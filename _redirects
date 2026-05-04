@@ -1,0 +1,2 @@
+# Redirect www to apex
+https://www.beaufort-ai.com/* https://beaufort-ai.com/:splat 301!
