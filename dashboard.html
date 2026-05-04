@@ -12,17 +12,18 @@
 </head>
 <body class="dashboard-body">
 
-  <!-- HEADER BANNER -->
-  <header class="site-header">
-    <img src="images/logo.jpg" alt="Beaufort AI" class="header-logo header-logo-left">
-    <div class="header-center">
-      <span class="header-title">BEAUFORT AI</span>
-      <div class="header-btns">
-        <a href="landing.html" class="btn-about">About Beaufort AI →</a>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.jpg" alt="Beaufort AI" class="logo-img">
+      </a>
+      <div class="nav-links">
+        <span class="live-badge">● LIVE</span>
+        <a href="index.html" class="btn-about">About Beaufort AI →</a>
       </div>
     </div>
-    <img src="images/logo-kirt.jpg" alt="Kirt Chouest" class="header-logo header-logo-right">
-  </header>
+  </nav>
 
   <!-- DASHBOARD HEADER -->
   <div class="dash-header">
@@ -102,7 +103,8 @@ const BUOYS = [
   { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
 ];
 
-const PROXY_BASE = 'https://snowy-dew-5cb5-ndbc-proxy.capt-barrett.workers.dev/';
+const PROXY = 'https://corsproxy.io/?';
+const NDBC_BASE = 'https://www.ndbc.noaa.gov/data/realtime2/';
 
 // ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
 function parseNDBC(text) {
@@ -265,7 +267,7 @@ function generateAnalysis(buoyData) {
 // ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
 async function fetchBuoy(buoy) {
   try {
-    const url = PROXY_BASE + buoy.id;
+    const url = `${PROXY}${NDBC_BASE}${buoy.id}.txt`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();

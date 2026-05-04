@@ -59,6 +59,9 @@ body {
 }
 .nav-logo { display: flex; align-items: center; text-decoration: none; }
 .logo-img { height: 36px; width: auto; }
+.nav-logos { display: flex; align-items: center; gap: 16px; }
+.logo-img-lg { height: 52px; width: auto; }
+.logo-kirt { height: 64px; filter: brightness(0) invert(1); }
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-links a {
   color: var(--muted);
@@ -76,6 +79,16 @@ body {
   font-size: 14px !important;
 }
 .btn-nav:hover { background: #2563eb !important; }
+.btn-nav-dash {
+  background: rgba(34,197,94,0.15) !important;
+  border: 1px solid rgba(34,197,94,0.4) !important;
+  color: #22c55e !important;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+.btn-nav-dash:hover { background: rgba(34,197,94,0.25) !important; }
 
 /* HERO */
 .hero {
