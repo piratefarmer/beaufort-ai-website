@@ -6,24 +6,40 @@
   <title>BEAU Live Dashboard — Beaufort AI</title>
   <meta name="description" content="Live Gulf of Mexico weather data from NDBC buoys — powered by Beaufort AI">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/dashboard.css?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    .full-nav { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+    .full-nav a { color: #fff; text-decoration: none; font-weight: 500; }
+    .full-nav a:hover { text-decoration: underline; }
+    #fleet-grid { max-height: 300px; overflow-y: auto; }
+    .dash-footer-links { text-align: center; margin-top: 20px; }
+    .dash-footer-links a { color: #ccc; margin: 0 10px; text-decoration: none; }
+    .dash-footer-links a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body class="dashboard-body">
 
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="nav-logo">
-        <img src="images/logo.jpg" alt="Beaufort AI" class="logo-img">
-      </a>
-      <div class="nav-links">
-        <span class="live-badge">● LIVE</span>
+  <!-- FULL NAV BAR -->
+  <nav class="full-nav">
+    <a href="index.html">Home</a>
+    <a href="index.html#how-it-works">How It Works</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#contact">Contact</a>
+  </nav>
+
+  <!-- HEADER BANNER -->
+  <header class="site-header">
+    <img src="images/logo.jpg" alt="Beaufort AI" class="header-logo header-logo-left">
+    <div class="header-center">
+      <span class="header-title">BEAUFORT AI</span>
+      <div class="header-btns">
         <a href="index.html" class="btn-about">About Beaufort AI →</a>
       </div>
     </div>
-  </nav>
+    <img src="images/logo-kirt.jpg" alt="Kirt Chouest" class="header-logo header-logo-right">
+  </header>
 
   <!-- DASHBOARD HEADER -->
   <div class="dash-header">
@@ -42,6 +58,30 @@
     </div>
   </div>
 
+  <!-- OPERATIONS MODE BAR (MOVED TO TOP) -->
+  <div class="system-bar">
+    <div class="sys-item">
+      <span class="sys-label">BEAU ENGINE</span>
+      <span class="sys-value green-text">● ACTIVE</span>
+    </div>
+    <div class="sys-item">
+      <span class="sys-label">DATA SOURCE</span>
+      <span class="sys-value">NDBC / NOAA</span>
+    </div>
+    <div class="sys-item">
+      <span class="sys-label">BUOYS TRACKED</span>
+      <span class="sys-value" id="buoy-count">—</span>
+    </div>
+    <div class="sys-item">
+      <span class="sys-label">ALERT STATUS</span>
+      <span class="sys-value" id="alert-status">SCANNING...</span>
+    </div>
+    <div class="sys-item">
+      <span class="sys-label">COVERAGE</span>
+      <span class="sys-value">Gulf of Mexico</span>
+    </div>
+  </div>
+
   <!-- MAIN DASHBOARD -->
   <div class="dash-main">
 
@@ -50,28 +90,9 @@
       <!-- Buoy cards injected by JS -->
     </div>
 
-    <!-- SYSTEM STATUS BAR -->
-    <div class="system-bar">
-      <div class="sys-item">
-        <span class="sys-label">BEAU ENGINE</span>
-        <span class="sys-value green-text">● ACTIVE</span>
-      </div>
-      <div class="sys-item">
-        <span class="sys-label">DATA SOURCE</span>
-        <span class="sys-value">NDBC / NOAA</span>
-      </div>
-      <div class="sys-item">
-        <span class="sys-label">BUOYS TRACKED</span>
-        <span class="sys-value" id="buoy-count">—</span>
-      </div>
-      <div class="sys-item">
-        <span class="sys-label">ALERT STATUS</span>
-        <span class="sys-value" id="alert-status">SCANNING...</span>
-      </div>
-      <div class="sys-item">
-        <span class="sys-label">COVERAGE</span>
-        <span class="sys-value">Gulf of Mexico</span>
-      </div>
+    <!-- FLEET GRID (WITH FIXED HEIGHT + SCROLL) -->
+    <div id="fleet-grid">
+      <!-- Fleet data injected by JS -->
     </div>
 
     <!-- BEAU ANALYSIS BOX -->
@@ -90,6 +111,12 @@
   <!-- FOOTER NOTE -->
   <div class="dash-footer">
     <p>Data sourced from NOAA National Data Buoy Center (NDBC). Beaufort AI aggregates, analyzes, and augments this data with AI-powered pattern recognition. Not for navigational use. © 2026 Beaufort AI LLC.</p>
+    <div class="dash-footer-links">
+      <a href="index.html">← Back to Home</a> |
+      <a href="index.html#about">About</a> |
+      <a href="index.html#how-it-works">How It Works</a> |
+      <a href="index.html#contact">Contact</a>
+    </div>
   </div>
 
 <script>
@@ -103,8 +130,7 @@ const BUOYS = [
   { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
 ];
 
-const PROXY = 'https://corsproxy.io/?';
-const NDBC_BASE = 'https://www.ndbc.noaa.gov/data/realtime2/';
+const PROXY_BASE = 'https://snowy-dew-5cb5-ndbc-proxy.capt-barrett.workers.dev/';
 
 // ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
 function parseNDBC(text) {
@@ -252,7 +278,6 @@ function generateAnalysis(buoyData) {
     analysis.push(`Sea state nominal (${maxWave}m Hs).`);
   }
 
-  // Check for swell
   const longPeriod = active.find(b => b.data.dpd >= 10);
   if (longPeriod) {
     analysis.push(`Long-period swell detected at buoy ${longPeriod.buoy.id} (${longPeriod.data.dpd}s) — distant storm energy propagating through region.`);
@@ -267,7 +292,7 @@ function generateAnalysis(buoyData) {
 // ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
 async function fetchBuoy(buoy) {
   try {
-    const url = `${PROXY}${NDBC_BASE}${buoy.id}.txt`;
+    const url = PROXY_BASE + buoy.id;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
