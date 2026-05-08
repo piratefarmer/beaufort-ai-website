@@ -6,21 +6,9 @@
   <title>BEAU Live Dashboard — Beaufort AI</title>
   <meta name="description" content="Live Gulf of Mexico weather data from NDBC buoys — powered by Beaufort AI">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dashboard.css?v=4">
+  <link rel="stylesheet" href="css/dashboard.css?v=5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    .full-nav { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
-    .full-nav a { color: #fff; text-decoration: none; font-weight: 500; }
-    .full-nav a:hover { text-decoration: underline; }
-    #fleet-grid { max-height: 420px; overflow-y: scroll; scrollbar-width: thin; scrollbar-color: #3b82f6 #1e2530; }
-    #fleet-grid::-webkit-scrollbar { width: 6px; }
-    #fleet-grid::-webkit-scrollbar-track { background: #1e2530; border-radius: 3px; }
-    #fleet-grid::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
-    .dash-footer-links { text-align: center; margin-top: 20px; }
-    .dash-footer-links a { color: #ccc; margin: 0 10px; text-decoration: none; }
-    .dash-footer-links a:hover { text-decoration: underline; }
-  </style>
 </head>
 <body class="dashboard-body">
 
@@ -148,15 +136,25 @@ const PROXY_BASE = 'https://snowy-dew-5cb5-ndbc-proxy.capt-barrett.workers.dev/'
 
 // ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
 function parseNDBC(text) {
-  const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));
-  if (!lines.length) return null;
-  const headers = text.split('\n')[0].replace('#','').trim().split(/\s+/);
-  const vals = lines[0].trim().split(/\s+/);
+  if (!text) return null;
+  const allLines = text.trim().split('\n');
+  if (allLines.length < 3) return null;
+  const headers = allLines[0].replace('#','').trim().split(/\s+/);
+  const dataLines = allLines.filter(l => !l.startsWith('#'));
+  if (!dataLines.length) return null;
+  const vals = dataLines[0].trim().split(/\s+/);
   const d = {};
   headers.forEach((h, i) => d[h] = vals[i]);
 
-  const mps_to_kts = v => v === 'MM' ? null : (parseFloat(v) * 1.94384).toFixed(1);
-  const num = v => v === 'MM' ? null : parseFloat(v);
+  const num = v => {
+    if (v == null || v === 'MM') return null;
+    const n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  };
+  const mps_to_kts = v => {
+    const n = num(v);
+    return n == null ? null : (n * 1.94384).toFixed(1);
+  };
 
   return {
     time:    `${d.MM}/${d.DD} ${d.hh}:${d.mm} UTC`,
@@ -173,7 +171,7 @@ function parseNDBC(text) {
 
 // ─── DIRECTION ARROW ──────────────────────────────────────────────────────────
 function dirArrow(deg) {
-  if (deg === null) return '—';
+  if (deg == null || isNaN(deg)) return '—';
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
 }
@@ -181,7 +179,7 @@ function dirArrow(deg) {
 // ─── ALERT LEVEL ──────────────────────────────────────────────────────────────
 function alertLevel(d) {
   if (!d) return { level: 'unknown', color: 'muted', label: 'NO DATA' };
-  const w = parseFloat(d.wspd);
+  const w = d.wspd != null ? parseFloat(d.wspd) : NaN;
   const wv = d.wvht;
   if (w >= 34 || wv >= 3.0) return { level: 'warning', color: 'red',   label: '⚠ ADVISORY' };
   if (w >= 22 || wv >= 2.0) return { level: 'caution', color: 'amber', label: '◈ CAUTION'  };
@@ -190,7 +188,7 @@ function alertLevel(d) {
 
 // ─── PRESSURE TREND ───────────────────────────────────────────────────────────
 function pressTrend(pres) {
-  if (!pres) return '';
+  if (pres == null) return '';
   if (pres < 1005) return ' ↓ LOW';
   if (pres > 1018) return ' ↑ HIGH';
   return ' STEADY';
@@ -213,12 +211,12 @@ function buildCard(buoy, data, error) {
       </div>`;
   }
 
-  const windStr = data.wspd ? `${data.wspd} kt ${dirArrow(data.wdir)}°` : '—';
-  const gustStr = data.gst  ? `G${data.gst} kt` : '';
-  const wvStr   = data.wvht ? `${data.wvht}m` : '—';
-  const pdStr   = data.dpd  ? `${data.dpd}s` : '—';
-  const presStr = data.pres ? `${data.pres} hPa${pressTrend(data.pres)}` : '—';
-  const atmpStr = data.atmp ? `${(data.atmp * 9/5 + 32).toFixed(0)}°F` : '—';
+  const windStr = data.wspd != null ? `${data.wspd} kt ${dirArrow(data.wdir)}` : '—';
+  const gustStr = data.gst  != null ? `G${data.gst} kt` : '';
+  const wvStr   = data.wvht != null ? `${data.wvht}m` : '—';
+  const pdStr   = data.dpd  != null ? `${data.dpd}s` : '—';
+  const presStr = data.pres != null ? `${data.pres} hPa${pressTrend(data.pres)}` : '—';
+  const atmpStr = data.atmp != null ? `${(data.atmp * 9/5 + 32).toFixed(0)}°F` : '—';
 
   return `
     <div class="buoy-card ${borderClass}">
@@ -292,15 +290,18 @@ function generateAnalysis(buoyData) {
     analysis.push(`Sea state nominal (${maxWave}m Hs).`);
   }
 
-  const longPeriod = active.find(b => b.data.dpd >= 10);
+  const longPeriod = active.find(b => b.data.dpd != null && b.data.dpd >= 10);
   if (longPeriod) {
     analysis.push(`Long-period swell detected at buoy ${longPeriod.buoy.id} (${longPeriod.data.dpd}s) — distant storm energy propagating through region.`);
   }
 
-  document.getElementById('alert-status').textContent = alertCount > 0 ? `${alertCount} ALERT${alertCount > 1 ? 'S' : ''}` : 'NORMAL';
-  document.getElementById('alert-status').className = 'sys-value ' + (alertCount > 0 ? 'amber-text' : 'green-text');
+  const alertEl = document.getElementById('alert-status');
+  if (alertEl) {
+    alertEl.textContent = alertCount > 0 ? `${alertCount} ALERT${alertCount > 1 ? 'S' : ''}` : 'NORMAL';
+    alertEl.className = 'sys-value ' + (alertCount > 0 ? 'amber-text' : 'green-text');
+  }
 
-  return analysis.join(' | ');
+  return analysis.length ? analysis.join(' | ') : 'Network nominal — no significant signals.';
 }
 
 // ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
@@ -316,29 +317,42 @@ async function fetchBuoy(buoy) {
   }
 }
 
+// ─── DOM HELPERS ──────────────────────────────────────────────────────────────
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+function setStatus(color, text) {
+  const dot = document.getElementById('status-dot');
+  if (dot) dot.style.color = color;
+  setText('status-text', text);
+}
+
 // ─── MAIN REFRESH ─────────────────────────────────────────────────────────────
 async function refresh() {
-  document.getElementById('status-dot').style.color = '#f59e0b';
-  document.getElementById('status-text').textContent = 'Fetching...';
+  setStatus('#f59e0b', 'Fetching...');
 
-  const results = await Promise.all(BUOYS.map(fetchBuoy));
+  let results;
+  try {
+    results = await Promise.all(BUOYS.map(fetchBuoy));
+  } catch (e) {
+    setStatus('#ef4444', 'Network error');
+    setText('analysis-content', 'Unable to reach buoy network. Retrying on next interval.');
+    return;
+  }
 
   const grid = document.getElementById('buoy-grid');
-  grid.innerHTML = results.map(r => buildCard(r.buoy, r.data, r.error)).join('');
+  if (grid) grid.innerHTML = results.map(r => buildCard(r.buoy, r.data, r.error)).join('');
 
   const active = results.filter(r => r.data).length;
-  document.getElementById('buoy-count').textContent = `${active}/${BUOYS.length}`;
+  setText('buoy-count', `${active}/${BUOYS.length}`);
 
   const now = new Date();
-  document.getElementById('last-updated').textContent =
-    `Updated ${now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})} local`;
-  document.getElementById('analysis-time').textContent = now.toLocaleTimeString();
+  setText('last-updated', `Updated ${now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})} local`);
+  setText('analysis-time', now.toLocaleTimeString());
+  setText('analysis-content', generateAnalysis(results));
 
-  const analysis = generateAnalysis(results);
-  document.getElementById('analysis-content').textContent = analysis;
-
-  document.getElementById('status-dot').style.color = active > 0 ? '#22c55e' : '#ef4444';
-  document.getElementById('status-text').textContent = active > 0 ? `${active} buoys online` : 'No data';
+  setStatus(active > 0 ? '#22c55e' : '#ef4444', active > 0 ? `${active} buoys online` : 'No data');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
