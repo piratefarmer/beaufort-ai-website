@@ -13,7 +13,10 @@
     .full-nav { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
     .full-nav a { color: #fff; text-decoration: none; font-weight: 500; }
     .full-nav a:hover { text-decoration: underline; }
-    #fleet-grid { max-height: 300px; overflow-y: auto; }
+    #fleet-grid { max-height: 420px; overflow-y: scroll; scrollbar-width: thin; scrollbar-color: #3b82f6 #1e2530; }
+    #fleet-grid::-webkit-scrollbar { width: 6px; }
+    #fleet-grid::-webkit-scrollbar-track { background: #1e2530; border-radius: 3px; }
+    #fleet-grid::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
     .dash-footer-links { text-align: center; margin-top: 20px; }
     .dash-footer-links a { color: #ccc; margin: 0 10px; text-decoration: none; }
     .dash-footer-links a:hover { text-decoration: underline; }
@@ -58,8 +61,14 @@
     </div>
   </div>
 
-  <!-- OPERATIONS MODE BAR (MOVED TO TOP) -->
-  <div class="system-bar">
+  <!-- TWO-COLUMN LAYOUT WRAPPER -->
+  <div class="dash-two-col">
+
+  <!-- LEFT COLUMN: OPS BAR + FLEET -->
+  <div class="dash-left-col">
+
+  <!-- OPERATIONS MODE BAR -->
+  <div class="system-bar system-bar-vertical">
     <div class="sys-item">
       <span class="sys-label">BEAU ENGINE</span>
       <span class="sys-value green-text">● ACTIVE</span>
@@ -82,17 +91,20 @@
     </div>
   </div>
 
-  <!-- MAIN DASHBOARD -->
+  <!-- FLEET GRID -->
+    <div id="fleet-grid">
+      <!-- Fleet data injected by JS -->
+    </div>
+
+  </div><!-- end dash-left-col -->
+
+  <!-- RIGHT COLUMN: BUOY GRID + ANALYSIS -->
+  <div class="dash-right-col">
   <div class="dash-main">
 
     <!-- BUOY GRID -->
     <div class="buoy-grid" id="buoy-grid">
       <!-- Buoy cards injected by JS -->
-    </div>
-
-    <!-- FLEET GRID (WITH FIXED HEIGHT + SCROLL) -->
-    <div id="fleet-grid">
-      <!-- Fleet data injected by JS -->
     </div>
 
     <!-- BEAU ANALYSIS BOX -->
@@ -106,7 +118,9 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- end dash-main -->
+  </div><!-- end dash-right-col -->
+  </div><!-- end dash-two-col -->
 
   <!-- FOOTER NOTE -->
   <div class="dash-footer">

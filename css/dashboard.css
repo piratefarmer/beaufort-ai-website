@@ -148,11 +148,48 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* MAIN DASHBOARD */
-.dash-main {
-  max-width: 1200px;
+/* TWO-COLUMN LAYOUT */
+.dash-two-col {
+  display: flex;
+  gap: 20px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
+  align-items: flex-start;
+}
+.dash-left-col {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 120px;
+}
+.dash-right-col {
+  flex: 1;
+  min-width: 0;
+}
+
+/* OPS BAR — VERTICAL (left column) */
+.system-bar-vertical {
+  flex-direction: column !important;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.system-bar-vertical .sys-item {
+  border-right: none !important;
+  border-bottom: 1px solid #1e2530;
+  min-width: unset;
+}
+.system-bar-vertical .sys-item:last-child {
+  border-bottom: none;
+}
+
+/* MAIN DASHBOARD */
+.dash-main {
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -349,6 +386,12 @@
 }
 
 /* RESPONSIVE */
+@media (max-width: 900px) {
+  .dash-two-col { flex-direction: column; }
+  .dash-left-col { width: 100%; position: static; }
+  .system-bar-vertical { flex-direction: row !important; flex-wrap: wrap; }
+  .system-bar-vertical .sys-item { border-bottom: none !important; border-right: 1px solid #1e2530; }
+}
 @media (max-width: 600px) {
   .buoy-grid { grid-template-columns: 1fr; }
   .dash-header-inner { flex-direction: column; align-items: flex-start; }
