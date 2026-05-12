@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Marine Weather — Gulf of Mexico &amp; South Atlantic NDBC Buoys | Beaufort AI</title>
+  <meta name="description" content="Live marine weather from NOAA NDBC buoys — Gulf of Mexico and South Atlantic. Real-time wind speed, wave height, pressure and temperature updated every 10 minutes. Free live offshore weather data.">
+  <meta name="keywords" content="Gulf of Mexico weather, NDBC buoy data, live marine weather, South Atlantic buoys, Brazil offshore weather, Campos Basin weather, offshore weather, NOAA buoy, marine forecast, live wave height">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://beaufort-ai.com/weather.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://beaufort-ai.com/weather.html">
+  <meta property="og:title" content="Gulf of Mexico Live Weather — NDBC Buoy Data | Beaufort AI">
+  <meta property="og:description" content="Live Gulf of Mexico weather from NOAA NDBC buoys. Real-time wind, waves, pressure updated every 10 minutes. Free.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Gulf of Mexico Live Weather — NDBC Buoy Data">
+  <meta name="twitter:description" content="Free live Gulf of Mexico weather from NOAA buoys. Wind, waves, pressure updated every 10 minutes.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: #060910; color: #eef2ff; }
+    .weather-header { background: #080e18; border-bottom: 1px solid #1e3a5f; padding: 20px 0; }
+    .weather-header .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .weather-title { font-size: 1.4rem; font-weight: 700; color: #e2e8f0; }
+    .weather-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+    .status-bar { display: flex; align-items: center; gap: 20px; font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .status-pill { background: #0d1829; border: 1px solid #1e3a5f; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #94a3b8; }
+    .status-pill span { font-weight: 600; }
+    .alert-banner { margin: 24px 0 0; padding: 14px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; background: #0a2e18; border: 1px solid #1e7a30; color: #4ade80; }
+    .alert-banner.caution { background: #2a1f00; border-color: #b45309; color: #fbbf24; }
+    .alert-banner.warning { background: #2a0a00; border-color: #dc2626; color: #f87171; }
+    .buoy-full-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 28px 0; }
+    .bc { background: #0d1829; border: 1px solid #1e3a5f; border-radius: 10px; padding: 20px 22px; }
+    .bc.primary { border-color: #0ea5e9; box-shadow: 0 0 20px rgba(14,165,233,0.1); }
+    .bc.caution { border-color: #f59e0b; }
+    .bc.warning { border-color: #ef4444; }
+    .bc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .bc-id { font-size: 20px; font-weight: 800; color: #38bdf8; font-family: 'Space Grotesk', monospace; letter-spacing: 1px; }
+    .bc-name { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .bc-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.8px; }
+    .badge-normal { background: rgba(16,185,129,0.15); color: #4ade80; border: 1px solid #166534; }
+    .badge-caution { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid #92400e; }
+    .badge-warning { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid #991b1b; }
+    .badge-nodata { background: rgba(100,116,139,0.15); color: #64748b; border: 1px solid #334155; }
+    .bc-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bc-metric { background: #060f1e; border-radius: 6px; padding: 10px 12px; }
+    .bc-metric-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .bc-metric-value { font-size: 15px; font-weight: 600; color: #e2e8f0; font-family: 'Space Grotesk', monospace; }
+    .bc-time { font-size: 11px; color: #475569; margin-top: 12px; border-top: 1px solid #1e3a5f; padding-top: 8px; }
+    .bc-no-data { color: #475569; font-size: 13px; padding: 20px 0; text-align: center; }
+    .analysis-box { background: #071420; border: 1px solid #1e3a5f; border-radius: 10px; padding: 22px 26px; margin-bottom: 28px; }
+    .analysis-box h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #38bdf8; margin-bottom: 10px; }
+    .analysis-text { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+    .refresh-btn { background: rgba(14,165,233,0.1); border: 1px solid #0ea5e9; color: #38bdf8; padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .refresh-btn:hover { background: rgba(14,165,233,0.22); }
+    .back-link { color: #64748b; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+    .back-link:hover { color: #94a3b8; }
+    .disclaimer { font-size: 11px; color: #334155; text-align: center; margin-top: 40px; padding: 20px 0; border-top: 1px solid #0d1829; }
+  </style>
+</head>
+<body>
+
+<div class="weather-header">
+  <div class="container">
+    <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+      <a href="/"><img src="images/logo.jpg" alt="Beaufort AI" style="height:60px; width:auto;"></a>
+      <div>
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:4px;">
+          <a href="/" style="color:#64748b; text-decoration:none; font-size:13px; font-weight:600;">&#127968; Home</a>
+          <a href="/weather.html" style="color:#38bdf8; text-decoration:none; font-size:13px; font-weight:600;">&#128225; Gulf Weather</a>
+          <a href="https://beau.beaufort-ai.com" target="beau-dashboard" style="color:#4ade80; text-decoration:none; font-size:13px; font-weight:600;">&#9679; Live Dashboard</a>
+          <a href="/#contact" style="color:#64748b; text-decoration:none; font-size:13px;">Get Early Access</a>
+        </div>
+        <div class="weather-title">📡 Live Marine Weather — Gulf &amp; South Atlantic</div>
+        <div class="weather-subtitle">NOAA NDBC Buoy Network · Updates every 10 minutes</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-pill"><span class="status-dot"></span> <span id="status-text">Loading...</span></div>
+      <div class="status-pill">Buoys: <span id="buoy-count">—</span></div>
+      <div class="status-pill">Network: <span id="alert-status" style="color:#4ade80;">—</span></div>
+      <button class="refresh-btn" onclick="refresh()">↻ Refresh</button>
+    </div>
+  </div>
+</div>
+
+<div style="background:#060910; padding:32px 0 60px;">
+  <div class="container">
+
+    <div class="analysis-box">
+      <h3>🧠 BEAU Network Analysis</h3>
+      <div class="analysis-text" id="analysis-text">Analyzing buoy network...</div>
+      <div style="font-size:11px; color:#334155; margin-top:8px;" id="analysis-time"></div>
+    </div>
+
+    <div class="buoy-full-grid" id="buoy-grid">
+      <!-- Cards injected by JS -->
+      <div style="color:#475569; text-align:center; padding:40px; grid-column:1/-1;">Fetching live buoy data...</div>
+    </div>
+
+    <div class="disclaimer">
+      Data sourced from NOAA National Data Buoy Center (NDBC). Refreshes automatically every 10 minutes.<br>
+      <strong style="color:#475569;">Not for navigational use.</strong> For safety-of-life decisions, always consult official sources. &copy; 2026 Beaufort AI LLC.
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BUOYS = [
+  { id: 'BURL1', name: 'SW Pass — Fourchon',       lat: 28.906, lon: -89.429, primary: true },
+  { id: '42040', name: 'Pensacola — NE Gulf',       lat: 29.212, lon: -88.207 },
+  { id: '42001', name: 'Mid Gulf of Mexico',        lat: 25.888, lon: -89.658 },
+  { id: '42002', name: 'W Central Gulf',            lat: 25.170, lon: -94.415 },
+  { id: '42039', name: 'Dauphin Island',            lat: 28.788, lon: -86.008 },
+  { id: '42055', name: 'Bay of Campeche',           lat: 22.162, lon: -93.978 },
+  { id: '41044', name: 'NE Caribbean',              lat: 21.590, lon: -58.630 },
+  { id: '41037', name: 'Wrightsville Beach, NC',    lat: 34.207, lon: -77.038 },
+  // South Atlantic / Brazil
+  { id: '31007', name: 'Equatorial Atlantic',       lat:  0.000, lon: -23.000, region: 'south-atlantic' },
+  { id: '31003', name: 'South Atlantic — Brazil',   lat: -8.000, lon: -30.000, region: 'south-atlantic' },
+  { id: '31006', name: 'Equatorial Atlantic N',     lat:  4.000, lon: -23.000, region: 'south-atlantic' },
+];
+
+const PROXY = 'https://snowy-dew-5cb5-ndbc-proxy.capt-barrett.workers.dev/';
+
+function parseNDBC(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].replace('#','').trim().split(/\s+/);
+  const dataLines = lines.filter(l => !l.startsWith('#'));
+  if (!dataLines.length) return null;
+  const vals = dataLines[0].trim().split(/\s+/);
+  const d = {};
+  headers.forEach((h, i) => d[h] = vals[i]);
+  const mps = v => v === 'MM' ? null : +(parseFloat(v) * 1.94384).toFixed(1);
+  const num = v => v === 'MM' ? null : parseFloat(v);
+  return {
+    time: `${d.MM}/${d.DD} ${d.hh}:${d.mm} UTC`,
+    wdir: num(d.WDIR), wspd: mps(d.WSPD), gst: mps(d.GST),
+    wvht: num(d.WVHT), dpd: num(d.DPD),
+    pres: num(d.PRES), atmp: num(d.ATMP), wtmp: num(d.WTMP),
+  };
+}
+
+function dirStr(deg) {
+  if (deg === null) return '—';
+  const d = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return d[Math.round(deg/22.5)%16];
+}
+
+function alertLevel(data) {
+  if (!data) return { level:'nodata', label:'NO DATA' };
+  const w = parseFloat(data.wspd);
+  if (w >= 34 || data.wvht >= 3.0) return { level:'warning', label:'⚠ ADVISORY' };
+  if (w >= 22 || data.wvht >= 2.0) return { level:'caution', label:'◈ CAUTION' };
+  return { level:'normal', label:'● NORMAL' };
+}
+
+function buildCard(buoy, data, err) {
+  const al = alertLevel(data);
+  const primaryClass = buoy.primary ? ' primary' : '';
+  const alertClass = al.level !== 'normal' && al.level !== 'nodata' ? ` ${al.level}` : '';
+
+  if (err || !data) return `
+    <div class="bc${primaryClass}">
+      <div class="bc-header">
+        <div><div class="bc-id">${buoy.id}</div><div class="bc-name">${buoy.name}</div></div>
+        <span class="bc-badge badge-nodata">NO DATA</span>
+      </div>
+      <div class="bc-no-data">Data unavailable — station may be offline</div>
+    </div>`;
+
+  const windStr = data.wspd !== null ? `${data.wspd} kt ${dirStr(data.wdir)}` : '—';
+  const gustStr = data.gst !== null ? `G${data.gst} kt` : '';
+  const waveStr = data.wvht !== null ? `${data.wvht} m` : '—';
+  const periodStr = data.dpd !== null ? `${data.dpd} s` : '—';
+  const presStr = data.pres !== null ? `${data.pres} hPa` : '—';
+  const atmpF = data.atmp !== null ? `${(data.atmp*9/5+32).toFixed(0)}°F` : '—';
+  const wtmpF = data.wtmp !== null ? `${(data.wtmp*9/5+32).toFixed(0)}°F` : '—';
+
+  return `
+    <div class="bc${primaryClass}${alertClass}">
+      ${buoy.primary ? '<div style="font-size:9px;font-weight:700;color:#0ea5e9;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">★ Primary — Port Fourchon Area</div>' : ''}
+      ${buoy.region === 'south-atlantic' ? '<div style="font-size:9px;font-weight:700;color:#a78bfa;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🌎 South Atlantic / Brazil Network</div>' : ''}
+      <div class="bc-header">
+        <div><div class="bc-id">${buoy.id}</div><div class="bc-name">${buoy.name}</div></div>
+        <span class="bc-badge badge-${al.level}">${al.label}</span>
+      </div>
+      <div class="bc-metrics">
+        <div class="bc-metric"><div class="bc-metric-label">Wind</div><div class="bc-metric-value">${windStr}</div>${gustStr ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">${gustStr}</div>` : ''}</div>
+        <div class="bc-metric"><div class="bc-metric-label">Wave Hs</div><div class="bc-metric-value">${waveStr}</div>${data.dpd ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Period: ${periodStr}</div>` : ''}</div>
+        <div class="bc-metric"><div class="bc-metric-label">Pressure</div><div class="bc-metric-value">${presStr}</div></div>
+        <div class="bc-metric"><div class="bc-metric-label">Air / Sea</div><div class="bc-metric-value">${atmpF} / ${wtmpF}</div></div>
+      </div>
+      <div class="bc-time">Obs: ${data.time}</div>
+    </div>`;
+}
+
+function generateAnalysis(results) {
+  const active = results.filter(r => r.data);
+  if (!active.length) return 'No buoy data available at this time.';
+  const winds = active.map(r => r.data.wspd).filter(v => v !== null);
+  const pressures = active.map(r => r.data.pres).filter(v => v !== null);
+  const waves = active.map(r => r.data.wvht).filter(v => v !== null);
+  const maxWind = winds.length ? Math.max(...winds) : null;
+  const avgPres = pressures.length ? (pressures.reduce((a,b)=>a+b,0)/pressures.length).toFixed(1) : null;
+  const maxWave = waves.length ? Math.max(...waves) : null;
+  let parts = [], alerts = 0;
+
+  if (maxWind >= 34) { parts.push(`⚠ ADVISORY CONDITIONS — Peak wind ${maxWind} kt. Review all offshore operations.`); alerts++; }
+  else if (maxWind >= 22) { parts.push(`◈ Elevated winds — peak ${maxWind} kt. Monitor for squall development.`); }
+  else if (maxWind) { parts.push(`Wind nominal across network (peak ${maxWind} kt).`); }
+
+  if (avgPres && avgPres < 1008) { parts.push(`Pressure averaging ${avgPres} hPa — below normal. Potential system development.`); alerts++; }
+  else if (avgPres) { parts.push(`Pressure stable at ${avgPres} hPa.`); }
+
+  if (maxWave >= 3.0) { parts.push(`⚠ Wave heights elevated — ${maxWave}m Hs. Crane/ROV limits may apply.`); alerts++; }
+  else if (maxWave >= 2.0) { parts.push(`Wave heights ${maxWave}m Hs — monitor for increase.`); }
+  else if (maxWave) { parts.push(`Sea state nominal (${maxWave}m Hs).`); }
+
+  const swellBuoy = active.find(r => r.data.dpd >= 10);
+  if (swellBuoy) parts.push(`Long-period swell at ${swellBuoy.buoy.id} (${swellBuoy.data.dpd}s period) — distant storm energy propagating through region.`);
+
+  const alertEl = document.getElementById('alert-status');
+  alertEl.textContent = alerts > 0 ? `${alerts} ALERT${alerts>1?'S':''}` : 'NORMAL';
+  alertEl.style.color = alerts > 0 ? '#fbbf24' : '#4ade80';
+
+  return parts.join(' &nbsp;|&nbsp; ');
+}
+
+async function fetchBuoy(buoy) {
+  try {
+    const res = await fetch(PROXY + buoy.id, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return { buoy, data: parseNDBC(await res.text()), error: null };
+  } catch(e) { return { buoy, data: null, error: e.message }; }
+}
+
+async function refresh() {
+  document.getElementById('status-text').textContent = 'Fetching...';
+  const results = await Promise.all(BUOYS.map(fetchBuoy));
+  document.getElementById('buoy-grid').innerHTML = results.map(r => buildCard(r.buoy, r.data, r.error)).join('');
+  const active = results.filter(r => r.data).length;
+  document.getElementById('buoy-count').textContent = `${active}/${BUOYS.length} active`;
+  document.getElementById('status-text').textContent = 'Live';
+  document.getElementById('analysis-text').innerHTML = generateAnalysis(results);
+  const now = new Date();
+  document.getElementById('analysis-time').textContent = `Analysis generated ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})} local`;
+}
+
+refresh();
+setInterval(refresh, 600000); // refresh every 10 minutes
+</script>
+</body>
+</html>
