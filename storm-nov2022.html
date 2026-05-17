@@ -12,7 +12,11 @@
 
     .header { background: #080e18; border-bottom: 1px solid #1e3a5f; padding: 20px 0; }
     .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-    .logo { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #4a9eff; font-weight: 600; margin-bottom: 6px; }
+    .logo { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #4a9eff; font-weight: 600; margin-bottom: 6px; text-decoration: none; display: inline-block; }
+    .logo:hover { color: #7dd3fc; }
+    .nav-links { display: flex; gap: 20px; margin-top: 12px; }
+    .nav-links a { font-size: 12px; color: #64748b; text-decoration: none; }
+    .nav-links a:hover { color: #94a3b8; }
     h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; color: #e2e8f0; }
     .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
 
@@ -71,9 +75,14 @@
 
 <div class="header">
   <div class="container">
-    <div class="logo">Beaufort AI — Case Study</div>
+    <a href="/" class="logo">← Beaufort AI</a>
     <h1>Gulf Storm Event · November 19–21, 2022</h1>
-    <div class="subtitle">Buoy 42001 — Mid-Gulf of Mexico · 48-Hour Early Warning Demonstration</div>
+    <div class="subtitle">Buoy 42001 — Mid-Gulf of Mexico · Sensor-Based Situational Awareness Demonstration</div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/weather.html">Live Weather</a>
+      <a href="/storm-nov2022.html">Case Study</a>
+    </div>
   </div>
 </div>
 
@@ -114,6 +123,13 @@
     </div>
   </div>
 
+  <div class="insight-box" style="border-color:#334155; background:#0a0f1a;">
+    <div class="insight-title" style="color:#94a3b8;">📡 How This Differs From NOAA Forecasts</div>
+    <div class="insight-text">
+      NOAA's NWS marine forecasts provide excellent <strong>regional predictions</strong> for well-monitored US coastal waters. Beaufort AI's value is different: it delivers <strong>vessel-specific, location-specific situational awareness</strong> by fusing real-time sensor data from your exact operating area — including regions like the <strong>Campos Basin offshore Brazil</strong> where NOAA buoy coverage is sparse and forecasts rely on models rather than direct observation. Beau also integrates onboard sensor readings, ROV deployment status, and vessel-specific operational constraints that no regional forecast can account for.
+    </div>
+  </div>
+
   <div class="peak-banner">
     <div class="peak-label">🌊 Storm Peak — Nov 20, 2022 at 07:40 UTC</div>
     <div class="peak-vals">34.6 kt wind &nbsp;·&nbsp; 44.1 kt gusts &nbsp;·&nbsp; 5.07 m seas (16.6 ft)</div>
@@ -134,7 +150,7 @@
   <div class="insight-box green">
     <div class="insight-title">✅ Beau's Advantage</div>
     <div class="insight-text">
-      Traditional forecasts deliver warnings hours before a storm. Beau's multi-buoy sensor fusion detected this event's <strong>precursor signature 30+ hours early</strong> — the slow NE swell build, the backing winds, the pressure gradient — and escalated from CAUTION to WARNING well before any advisory was issued. For offshore operations, that's the difference between a routine route change and an emergency response.
+      Regional forecasts tell you a storm is coming. Beau tells you what the sensors at your <em>specific location</em> are reading right now — and trends them forward in real time. Beau's multi-buoy sensor fusion tracked this event's <strong>precursor signature 30+ hours early</strong> — the slow NE swell build, the backing winds, the pressure gradient — giving operators time for a routine route change instead of an emergency response. In data-sparse offshore regions, that edge is even greater.
     </div>
   </div>
 
