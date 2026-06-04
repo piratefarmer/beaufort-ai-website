@@ -1,0 +1,10 @@
+name = "beaufort-ai-website"
+type = "javascript"
+account_id = "e40994912d6ab9356321c6157756df35"
+workers_dev = false
+route = "beau.beaufort-ai.com/*"
+zone_id = "88749677e728b1fc626299f04394d34a"
+
+[env.production]
+name = "beaufort-ai-website"
+route = "beau.beaufort-ai.com/*"
