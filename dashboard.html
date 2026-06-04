@@ -132,7 +132,9 @@ const BUOYS = [
   { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
 ];
 
-const PROXY_BASE = 'https://snowy-dew-5cb5-ndbc-proxy.capt-barrett.workers.dev/';
+// Updated June 4, 2026: Use local Pi dashboard (live, real-time sensor data)
+const PROXY_BASE = 'http://192.168.1.226:5000/api/sensors';
+const USE_PI_DASHBOARD = true;
 
 // ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
 function parseNDBC(text) {
@@ -307,11 +309,30 @@ function generateAnalysis(buoyData) {
 // ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
 async function fetchBuoy(buoy) {
   try {
-    const url = PROXY_BASE + buoy.id;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    return { buoy, data: parseNDBC(text), error: null };
+    if (USE_PI_DASHBOARD) {
+      // Use local Pi dashboard (single live sensor)
+      const res = await fetch(PROXY_BASE, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      // Convert Pi format to display format
+      const data = {
+        wind_speed: json.wind?.speed_kts || 0,
+        wind_gust: json.wind?.gust_kts || 0,
+        wind_dir: json.wind?.direction_deg || 0,
+        pressure: json.barometer?.pressure_mb || 1013,
+        air_temp: json.barometer?.temp_f || 65,
+        water_temp: null,
+        timestamp: json.timestamp
+      };
+      return { buoy, data, error: null };
+    } else {
+      // Original NDBC proxy mode
+      const url = PROXY_BASE + buoy.id;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      return { buoy, data: parseNDBC(text), error: null };
+    }
   } catch(e) {
     return { buoy, data: null, error: e.message };
   }
