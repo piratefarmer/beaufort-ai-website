@@ -132,9 +132,28 @@ const BUOYS = [
   { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
 ];
 
-// Updated June 4, 2026: Use local Pi dashboard (live, real-time sensor data)
-const PROXY_BASE = 'http://192.168.1.226:5000/api/sensors';
+// Updated June 7, 2026: Demo mode until Worker deployed
+const PROXY_BASE = '/api/sensors';
+const BEAU_BASE = '/api/beau';
 const USE_PI_DASHBOARD = true;
+const USE_DEMO_DATA = true;  // Switch to false once Cloudflare Worker is live
+
+function getDemoData() {
+  const now = new Date();
+  const windSpeed = 15 + Math.sin(now.getTime() / 30000) * 5;
+  const windDir = 215 + Math.cos(now.getTime() / 40000) * 10;
+  const pressure = 1003.2 - (Math.sin(now.getTime() / 60000) * 2);
+  return {
+    wind_speed: windSpeed.toFixed(1),
+    wind_gust: (windSpeed + 3).toFixed(1),
+    wind_dir: (windDir % 360).toFixed(0),
+    pressure: pressure.toFixed(1),
+    air_temp: 82.5,
+    water_temp: null,
+    timestamp: now.toISOString(),
+    beau_prediction: 'Demo: Light to moderate seas. Pressure falling slightly — monitor for wind shift in next 6 hours. DP operations nominal. Confidence: 0.78'
+  };
+}
 
 // ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
 function parseNDBC(text) {
@@ -213,12 +232,22 @@ function buildCard(buoy, data, error) {
       </div>`;
   }
 
-  const windStr = data.wspd != null ? `${data.wspd} kt ${dirArrow(data.wdir)}` : '—';
-  const gustStr = data.gst  != null ? `G${data.gst} kt` : '';
-  const wvStr   = data.wvht != null ? `${data.wvht}m` : '—';
-  const pdStr   = data.dpd  != null ? `${data.dpd}s` : '—';
-  const presStr = data.pres != null ? `${data.pres} hPa${pressTrend(data.pres)}` : '—';
-  const atmpStr = data.atmp != null ? `${(data.atmp * 9/5 + 32).toFixed(0)}°F` : '—';
+  // Handle both NDBC and Pi sensor field names
+  const wspd = data.wspd ?? data.wind_speed;
+  const wdir = data.wdir ?? data.wind_dir;
+  const gst = data.gst ?? data.wind_gust;
+  const pres = data.pres ?? data.pressure;
+  const atmp = data.atmp ?? data.air_temp;
+  const wvht = data.wvht;
+  const dpd = data.dpd;
+  
+  const windStr = wspd != null ? `${wspd} kt ${dirArrow(wdir)}` : '—';
+  const gustStr = gst  != null ? `G${gst} kt` : '';
+  const wvStr   = wvht != null ? `${wvht}m` : '—';
+  const pdStr   = dpd  != null ? `${dpd}s` : '—';
+  const presStr = pres != null ? `${pres} hPa${pressTrend(pres)}` : '—';
+  const atmpStr = atmp != null ? `${atmp.toFixed(0)}°F` : '—';
+  const beauStr = data.beau_prediction ? `<div class='beau-assessment'><strong>BEAU:</strong> ${data.beau_prediction}</div>` : '';
 
   return `
     <div class="buoy-card ${borderClass}">
@@ -235,10 +264,6 @@ function buildCard(buoy, data, error) {
           <span class="metric-value">${windStr} ${gustStr}</span>
         </div>
         <div class="metric">
-          <span class="metric-label">WAVE Hs</span>
-          <span class="metric-value">${wvStr} / ${pdStr}</span>
-        </div>
-        <div class="metric">
           <span class="metric-label">PRESSURE</span>
           <span class="metric-value">${presStr}</span>
         </div>
@@ -246,6 +271,7 @@ function buildCard(buoy, data, error) {
           <span class="metric-label">AIR TEMP</span>
           <span class="metric-value">${atmpStr}</span>
         </div>
+        ${beauStr ? `<div class="metric beau-metric">${beauStr}</div>` : ''}
       </div>
       <div class="buoy-time">${data.time}</div>
     </div>`;
@@ -309,22 +335,41 @@ function generateAnalysis(buoyData) {
 // ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
 async function fetchBuoy(buoy) {
   try {
+    if (USE_DEMO_DATA) {
+      // Demo mode: return simulated data while Worker is deployed
+      return { buoy, data: getDemoData(), error: null };
+    }
+    
     if (USE_PI_DASHBOARD) {
-      // Use local Pi dashboard (single live sensor)
+      // Use public API proxy to Pi dashboard (single live sensor)
       const res = await fetch(PROXY_BASE, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
+      
+      // Fetch Beau prediction if available
+      let beauPrediction = null;
+      try {
+        const beauRes = await fetch(BEAU_BASE, { cache: 'no-store' });
+        if (beauRes.ok) {
+          const beauData = await beauRes.json();
+          beauPrediction = beauData.beau_prediction?.beau_prediction || null;
+        }
+      } catch(e) {
+        // Beau offline is OK — show sensors alone
+      }
+      
       // Convert Pi format to display format
       const data = {
-        wind_speed: json.wind?.speed_kts || 0,
-        wind_gust: json.wind?.gust_kts || 0,
-        wind_dir: json.wind?.direction_deg || 0,
-        pressure: json.barometer?.pressure_mb || 1013,
-        air_temp: json.barometer?.temp_f || 65,
+        wind_speed: json.wind_speed_kts || 0,
+        wind_gust: json.wind_gust_kts || 0,
+        wind_dir: json.wind_direction || 0,
+        pressure: json.pressure_hpa || 1013,
+        air_temp: json.temperature_f || 65,
         water_temp: null,
-        timestamp: json.timestamp
+        timestamp: json.timestamp,
+        beau_prediction: beauPrediction
       };
-      return { buoy, data, error: null };
+      return { buoy, data, error: null, beau: beauPrediction };
     } else {
       // Original NDBC proxy mode
       const url = PROXY_BASE + buoy.id;
