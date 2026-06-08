@@ -1,55 +1,77 @@
 /**
  * Cloudflare Worker — Beaufort AI API Proxy
  * 
- * Proxies requests from beaufortai.ai to private Pi @ 192.168.1.226:5000
- * Only works if gateway/tailscale has access to internal network.
+ * Proxies requests from beau.beaufort-ai.com/api/beau to DGX server
+ * DGX API: http://100.117.159.103:5001/api/beau (via Tailscale)
  * 
  * Deploy: wrangler deploy
- * Route: beaufortai.ai/api/*
+ * Route: beau.beaufort-ai.com/api/beau
  */
+
+const DGX_API_URL = 'http://100.117.159.103:5001/api/beau';
+const TIMEOUT_MS = 10000;
 
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    
-    // Only proxy /api/sensors and /api/beau
-    if (!url.pathname.match(/^\/api\/(sensors|beau)$/)) {
-      return new Response('Not found', { status: 404 });
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response('OK', {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
     }
 
-    // Reconstruct internal URL
-    const internalUrl = `http://192.168.1.226:5000${url.pathname}`;
-    
+    if (request.method !== 'POST') {
+      return new Response(JSON.stringify({ error: 'Only POST allowed' }), {
+        status: 405,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     try {
-      const response = await fetch(internalUrl, {
-        method: request.method,
-        headers: request.headers,
-        body: request.body,
+      // Parse incoming request
+      const body = await request.text();
+      
+      // Proxy to DGX API
+      const response = await fetch(DGX_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
         cf: {
           mirage: false,
-          minify: { javascript: false, css: false, html: false },
-          cacheEverything: false,
           cacheTtl: 0,
-        }
+          cacheEverything: false,
+        },
       });
 
-      // Clone response and add CORS headers
-      const newResponse = new Response(response.body, response);
-      newResponse.headers.set('Access-Control-Allow-Origin', 'https://beaufortai.ai');
-      newResponse.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      newResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      
-      return newResponse;
+      // Get response and add CORS headers
+      const responseBody = await response.json();
+      return new Response(JSON.stringify(responseBody), {
+        status: response.status,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
     } catch (error) {
       return new Response(
         JSON.stringify({
-          error: 'Pi unreachable',
-          message: error.message,
-          timestamp: new Date().toISOString()
+          status: 'error',
+          error: {
+            code: 'PROXY_ERROR',
+            message: `DGX API unreachable: ${error.message}`,
+          },
         }),
         {
           status: 503,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
         }
       );
     }

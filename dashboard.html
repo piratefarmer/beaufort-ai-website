@@ -132,11 +132,11 @@ const BUOYS = [
   { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
 ];
 
-// Updated June 7, 2026: Demo mode until Worker deployed
+// Updated June 8, 2026: Live Beau API endpoint on DGX
 const PROXY_BASE = '/api/sensors';
-const BEAU_BASE = '/api/beau';
+const BEAU_BASE = 'http://100.117.159.103:5001/api/beau';  // ✅ LIVE on DGX
 const USE_PI_DASHBOARD = true;
-const USE_DEMO_DATA = true;  // Switch to false once Cloudflare Worker is live
+const USE_DEMO_DATA = false;  // ✅ Live API now available
 
 function getDemoData() {
   const now = new Date();
@@ -349,13 +349,30 @@ async function fetchBuoy(buoy) {
       // Fetch Beau prediction if available
       let beauPrediction = null;
       try {
-        const beauRes = await fetch(BEAU_BASE, { cache: 'no-store' });
+        const beauRes = await fetch(BEAU_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vessel: {
+              position: { latitude: 26.5, longitude: -89.5 }
+            },
+            sensors: {
+              wind: { speed: json.wind_speed_kts || 0, direction: json.wind_direction || 0 },
+              pressure: { atmospheric: json.pressure_hpa || 1013 },
+              temperature: { air: json.temperature_f || 65 }
+            }
+          }),
+          cache: 'no-store'
+        });
         if (beauRes.ok) {
           const beauData = await beauRes.json();
-          beauPrediction = beauData.beau_prediction?.beau_prediction || null;
+          if (beauData.prediction?.alert_description) {
+            beauPrediction = `[${beauData.prediction.alert_level}] ${beauData.prediction.alert_description}`;
+          }
         }
       } catch(e) {
         // Beau offline is OK — show sensors alone
+        console.warn('Beau API offline:', e.message);
       }
       
       // Convert Pi format to display format
