@@ -1,7 +1,3 @@
 name = "beau-api-proxy"
 main = "src/api-beau-proxy.js"
 compatibility_date = "2026-06-08"
-
-[env.production]
-route = "https://api.beaufort-ai.com/beau"
-zone_name = "beaufort-ai.com"
