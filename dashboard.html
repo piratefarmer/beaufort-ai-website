@@ -357,21 +357,27 @@ async function fetchBuoy(buoy) {
             'x-api-key': BEAU_API_KEY
           },
           body: JSON.stringify({
-            vessel: {
-              position: { latitude: 26.5, longitude: -89.5 }
-            },
-            sensors: {
-              wind: { speed: json.wind_speed_kts || 0, direction: json.wind_direction || 0 },
-              pressure: { atmospheric: json.pressure_hpa || 1013 },
-              temperature: { air: json.temperature_f || 65 }
-            }
+            wind_speed: json.wind_speed_kts || 0,
+            wind_direction: json.wind_direction || 0,
+            apparent_wind_speed: json.wind_speed_kts || 0,
+            apparent_wind_direction: json.wind_direction || 0,
+            latitude: 26.5,
+            longitude: -89.5,
+            speed_over_ground: json.speed || 0,
+            course_over_ground: json.course || 0,
+            pressure: json.pressure_hpa || 1013,
+            barometer_temperature: json.air_temp || 65,
+            humidity: 50,
+            roll: 0,
+            pitch: 0,
+            yaw: json.course || 0
           }),
           cache: 'no-store'
         });
         if (beauRes.ok) {
           const beauData = await beauRes.json();
-          if (beauData.prediction?.alert_description) {
-            beauPrediction = `[${beauData.prediction.alert_level}] ${beauData.prediction.alert_description}`;
+          if (beauData.alert_description) {
+            beauPrediction = `[${beauData.alert_level}] ${beauData.alert_description}`;
           }
         }
       } catch(e) {
