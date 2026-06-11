@@ -1,448 +1,1156 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  BEAU LIVE DASHBOARD — Beaufort AI
+  ============================================================
+  Clean rebuild: June 2026
+
+  REPLIT INTEGRATION:
+  - Endpoint: https://beau-maritime-ai.replit.app/api/beau
+  - Method: POST
+  - Auth: x-api-key header
+  - Payload: 14-field JSON (see BEAU_PAYLOAD in JS)
+  - Response time: 30–60 seconds (model inference)
+  - UI shows animated "Beau is thinking..." spinner during inference
+
+  API CONTRACT:
+  Request body (all fields required):
+  {
+    wind_speed:              number  // true wind speed (knots)
+    wind_direction:          number  // degrees true (0–360)
+    apparent_wind_speed:     number  // apparent wind speed (knots)
+    apparent_wind_direction: number  // apparent wind degrees (0–360)
+    latitude:                number  // decimal degrees
+    longitude:               number  // decimal degrees (negative = West)
+    speed_over_ground:       number  // vessel SOG (knots)
+    course_over_ground:      number  // vessel COG (degrees true)
+    pressure:                number  // atmospheric pressure (hPa)
+    barometer_temperature:   number  // sensor temp (°F)
+    humidity:                number  // relative humidity (%)
+    roll:                    number  // vessel roll (degrees)
+    pitch:                   number  // vessel pitch (degrees)
+    yaw:                     number  // vessel yaw (degrees)
+  }
+
+  Response:
+  {
+    prediction: {
+      alert_level:       string  // "NORMAL" | "CAUTION" | "ADVISORY"
+      alert_description: string  // Human-readable analysis
+      confidence:        number  // 0.0–1.0
+    }
+  }
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BEAU Live Dashboard — Beaufort AI</title>
-  <meta name="description" content="Live Gulf of Mexico weather data from NDBC buoys — powered by Beaufort AI">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dashboard.css?v=5">
+  <meta name="description" content="Live vessel sensor dashboard powered by Beau — Beaufort AI's maritime intelligence engine">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080a0d;
+      --surface:  #0d1117;
+      --border:   #1e2530;
+      --border2:  #1a1f2a;
+      --text:     #c9d1d9;
+      --text-dim: #8b949e;
+      --muted:    #3a4555;
+      --muted2:   #2a3544;
+      --blue:     #3b82f6;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding-top: 100px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── HEADER ──────────────────────────────────────────────── */
+    .site-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      overflow: hidden;
+    }
+
+    .header-wordmark {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--blue);
+      text-shadow: 0 0 28px rgba(59,130,246,0.45);
+      flex: 1;
+      text-align: center;
+    }
+    .header-wordmark span {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ── NAV ─────────────────────────────────────────────────── */
+    .site-nav {
+      display: flex;
+      gap: 20px;
+    }
+    .site-nav a {
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .site-nav a:hover { color: #fff; text-decoration: none; }
+
+    /* ── DASH SUBHEADER ──────────────────────────────────────── */
+    .dash-header {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 22px 24px;
+    }
+    .dash-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dash-title {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .dash-title .accent { color: var(--blue); }
+    .dash-subtitle {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dash-status { text-align: right; }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-bottom: 4px;
+    }
+    #status-dot {
+      font-size: 10px;
+      color: var(--amber);
+      transition: color 0.3s;
+    }
+    #status-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .last-updated {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────────────── */
+    .dash-layout {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* ── LEFT SIDEBAR ────────────────────────────────────────── */
+    .dash-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 116px;
+    }
+
+    /* ── SYS PANEL ───────────────────────────────────────────── */
+    .sys-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .sys-panel-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      padding: 10px 16px 8px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(59,130,246,0.03);
+    }
+    .sys-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sys-row:last-child { border-bottom: none; }
+    .sys-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+    .sys-value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .green-text  { color: var(--green) !important; }
+    .amber-text  { color: var(--amber) !important; }
+    .red-text    { color: var(--red)   !important; }
+    .muted-text  { color: var(--muted) !important; }
+    .blue-text   { color: var(--blue)  !important; }
+
+    /* ── SENSOR INPUT PANEL ──────────────────────────────────── */
+    .sensor-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .sensor-panel-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      padding: 10px 16px 8px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(59,130,246,0.03);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sensor-inputs {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sensor-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .sensor-field label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .sensor-field input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .sensor-field input:focus {
+      border-color: var(--blue);
+    }
+
+    /* ── SEND BUTTON ─────────────────────────────────────────── */
+    .btn-ask-beau {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: var(--blue);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      border: none;
+      border-radius: 0 0 10px 10px;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-ask-beau:hover:not(:disabled) { background: #2563eb; }
+    .btn-ask-beau:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── MAIN CONTENT ────────────────────────────────────────── */
+    .dash-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── SENSOR DISPLAY GRID ─────────────────────────────────── */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .sensor-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .sensor-card:hover { transform: translateY(-1px); border-color: #2a3544; }
+    .sensor-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--blue);
+      opacity: 0.4;
+    }
+    .sensor-card.wind::before   { background: var(--green); opacity: 0.6; }
+    .sensor-card.pressure::before { background: var(--amber); opacity: 0.6; }
+    .sensor-card.motion::before { background: #8b5cf6; opacity: 0.6; }
+    .sensor-card.position::before { background: var(--blue); opacity: 0.6; }
+
+    .sc-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+    .sc-value {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .sc-unit {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    /* ── ANALYSIS BOX ────────────────────────────────────────── */
+    .analysis-box {
+      background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(59,130,246,0.02));
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .analysis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(59,130,246,0.15);
+      background: rgba(59,130,246,0.04);
+    }
+    .analysis-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+    .analysis-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .analysis-alert-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: none;
+    }
+    .analysis-alert-badge.normal  { background: rgba(34,197,94,0.15);  color: var(--green); display: inline; }
+    .analysis-alert-badge.caution { background: rgba(245,158,11,0.15); color: var(--amber); display: inline; }
+    .analysis-alert-badge.advisory{ background: rgba(239,68,68,0.15);  color: var(--red);   display: inline; }
+    .analysis-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .analysis-body {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      min-height: 80px;
+    }
+    .analysis-confidence {
+      padding: 10px 20px 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      display: none;
+    }
+
+    /* ── SPINNER ─────────────────────────────────────────────── */
+    .thinking-state {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+    }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Dot-pulse for "thinking" */
+    .thinking-dots::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+      100% { content: ''; }
+    }
+
+    /* ── PAYLOAD PREVIEW ─────────────────────────────────────── */
+    .payload-preview {
+      padding: 0 20px 16px;
+      border-top: 1px solid rgba(59,130,246,0.1);
+      display: none;
+    }
+    .payload-preview.visible { display: block; }
+    .payload-toggle {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 8px 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .payload-toggle:hover { color: var(--text-dim); }
+    .payload-json {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+
+    /* ── HISTORY LIST ────────────────────────────────────────── */
+    .history-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .history-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .history-clear {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .history-clear:hover { color: var(--red); }
+    .history-list {
+      max-height: 280px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--blue) var(--border);
+    }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: var(--border); }
+    .history-list::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 2px; }
+    .history-entry {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border2);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .history-entry:last-child { border-bottom: none; }
+    .history-entry:hover { background: rgba(255,255,255,0.02); }
+    .history-entry-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .history-entry-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .history-entry-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .badge-normal   { background: rgba(34,197,94,0.15);  color: var(--green); }
+    .badge-caution  { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .badge-advisory { background: rgba(239,68,68,0.15);  color: var(--red);   }
+    .badge-error    { background: rgba(107,114,128,0.15); color: var(--muted); }
+    .history-entry-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+      /* Truncate to one line */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-empty {
+      padding: 24px 20px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────────── */
+    .site-footer {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 24px 40px;
+    }
+    .site-footer p {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted2);
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .dash-layout { flex-direction: column; }
+      .dash-sidebar { width: 100%; position: static; }
+    }
+    @media (max-width: 600px) {
+      .sensor-grid { grid-template-columns: 1fr 1fr; }
+      .site-header { flex-direction: column; justify-content: center; gap: 6px; height: auto; padding: 12px 20px; }
+      body { padding-top: 80px; }
+      .site-nav { display: none; }
+    }
+  </style>
 </head>
-<body class="dashboard-body">
+<body>
 
-  <!-- FULL NAV BAR -->
-  <nav class="full-nav">
-    <a href="index.html">Home</a>
-    <a href="index.html#how-it-works">How It Works</a>
-    <a href="index.html#about">About</a>
-    <a href="index.html#contact">Contact</a>
-  </nav>
-
-  <!-- HEADER BANNER -->
+  <!-- HEADER -->
   <header class="site-header">
-    <img src="images/logo.jpg" alt="Beaufort AI" class="header-logo header-logo-left">
-    <div class="header-center">
-      <span class="header-title">BEAUFORT AI</span>
-      <div class="header-btns">
-        <a href="index.html" class="btn-about">About Beaufort AI →</a>
-      </div>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/#how-it-works">How It Works</a>
+      <a href="/#about">About</a>
+    </nav>
+    <div class="header-wordmark">
+      BEAUFORT AI
+      <span>Maritime Intelligence Platform</span>
     </div>
-    <img src="images/logo-kirt.jpg" alt="Kirt Chouest" class="header-logo header-logo-right">
+    <nav class="site-nav">
+      <a href="/#contact">Contact</a>
+      <a href="/weather.html">Weather</a>
+    </nav>
   </header>
 
-  <!-- DASHBOARD HEADER -->
+  <!-- SUBHEADER -->
   <div class="dash-header">
     <div class="dash-header-inner">
       <div>
         <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard</h1>
-        <p class="dash-subtitle">Gulf of Mexico · NDBC Buoy Network · Updates every 5 minutes</p>
+        <p class="dash-subtitle">Vessel Sensor Integration · AI Maritime Analysis · Real-Time</p>
       </div>
       <div class="dash-status">
         <div class="status-row">
-          <span class="status-dot" id="status-dot">●</span>
-          <span id="status-text">Connecting...</span>
+          <span id="status-dot">●</span>
+          <span id="status-text">Ready</span>
         </div>
         <div class="last-updated" id="last-updated">—</div>
       </div>
     </div>
   </div>
 
-  <!-- TWO-COLUMN LAYOUT WRAPPER -->
-  <div class="dash-two-col">
+  <!-- MAIN LAYOUT -->
+  <div class="dash-layout">
 
-  <!-- LEFT COLUMN: OPS BAR + FLEET -->
-  <div class="dash-left-col">
+    <!-- LEFT SIDEBAR -->
+    <aside class="dash-sidebar">
 
-  <!-- OPERATIONS MODE BAR -->
-  <div class="system-bar system-bar-vertical">
-    <div class="sys-item">
-      <span class="sys-label">BEAU ENGINE</span>
-      <span class="sys-value green-text">● ACTIVE</span>
-    </div>
-    <div class="sys-item">
-      <span class="sys-label">DATA SOURCE</span>
-      <span class="sys-value">NDBC / NOAA</span>
-    </div>
-    <div class="sys-item">
-      <span class="sys-label">BUOYS TRACKED</span>
-      <span class="sys-value" id="buoy-count">—</span>
-    </div>
-    <div class="sys-item">
-      <span class="sys-label">ALERT STATUS</span>
-      <span class="sys-value" id="alert-status">SCANNING...</span>
-    </div>
-    <div class="sys-item">
-      <span class="sys-label">COVERAGE</span>
-      <span class="sys-value">Gulf of Mexico</span>
-    </div>
-  </div>
-
-  <!-- FLEET GRID -->
-    <div id="fleet-grid">
-      <!-- Fleet data injected by JS -->
-    </div>
-
-  </div><!-- end dash-left-col -->
-
-  <!-- RIGHT COLUMN: BUOY GRID + ANALYSIS -->
-  <div class="dash-right-col">
-  <div class="dash-main">
-
-    <!-- BUOY GRID -->
-    <div class="buoy-grid" id="buoy-grid">
-      <!-- Buoy cards injected by JS -->
-    </div>
-
-    <!-- BEAU ANALYSIS BOX -->
-    <div class="analysis-box">
-      <div class="analysis-header">
-        <span class="analysis-label">BEAU ANALYSIS</span>
-        <span class="analysis-time" id="analysis-time">—</span>
+      <!-- System Status Panel -->
+      <div class="sys-panel">
+        <div class="sys-panel-title">SYSTEM STATUS</div>
+        <div class="sys-row">
+          <span class="sys-label">BEAU ENGINE</span>
+          <span class="sys-value green-text">● ACTIVE</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-label">ENDPOINT</span>
+          <span class="sys-value" style="font-size:10px;">beau-maritime-ai.replit.app</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-label">INFERENCE TIME</span>
+          <span class="sys-value" id="inference-time">—</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-label">LAST QUERY</span>
+          <span class="sys-value" id="last-query-time">—</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-label">ALERT STATUS</span>
+          <span class="sys-value green-text" id="alert-status">NOMINAL</span>
+        </div>
+        <div class="sys-row">
+          <span class="sys-label">TOTAL QUERIES</span>
+          <span class="sys-value" id="query-count">0</span>
+        </div>
       </div>
-      <div class="analysis-content" id="analysis-content">
-        <span class="analysis-loading">Analyzing buoy network...</span>
+
+      <!-- Sensor Input Panel -->
+      <div class="sensor-panel">
+        <div class="sensor-panel-title">
+          <span>SENSOR INPUT</span>
+          <span style="color:var(--muted2); font-size:9px;">14 FIELDS</span>
+        </div>
+        <div class="sensor-inputs">
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>WIND SPEED (kt)</label>
+              <input type="number" id="f-wind_speed" value="18.3" step="0.1" min="0" max="150">
+            </div>
+            <div class="sensor-field">
+              <label>WIND DIR (°)</label>
+              <input type="number" id="f-wind_direction" value="225" step="1" min="0" max="359">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>APP WIND (kt)</label>
+              <input type="number" id="f-apparent_wind_speed" value="21.7" step="0.1" min="0" max="150">
+            </div>
+            <div class="sensor-field">
+              <label>APP WIND DIR (°)</label>
+              <input type="number" id="f-apparent_wind_direction" value="210" step="1" min="0" max="359">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>LAT (°)</label>
+              <input type="number" id="f-latitude" value="27.84" step="0.001">
+            </div>
+            <div class="sensor-field">
+              <label>LON (°)</label>
+              <input type="number" id="f-longitude" value="-89.41" step="0.001">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>SOG (kt)</label>
+              <input type="number" id="f-speed_over_ground" value="8.5" step="0.1" min="0" max="30">
+            </div>
+            <div class="sensor-field">
+              <label>COG (°)</label>
+              <input type="number" id="f-course_over_ground" value="185" step="1" min="0" max="359">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>PRESSURE (hPa)</label>
+              <input type="number" id="f-pressure" value="1007.4" step="0.1">
+            </div>
+            <div class="sensor-field">
+              <label>BARO TEMP (°F)</label>
+              <input type="number" id="f-barometer_temperature" value="28.5" step="0.1">
+            </div>
+          </div>
+
+          <div class="sensor-field">
+            <label>HUMIDITY (%)</label>
+            <input type="number" id="f-humidity" value="72" step="1" min="0" max="100">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+            <div class="sensor-field">
+              <label>ROLL (°)</label>
+              <input type="number" id="f-roll" value="2.1" step="0.1">
+            </div>
+            <div class="sensor-field">
+              <label>PITCH (°)</label>
+              <input type="number" id="f-pitch" value="-1.5" step="0.1">
+            </div>
+            <div class="sensor-field">
+              <label>YAW (°)</label>
+              <input type="number" id="f-yaw" value="0.3" step="0.1">
+            </div>
+          </div>
+
+        </div><!-- /sensor-inputs -->
+        <button class="btn-ask-beau" id="btn-ask">ASK BEAU →</button>
+      </div><!-- /sensor-panel -->
+
+    </aside><!-- /sidebar -->
+
+    <!-- MAIN CONTENT -->
+    <main class="dash-main">
+
+      <!-- LIVE SENSOR CARDS -->
+      <div class="sensor-grid" id="sensor-grid">
+        <!-- populated by JS from input fields -->
       </div>
-    </div>
 
-  </div><!-- end dash-main -->
-  </div><!-- end dash-right-col -->
-  </div><!-- end dash-two-col -->
+      <!-- BEAU ANALYSIS BOX -->
+      <div class="analysis-box">
+        <div class="analysis-header">
+          <span class="analysis-label">⬡ BEAU ANALYSIS</span>
+          <div class="analysis-meta">
+            <span class="analysis-alert-badge" id="alert-badge"></span>
+            <span class="analysis-time" id="analysis-time">—</span>
+          </div>
+        </div>
+        <div class="analysis-body" id="analysis-body">
+          <span class="muted-text" style="font-style:italic;">Enter sensor data and press ASK BEAU to request maritime AI analysis.</span>
+        </div>
+        <div class="analysis-confidence" id="analysis-confidence"></div>
 
-  <!-- FOOTER NOTE -->
-  <div class="dash-footer">
-    <p>Data sourced from NOAA National Data Buoy Center (NDBC). Beaufort AI aggregates, analyzes, and augments this data with AI-powered pattern recognition. Not for navigational use. © 2026 Beaufort AI LLC.</p>
-    <div class="dash-footer-links">
-      <a href="index.html">← Back to Home</a> |
-      <a href="index.html#about">About</a> |
-      <a href="index.html#how-it-works">How It Works</a> |
-      <a href="index.html#contact">Contact</a>
-    </div>
-  </div>
+        <!-- Payload preview (collapsible) -->
+        <div class="payload-preview" id="payload-section">
+          <button class="payload-toggle" id="payload-toggle" onclick="togglePayload()">▶ SHOW LAST PAYLOAD</button>
+          <pre class="payload-json" id="payload-json" style="display:none;"></pre>
+        </div>
+      </div>
+
+      <!-- QUERY HISTORY -->
+      <div class="history-box">
+        <div class="history-header">
+          <span>QUERY HISTORY</span>
+          <button class="history-clear" onclick="clearHistory()">CLEAR</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty" id="history-empty">No queries yet. Ask Beau something.</div>
+        </div>
+      </div>
+
+    </main><!-- /dash-main -->
+  </div><!-- /dash-layout -->
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>Beaufort AI LLC — Maritime Intelligence Platform. Real-time vessel sensor data analyzed by Beau AI engine.<br>
+    Not for navigational use. Always rely on certified navigation equipment and qualified officers for operational decisions.</p>
+  </footer>
+
 
 <script>
-// ─── BUOY CONFIGURATION ───────────────────────────────────────────────────────
-const BUOYS = [
-  { id: '42001', name: 'MID GULF',      lat: 25.888, lon: -89.658 },
-  { id: '42002', name: 'W GULF',        lat: 25.170, lon: -94.415 },
-  { id: '42036', name: 'W TAMPA',       lat: 28.500, lon: -84.517 },
-  { id: '42039', name: 'PENSACOLA',     lat: 28.788, lon: -86.008 },
-  { id: '42040', name: 'LA OFFSHORE',   lat: 29.212, lon: -88.207 },
-  { id: '42055', name: 'BAY OF CAMP',   lat: 22.162, lon: -93.978 },
-];
+  // ============================================================
+  // BEAU DASHBOARD — Clean JavaScript Engine
+  // ============================================================
 
-// Updated June 8, 2026: Live Beau API via public Replit proxy
-const PROXY_BASE = 'http://192.168.1.226:5000/api/sensors';  // Local Pi dashboard — fails when remote; fallback to DEMO_DATA
-const BEAU_BASE = 'https://beau-maritime-ai.replit.app/api/beau';  // ✅ Public proxy
-const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
-const USE_PI_DASHBOARD = true;
-const USE_DEMO_DATA = false;  // ✅ Live API now available
+  // ── CONFIG ──────────────────────────────────────────────────
+  const BEAU_API_URL = 'https://beau-maritime-ai.replit.app/api/beau';
+  const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 
-function getDemoData() {
-  const now = new Date();
-  const windSpeed = 15 + Math.sin(now.getTime() / 30000) * 5;
-  const windDir = 215 + Math.cos(now.getTime() / 40000) * 10;
-  const pressure = 1003.2 - (Math.sin(now.getTime() / 60000) * 2);
-  return {
-    wind_speed: windSpeed.toFixed(1),
-    wind_gust: (windSpeed + 3).toFixed(1),
-    wind_dir: (windDir % 360).toFixed(0),
-    pressure: pressure.toFixed(1),
-    air_temp: 82.5,
-    water_temp: null,
-    timestamp: now.toISOString(),
-    beau_prediction: 'Demo: Light to moderate seas. Pressure falling slightly — monitor for wind shift in next 6 hours. DP operations nominal. Confidence: 0.78'
-  };
-}
+  // ── STATE ────────────────────────────────────────────────────
+  let queryCount = 0;
+  let lastPayload = null;
+  let history = [];  // Array of { time, level, text, confidence, payload }
+  let payloadVisible = false;
+  let requestInFlight = false;
 
-// ─── PARSE NDBC TEXT ──────────────────────────────────────────────────────────
-function parseNDBC(text) {
-  if (!text) return null;
-  const allLines = text.trim().split('\n');
-  if (allLines.length < 3) return null;
-  const headers = allLines[0].replace('#','').trim().split(/\s+/);
-  const dataLines = allLines.filter(l => !l.startsWith('#'));
-  if (!dataLines.length) return null;
-  const vals = dataLines[0].trim().split(/\s+/);
-  const d = {};
-  headers.forEach((h, i) => d[h] = vals[i]);
-
-  const num = v => {
-    if (v == null || v === 'MM') return null;
-    const n = parseFloat(v);
-    return isNaN(n) ? null : n;
-  };
-  const mps_to_kts = v => {
-    const n = num(v);
-    return n == null ? null : (n * 1.94384).toFixed(1);
-  };
-
-  return {
-    time:    `${d.MM}/${d.DD} ${d.hh}:${d.mm} UTC`,
-    wdir:    num(d.WDIR),
-    wspd:    mps_to_kts(d.WSPD),
-    gst:     mps_to_kts(d.GST),
-    wvht:    num(d.WVHT),
-    dpd:     num(d.DPD),
-    pres:    num(d.PRES),
-    atmp:    num(d.ATMP),
-    wtmp:    num(d.WTMP),
-  };
-}
-
-// ─── DIRECTION ARROW ──────────────────────────────────────────────────────────
-function dirArrow(deg) {
-  if (deg == null || isNaN(deg)) return '—';
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  return dirs[Math.round(deg / 22.5) % 16];
-}
-
-// ─── ALERT LEVEL ──────────────────────────────────────────────────────────────
-function alertLevel(d) {
-  if (!d) return { level: 'unknown', color: 'muted', label: 'NO DATA' };
-  const w = d.wspd != null ? parseFloat(d.wspd) : NaN;
-  const wv = d.wvht;
-  if (w >= 34 || wv >= 3.0) return { level: 'warning', color: 'red',   label: '⚠ ADVISORY' };
-  if (w >= 22 || wv >= 2.0) return { level: 'caution', color: 'amber', label: '◈ CAUTION'  };
-  return                           { level: 'normal',  color: 'green', label: '● NORMAL'   };
-}
-
-// ─── PRESSURE TREND ───────────────────────────────────────────────────────────
-function pressTrend(pres) {
-  if (pres == null) return '';
-  if (pres < 1005) return ' ↓ LOW';
-  if (pres > 1018) return ' ↑ HIGH';
-  return ' STEADY';
-}
-
-// ─── BUILD BUOY CARD ──────────────────────────────────────────────────────────
-function buildCard(buoy, data, error) {
-  const al = alertLevel(data);
-  const borderClass = `border-${al.color}`;
-
-  if (error || !data) {
-    return `
-      <div class="buoy-card ${borderClass}">
-        <div class="buoy-card-header">
-          <span class="buoy-id">${buoy.id}</span>
-          <span class="buoy-name">${buoy.name}</span>
-          <span class="buoy-alert muted-text">NO DATA</span>
-        </div>
-        <div class="buoy-no-data">Data unavailable</div>
-      </div>`;
+  // ── HELPERS ──────────────────────────────────────────────────
+  function getField(id) {
+    const el = document.getElementById('f-' + id);
+    return el ? parseFloat(el.value) : 0;
   }
 
-  // Handle both NDBC and Pi sensor field names
-  const wspd = data.wspd ?? data.wind_speed;
-  const wdir = data.wdir ?? data.wind_dir;
-  const gst = data.gst ?? data.wind_gust;
-  const pres = data.pres ?? data.pressure;
-  const atmp = data.atmp ?? data.air_temp;
-  const wvht = data.wvht;
-  const dpd = data.dpd;
-  
-  const windStr = wspd != null ? `${wspd} kt ${dirArrow(wdir)}` : '—';
-  const gustStr = gst  != null ? `G${gst} kt` : '';
-  const wvStr   = wvht != null ? `${wvht}m` : '—';
-  const pdStr   = dpd  != null ? `${dpd}s` : '—';
-  const presStr = pres != null ? `${pres} hPa${pressTrend(pres)}` : '—';
-  const atmpStr = atmp != null ? `${atmp.toFixed(0)}°F` : '—';
-  const beauStr = data.beau_prediction ? `<div class='beau-assessment'><strong>BEAU:</strong> ${data.beau_prediction}</div>` : '';
-
-  return `
-    <div class="buoy-card ${borderClass}">
-      <div class="buoy-card-header">
-        <div>
-          <span class="buoy-id">${buoy.id}</span>
-          <span class="buoy-name">${buoy.name}</span>
-        </div>
-        <span class="buoy-alert ${al.color}-text">${al.label}</span>
-      </div>
-      <div class="buoy-metrics">
-        <div class="metric">
-          <span class="metric-label">WIND</span>
-          <span class="metric-value">${windStr} ${gustStr}</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">PRESSURE</span>
-          <span class="metric-value">${presStr}</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">AIR TEMP</span>
-          <span class="metric-value">${atmpStr}</span>
-        </div>
-        ${beauStr ? `<div class="metric beau-metric">${beauStr}</div>` : ''}
-      </div>
-      <div class="buoy-time">${data.time}</div>
-    </div>`;
-}
-
-// ─── BEAU ANALYSIS ────────────────────────────────────────────────────────────
-function generateAnalysis(buoyData) {
-  const active = buoyData.filter(b => b.data);
-  if (!active.length) return 'Insufficient buoy data for analysis.';
-
-  const winds = active.map(b => parseFloat(b.data.wspd)).filter(v => !isNaN(v));
-  const pressures = active.map(b => b.data.pres).filter(v => v);
-  const waves = active.map(b => b.data.wvht).filter(v => v);
-
-  const maxWind = winds.length ? Math.max(...winds) : null;
-  const avgPres = pressures.length ? (pressures.reduce((a,b) => a+b, 0) / pressures.length).toFixed(1) : null;
-  const maxWave = waves.length ? Math.max(...waves) : null;
-
-  let analysis = [];
-  let alertCount = 0;
-
-  if (maxWind >= 34) {
-    analysis.push(`⚠ ADVISORY CONDITIONS — Peak wind ${maxWind} kt detected. All offshore operations review required.`);
-    alertCount++;
-  } else if (maxWind >= 22) {
-    analysis.push(`◈ ELEVATED WINDS — Peak ${maxWind} kt across network. Monitor for squall development.`);
-  } else if (maxWind) {
-    analysis.push(`Wind conditions nominal across network (peak ${maxWind} kt).`);
+  function setEl(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
   }
 
-  if (avgPres && avgPres < 1008) {
-    analysis.push(`Pressure averaging ${avgPres} hPa — below normal. Potential system development.`);
-    alertCount++;
-  } else if (avgPres) {
-    analysis.push(`Pressure stable at ${avgPres} hPa mean.`);
+  function setStatus(color, text) {
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    if (dot) dot.style.color = color;
+    if (txt) txt.textContent = text;
   }
 
-  if (maxWave >= 3.0) {
-    analysis.push(`⚠ Wave heights elevated — ${maxWave}m Hs. Crane/ROV limits may be impacted.`);
-    alertCount++;
-  } else if (maxWave >= 2.0) {
-    analysis.push(`Wave heights at ${maxWave}m Hs — monitor for increase.`);
-  } else if (maxWave) {
-    analysis.push(`Sea state nominal (${maxWave}m Hs).`);
+  function now() {
+    return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-  const longPeriod = active.find(b => b.data.dpd != null && b.data.dpd >= 10);
-  if (longPeriod) {
-    analysis.push(`Long-period swell detected at buoy ${longPeriod.buoy.id} (${longPeriod.data.dpd}s) — distant storm energy propagating through region.`);
+  function dirLabel(deg) {
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    if (deg == null || isNaN(deg)) return '—';
+    return dirs[Math.round(deg / 22.5) % 16];
   }
 
-  const alertEl = document.getElementById('alert-status');
-  if (alertEl) {
-    alertEl.textContent = alertCount > 0 ? `${alertCount} ALERT${alertCount > 1 ? 'S' : ''}` : 'NORMAL';
-    alertEl.className = 'sys-value ' + (alertCount > 0 ? 'amber-text' : 'green-text');
+  // ── BUILD PAYLOAD FROM INPUTS ────────────────────────────────
+  function buildPayload() {
+    return {
+      wind_speed:              getField('wind_speed'),
+      wind_direction:          getField('wind_direction'),
+      apparent_wind_speed:     getField('apparent_wind_speed'),
+      apparent_wind_direction: getField('apparent_wind_direction'),
+      latitude:                getField('latitude'),
+      longitude:               getField('longitude'),
+      speed_over_ground:       getField('speed_over_ground'),
+      course_over_ground:      getField('course_over_ground'),
+      pressure:                getField('pressure'),
+      barometer_temperature:   getField('barometer_temperature'),
+      humidity:                getField('humidity'),
+      roll:                    getField('roll'),
+      pitch:                   getField('pitch'),
+      yaw:                     getField('yaw'),
+    };
   }
 
-  return analysis.length ? analysis.join(' | ') : 'Network nominal — no significant signals.';
-}
+  // ── RENDER SENSOR GRID ───────────────────────────────────────
+  function renderSensorGrid(payload) {
+    const grid = document.getElementById('sensor-grid');
+    if (!grid) return;
 
-// ─── FETCH ONE BUOY ───────────────────────────────────────────────────────────
-async function fetchBuoy(buoy) {
-  try {
-    if (USE_DEMO_DATA) {
-      // Demo mode: return simulated data while Worker is deployed
-      return { buoy, data: getDemoData(), error: null };
+    const cards = [
+      { cls: 'wind',     label: 'TRUE WIND',       value: payload.wind_speed.toFixed(1),       unit: `kt  ${dirLabel(payload.wind_direction)} (${payload.wind_direction}°)` },
+      { cls: 'wind',     label: 'APPARENT WIND',   value: payload.apparent_wind_speed.toFixed(1), unit: `kt  ${dirLabel(payload.apparent_wind_direction)} (${payload.apparent_wind_direction}°)` },
+      { cls: 'position', label: 'POSITION',        value: `${payload.latitude.toFixed(3)}`, unit: `${payload.latitude >= 0 ? 'N' : 'S'} / ${Math.abs(payload.longitude).toFixed(3)}${payload.longitude >= 0 ? 'E' : 'W'}` },
+      { cls: 'position', label: 'VESSEL MOTION',   value: payload.speed_over_ground.toFixed(1), unit: `kt SOG · COG ${payload.course_over_ground}°` },
+      { cls: 'pressure', label: 'PRESSURE',        value: payload.pressure.toFixed(1),          unit: `hPa${pressureTrend(payload.pressure)}` },
+      { cls: 'pressure', label: 'HUMIDITY',        value: payload.humidity.toFixed(0),          unit: '% RH' },
+      { cls: 'motion',   label: 'ROLL / PITCH',    value: `${payload.roll > 0 ? '+' : ''}${payload.roll.toFixed(1)}° / ${payload.pitch > 0 ? '+' : ''}${payload.pitch.toFixed(1)}°`, unit: 'vessel attitude' },
+      { cls: 'motion',   label: 'YAW',             value: `${payload.yaw > 0 ? '+' : ''}${payload.yaw.toFixed(1)}°`,   unit: `Baro temp ${payload.barometer_temperature.toFixed(1)}°F` },
+    ];
+
+    grid.innerHTML = cards.map(c => `
+      <div class="sensor-card ${c.cls}">
+        <div class="sc-label">${c.label}</div>
+        <div class="sc-value">${c.value}</div>
+        <div class="sc-unit">${c.unit}</div>
+      </div>`).join('');
+  }
+
+  function pressureTrend(p) {
+    if (p < 1005) return ' ↓';
+    if (p > 1018) return ' ↑';
+    return '';
+  }
+
+  // ── ASK BEAU ─────────────────────────────────────────────────
+  async function askBeau() {
+    if (requestInFlight) return;
+    requestInFlight = true;
+
+    const btn = document.getElementById('btn-ask');
+    if (btn) { btn.disabled = true; btn.textContent = 'QUERYING...'; }
+
+    const payload = buildPayload();
+    lastPayload = payload;
+    renderSensorGrid(payload);
+
+    // Update payload preview
+    const pj = document.getElementById('payload-json');
+    if (pj) pj.textContent = JSON.stringify(payload, null, 2);
+    const ps = document.getElementById('payload-section');
+    if (ps) ps.classList.add('visible');
+
+    // Show thinking state
+    const body = document.getElementById('analysis-body');
+    const badge = document.getElementById('alert-badge');
+    const conf = document.getElementById('analysis-confidence');
+    if (badge) { badge.className = 'analysis-alert-badge'; badge.textContent = ''; }
+    if (conf)  { conf.style.display = 'none'; conf.textContent = ''; }
+    if (body) {
+      body.innerHTML = `
+        <div class="thinking-state">
+          <div class="spinner"></div>
+          <span>Beau is thinking<span class="thinking-dots"></span> (30–60 sec inference)</span>
+        </div>`;
     }
-    
-    if (USE_PI_DASHBOARD) {
-      // Use public API proxy to Pi dashboard (single live sensor)
-      const res = await fetch(PROXY_BASE, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      
-      // Fetch Beau prediction if available
-      let beauPrediction = null;
-      try {
-        const beauRes = await fetch(BEAU_BASE, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': BEAU_API_KEY
-          },
-          body: JSON.stringify({
-            latitude: 26.5,
-            longitude: -89.5,
-            wind_speed: json.wind_speed_kts || 0,
-            wind_direction: json.wind_direction || 0,
-            pressure: json.pressure_hpa || 1013
-          }),
-          cache: 'no-store'
-        });
-        if (beauRes.ok) {
-          const beauData = await beauRes.json();
-          if (beauData.prediction?.alert_description) {
-            beauPrediction = `[${beauData.prediction.alert_level}] ${beauData.prediction.alert_description}`;
-          }
-        }
-      } catch(e) {
-        // Beau offline is OK — show sensors alone
-        console.warn('Beau API offline:', e.message);
+
+    setStatus('#f59e0b', 'Querying Beau...');
+    setEl('analysis-time', now());
+
+    const startMs = Date.now();
+
+    try {
+      const response = await fetch(BEAU_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': BEAU_API_KEY,
+        },
+        body: JSON.stringify(payload),
+        // No timeout — Beau can take 60s; let browser handle it
+      });
+
+      const elapsedMs = Date.now() - startMs;
+      const elapsedSec = (elapsedMs / 1000).toFixed(1);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
-      // Convert Pi format to display format
-      const data = {
-        wind_speed: json.wind_speed_kts || 0,
-        wind_gust: json.wind_gust_kts || 0,
-        wind_dir: json.wind_direction || 0,
-        pressure: json.pressure_hpa || 1013,
-        air_temp: json.temperature_f || 65,
-        water_temp: null,
-        timestamp: json.timestamp,
-        beau_prediction: beauPrediction
-      };
-      return { buoy, data, error: null, beau: beauPrediction };
-    } else {
-      // Original NDBC proxy mode
-      const url = PROXY_BASE + buoy.id;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      return { buoy, data: parseNDBC(text), error: null };
+
+      const data = await response.json();
+
+      // Parse response — handle both flat and nested formats
+      const prediction = data.prediction || data;
+      const alertLevel  = (prediction.alert_level  || data.alert_level  || 'UNKNOWN').toUpperCase();
+      const alertDesc   =  prediction.alert_description || data.alert_description || data.analysis || JSON.stringify(data);
+      const confidence  =  prediction.confidence  ?? data.confidence  ?? null;
+
+      // Update analysis box
+      if (body) body.textContent = alertDesc;
+
+      if (badge) {
+        badge.textContent = alertLevel;
+        const lvlClass = alertLevel === 'ADVISORY' ? 'advisory' : alertLevel === 'CAUTION' ? 'caution' : 'normal';
+        badge.className = `analysis-alert-badge ${lvlClass}`;
+      }
+
+      if (conf && confidence !== null) {
+        conf.textContent = `Confidence: ${(confidence * 100).toFixed(0)}%  ·  Inference: ${elapsedSec}s`;
+        conf.style.display = 'block';
+      }
+
+      // Update sidebar
+      setEl('inference-time', `${elapsedSec}s`);
+      setEl('last-query-time', now());
+      queryCount++;
+      setEl('query-count', queryCount.toString());
+
+      // Alert status
+      const alertEl = document.getElementById('alert-status');
+      if (alertEl) {
+        if (alertLevel === 'ADVISORY') {
+          alertEl.textContent = '⚠ ADVISORY';
+          alertEl.className = 'sys-value red-text';
+        } else if (alertLevel === 'CAUTION') {
+          alertEl.textContent = '◈ CAUTION';
+          alertEl.className = 'sys-value amber-text';
+        } else {
+          alertEl.textContent = '● NORMAL';
+          alertEl.className = 'sys-value green-text';
+        }
+      }
+
+      setStatus('#22c55e', `OK · ${elapsedSec}s`);
+      setEl('last-updated', `Last query: ${now()}`);
+
+      // Add to history
+      addHistory(alertLevel, alertDesc, confidence, payload);
+
+    } catch (err) {
+      const elapsedSec = ((Date.now() - startMs) / 1000).toFixed(1);
+      const errMsg = err.message || 'Request failed';
+
+      if (body) {
+        body.innerHTML = `<span class="red-text">⚠ Error: ${errMsg}</span><br><span class="muted-text" style="font-size:11px;">Check network connection and API key. Beau endpoint: ${BEAU_API_URL}</span>`;
+      }
+
+      setStatus('#ef4444', `Error · ${elapsedSec}s`);
+      addHistory('ERROR', errMsg, null, payload);
+    } finally {
+      requestInFlight = false;
+      if (btn) { btn.disabled = false; btn.textContent = 'ASK BEAU →'; }
     }
-  } catch(e) {
-    return { buoy, data: null, error: e.message };
-  }
-}
-
-// ─── DOM HELPERS ──────────────────────────────────────────────────────────────
-function setText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
-}
-function setStatus(color, text) {
-  const dot = document.getElementById('status-dot');
-  if (dot) dot.style.color = color;
-  setText('status-text', text);
-}
-
-// ─── MAIN REFRESH ─────────────────────────────────────────────────────────────
-async function refresh() {
-  setStatus('#f59e0b', 'Fetching...');
-
-  let results;
-  try {
-    results = await Promise.all(BUOYS.map(fetchBuoy));
-  } catch (e) {
-    setStatus('#ef4444', 'Network error');
-    setText('analysis-content', 'Unable to reach buoy network. Retrying on next interval.');
-    return;
   }
 
-  const grid = document.getElementById('buoy-grid');
-  if (grid) grid.innerHTML = results.map(r => buildCard(r.buoy, r.data, r.error)).join('');
+  // ── HISTORY ──────────────────────────────────────────────────
+  function addHistory(level, text, confidence, payload) {
+    const entry = {
+      time: now(),
+      level,
+      text,
+      confidence,
+      payload: JSON.stringify(payload, null, 2),
+    };
+    history.unshift(entry);  // newest first
+    if (history.length > 20) history.pop();
+    renderHistory();
+  }
 
-  const active = results.filter(r => r.data).length;
-  setText('buoy-count', `${active}/${BUOYS.length}`);
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    const empty = document.getElementById('history-empty');
+    if (!list) return;
 
-  const now = new Date();
-  setText('last-updated', `Updated ${now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})} local`);
-  setText('analysis-time', now.toLocaleTimeString());
-  setText('analysis-content', generateAnalysis(results));
+    if (!history.length) {
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
 
-  setStatus(active > 0 ? '#22c55e' : '#ef4444', active > 0 ? `${active} buoys online` : 'No data');
-}
+    list.innerHTML = history.map((e, i) => {
+      const badgeCls = e.level === 'ADVISORY' ? 'badge-advisory'
+                     : e.level === 'CAUTION'  ? 'badge-caution'
+                     : e.level === 'ERROR'    ? 'badge-error'
+                     : 'badge-normal';
+      return `
+        <div class="history-entry" onclick="loadHistory(${i})">
+          <div class="history-entry-top">
+            <span class="history-entry-time">${e.time}</span>
+            <span class="history-entry-badge ${badgeCls}">${e.level}</span>
+          </div>
+          <div class="history-entry-text">${e.text}</div>
+        </div>`;
+    }).join('');
+  }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-refresh();
-setInterval(refresh, 5 * 60 * 1000); // Refresh every 5 minutes
+  function loadHistory(idx) {
+    const e = history[idx];
+    if (!e) return;
+    const body = document.getElementById('analysis-body');
+    const badge = document.getElementById('alert-badge');
+    const conf = document.getElementById('analysis-confidence');
+    const pj = document.getElementById('payload-json');
+
+    if (body) body.textContent = e.text;
+    if (badge) {
+      badge.textContent = e.level;
+      const lvlClass = e.level === 'ADVISORY' ? 'advisory' : e.level === 'CAUTION' ? 'caution' : e.level === 'ERROR' ? '' : 'normal';
+      badge.className = `analysis-alert-badge ${lvlClass}`;
+    }
+    if (conf) {
+      conf.textContent = e.confidence !== null ? `Confidence: ${(e.confidence * 100).toFixed(0)}%  ·  ${e.time}` : `Queried: ${e.time}`;
+      conf.style.display = 'block';
+    }
+    if (pj) pj.textContent = e.payload;
+
+    setEl('analysis-time', e.time);
+  }
+
+  function clearHistory() {
+    history = [];
+    renderHistory();
+    const empty = document.getElementById('history-empty');
+    if (empty) { empty.style.display = 'block'; }
+  }
+
+  // ── PAYLOAD TOGGLE ───────────────────────────────────────────
+  function togglePayload() {
+    payloadVisible = !payloadVisible;
+    const pj = document.getElementById('payload-json');
+    const toggle = document.getElementById('payload-toggle');
+    if (pj) pj.style.display = payloadVisible ? 'block' : 'none';
+    if (toggle) toggle.textContent = payloadVisible ? '▼ HIDE PAYLOAD' : '▶ SHOW LAST PAYLOAD';
+  }
+
+  // ── AUTO-POPULATE SENSOR GRID ON LOAD ───────────────────────
+  function initSensorGrid() {
+    renderSensorGrid(buildPayload());
+  }
+
+  // ── INPUT LIVE UPDATE ────────────────────────────────────────
+  document.querySelectorAll('.sensor-field input').forEach(input => {
+    input.addEventListener('input', () => {
+      renderSensorGrid(buildPayload());
+    });
+  });
+
+  // ── BUTTON BINDING ───────────────────────────────────────────
+  document.getElementById('btn-ask').addEventListener('click', askBeau);
+
+  // Enter key on any input triggers ask
+  document.querySelectorAll('.sensor-field input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') askBeau();
+    });
+  });
+
+  // ── INIT ──────────────────────────────────────────────────────
+  initSensorGrid();
+
 </script>
-
 </body>
 </html>
