@@ -362,7 +362,7 @@ function renderSensorGrid(p) {
   const cards = [
     {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed.toFixed(1),              unit:`kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)`},
     {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed.toFixed(1),     unit:`kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)`},
-    {cls:'position',label:'POSITION',      value:p.latitude.toFixed(3),               unit:`${p.latitude>=0?'N':'S'} / ${Math.abs(p.longitude).toFixed(3)}${p.longitude>=0?'E':'W'}`},
+    {cls:'position',label:'POSITION',      value:decToDMS(p.latitude, true),          unit:decToDMS(p.longitude, false)},
     {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground.toFixed(1),      unit:`kt SOG \u00b7 COG ${p.course_over_ground}\u00b0`},
     {cls:'pressure',label:'PRESSURE',      value:p.pressure.toFixed(1),               unit:`hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}`},
     {cls:'pressure',label:'HUMIDITY',      value:p.humidity.toFixed(0),               unit:'% RH'},
@@ -730,6 +730,17 @@ function togglePayload() {
 }
 
 // ── WIRE UP EVENTS ───────────────────────────────────────────
+// ── DMS CONVERSION ───────────────────────────────────────────────────────
+function decToDMS(dec, isLat) {
+  const dir = isLat ? (dec >= 0 ? 'N' : 'S') : (dec >= 0 ? 'E' : 'W');
+  const abs = Math.abs(dec);
+  const deg = Math.floor(abs);
+  const minFull = (abs - deg) * 60;
+  const min = Math.floor(minFull);
+  const sec = ((minFull - min) * 60).toFixed(1);
+  return `${deg}°${String(min).padStart(2,'0')}'${String(sec).padStart(4,'0')}"${dir}`;
+}
+
 // ── PI LIVE FEED ─────────────────────────────────────────────────────────
 async function fetchPiFeed() {
   const statusEl = document.getElementById('pi-feed-status');
