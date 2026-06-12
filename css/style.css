@@ -574,7 +574,7 @@ body {
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-  .nav-links a:not(.btn-nav) { display: none; }
+  .nav-links a:not(.btn-nav):not(.btn-nav-dash) { display: none; }
   .how-arrow { display: none; }
   .how-grid { flex-direction: column; }
   .hero-stat-div { display: none; }
