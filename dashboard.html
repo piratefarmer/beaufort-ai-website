@@ -380,6 +380,8 @@ function renderSensorGrid(p) {
 // ── STREAMING FETCH HELPER ───────────────────────────────────
 // Returns tokens via onToken(str) callback; calls onDone(finalData) when complete
 async function streamBeauRequest(body, onToken, onDone, onError) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s client timeout
   try {
     const res = await fetch(BEAU_API_URL, {
       method: 'POST',
@@ -389,7 +391,9 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
         'Accept': 'text/event-stream',
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
@@ -545,10 +549,14 @@ async function runSensorAnalysis() {
     },
     (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      if (body) body.innerHTML = `<span style="color:var(--red)">Error: ${err.message}</span><br><span style="color:var(--muted);font-size:11px">Check API endpoint and key.</span>`;
+      const isTimeout = err.name === 'AbortError' || err.message.includes('524') || err.message.includes('timeout');
+      const msg = isTimeout
+        ? 'Beau is waking up — model loading. Try again in 30 seconds.'
+        : `Error: ${err.message}`;
+      if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
       if (box) box.classList.remove('streaming');
-      setStatus('#ef4444', `Error \u00b7 ${elapsed}s`);
-      addHistory('SENSOR', 'ERROR', err.message, null, payload);
+      setStatus('#f59e0b', `Timeout \u00b7 ${elapsed}s`);
+      addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
 
