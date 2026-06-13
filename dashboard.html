@@ -121,6 +121,27 @@
     .site-footer{max-width:1400px;margin:0 auto;padding:16px 24px 40px}
     .site-footer p{font-family:var(--font-mono);font-size:10px;color:var(--muted2);line-height:1.7;text-align:center}
     @media(max-width:960px){.dash-layout{flex-direction:column}.dash-sidebar{width:100%;position:static}}
+    /* ── FourCastNet Forecast Strip ── */
+    .forecast-strip{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .forecast-strip-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(34,197,94,.03)}
+    .forecast-strip-title{font-family:var(--font-mono);font-size:9px;color:var(--green);letter-spacing:.12em;font-weight:600}
+    .forecast-strip-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+    .forecast-cards{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+    .forecast-cards::-webkit-scrollbar{display:none}
+    .forecast-card{flex:0 0 auto;min-width:90px;padding:10px 12px;border-right:1px solid var(--border);text-align:center;transition:background .2s}
+    .forecast-card:last-child{border-right:none}
+    .forecast-card:hover{background:rgba(255,255,255,.03)}
+    .fc-time{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.08em;margin-bottom:6px}
+    .fc-wind{font-family:var(--font-mono);font-size:18px;font-weight:600;line-height:1;margin-bottom:2px}
+    .fc-wind-unit{font-family:var(--font-mono);font-size:8px;color:var(--muted)}
+    .fc-arrow{font-size:16px;margin:4px 0;display:block;transition:transform .3s}
+    .fc-dir{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);margin-bottom:4px}
+    .fc-press{font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+    .fc-green{color:var(--green)}.fc-amber{color:var(--amber)}.fc-red{color:var(--red)}
+    .forecast-sparkline{padding:6px 16px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .sparkline-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap}
+    .sparkline-canvas{flex:1;height:28px}
+    .forecast-loading{padding:20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
     @media(max-width:600px){.sensor-grid{grid-template-columns:1fr 1fr}.site-header{flex-direction:column;justify-content:center;gap:6px;height:auto;padding:12px 20px}body{padding-top:80px}.site-nav{display:none}}
   </style>
 </head>
@@ -227,6 +248,20 @@
 
     <div class="sensor-grid" id="sensor-grid"></div>
 
+    <!-- FOURCASTNET 72H FORECAST STRIP -->
+    <div class="forecast-strip" id="forecast-strip">
+      <div class="forecast-strip-header">
+        <span class="forecast-strip-title">&#x2B21; FOURCASTNET 72-HOUR FORECAST</span>
+        <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
+      </div>
+      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from FourCastNet...</div></div>
+      <div class="forecast-sparkline">
+        <span class="sparkline-label">PRESSURE TREND</span>
+        <canvas class="sparkline-canvas" id="pressure-sparkline"></canvas>
+        <span class="sparkline-label" id="press-trend-label" style="color:var(--muted)"></span>
+      </div>
+    </div>
+
     <!-- MODE 1: SENSOR ANALYSIS (blue) -->
     <div class="analysis-box" id="analysis-box">
       <div class="analysis-header">
@@ -311,6 +346,39 @@ let autoEnabled = true;
 let piFeedEnabled = false;
 let piFeedInterval = null;
 
+// ANALYSIS CACHE — only re-run Beau when conditions change meaningfully
+let lastAnalysisResult = null; // {text, alertLevel, wind_speed, pressure, cachedAt}
+const ANALYSIS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — force refresh
+const WIND_CHANGE_THRESHOLD = 3;   // kts
+const PRESSURE_CHANGE_THRESHOLD = 1; // mb
+
+function shouldReanalyze(payload) {
+  if (!lastAnalysisResult) return true;
+  const ageMs = Date.now() - lastAnalysisResult.cachedAt;
+  if (ageMs > ANALYSIS_MAX_AGE_MS) return true;
+  if (Math.abs(payload.wind_speed - lastAnalysisResult.wind_speed) >= WIND_CHANGE_THRESHOLD) return true;
+  if (Math.abs(payload.pressure - lastAnalysisResult.pressure) >= PRESSURE_CHANGE_THRESHOLD) return true;
+  return false;
+}
+
+function renderCachedAnalysis() {
+  if (!lastAnalysisResult) return false;
+  const box  = document.getElementById('analysis-box');
+  const body = document.getElementById('analysis-body');
+  const badge = document.getElementById('alert-badge');
+  const conf  = document.getElementById('analysis-confidence');
+  if (body) body.textContent = lastAnalysisResult.text;
+  if (badge) {
+    badge.textContent = lastAnalysisResult.alertLevel;
+    const lvlCls = lastAnalysisResult.alertLevel==='ADVISORY'?'advisory':lastAnalysisResult.alertLevel==='CAUTION'?'caution':'normal';
+    badge.className = `analysis-alert-badge ${lvlCls}`;
+  }
+  const ageS = Math.round((Date.now() - lastAnalysisResult.cachedAt) / 1000);
+  if (conf) { conf.textContent = `Cached · ${ageS}s ago`; conf.style.display = 'block'; }
+  if (box) box.classList.remove('streaming');
+  return true;
+}
+
 // HELPERS
 function getField(id) {
   const el = document.getElementById('f-' + id);
@@ -360,7 +428,7 @@ function renderSensorGrid(p) {
   const grid = document.getElementById('sensor-grid');
   if (!grid) return;
   const cards = [
-    {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed.toFixed(1),              unit:`kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)`},
+    {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed > 0 ? p.wind_speed.toFixed(1) : '--',              unit:p.wind_speed > 0 ? `kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)` : 'not available'},
     {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed.toFixed(1),     unit:`kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)`},
     {cls:'position',label:'POSITION',      value:decToDMS(p.latitude, true),          unit:decToDMS(p.longitude, false)},
     {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground.toFixed(1),      unit:`kt SOG \u00b7 COG ${p.course_over_ground}\u00b0`},
@@ -436,15 +504,18 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       onDone(finalData);
 
     } else {
-      // NON-STREAMING FALLBACK: parse JSON response
+      // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
       const prediction = data.prediction || data;
-      const text = prediction.alert_description || prediction.answer || prediction.text || JSON.stringify(prediction);
-      // Simulate streaming by feeding the text in chunks
-      const words = text.split(' ');
-      for (const word of words) {
-        onToken(word + ' ');
-        await new Promise(r => setTimeout(r, 15));
+      // Extract text — prefer response field (cached sensor hits), then answer, then description
+      const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
+      if (text) {
+        // Simulate streaming by feeding the text in chunks
+        const words = text.split(' ');
+        for (const word of words) {
+          onToken(word + ' ');
+          await new Promise(r => setTimeout(r, 15));
+        }
       }
       onDone(data);
     }
@@ -456,14 +527,21 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
 // ── MODE 1: SENSOR ANALYSIS ──────────────────────────────────
 async function runSensorAnalysis() {
   if (sensorRequestInFlight) return;
-  sensorRequestInFlight = true;
-
-  const btn = document.getElementById('btn-ask');
-  if (btn) {btn.disabled = true; btn.textContent = 'ANALYZING...';}
 
   const payload = buildPayload();
   lastPayload = payload;
   renderSensorGrid(payload);
+
+  // Use cached result if conditions haven't changed meaningfully
+  if (!shouldReanalyze(payload)) {
+    renderCachedAnalysis();
+    return;
+  }
+
+  sensorRequestInFlight = true;
+
+  const btn = document.getElementById('btn-ask');
+  if (btn) {btn.disabled = true; btn.textContent = 'ANALYZING...';}
 
   // Update payload preview
   const pj = document.getElementById('payload-json');
@@ -546,6 +624,14 @@ async function runSensorAnalysis() {
 
       setStatus('#22c55e', `Sensor OK \u00b7 ${elapsed}s`);
       addHistory('SENSOR', alertLevel, streamedText.trim(), confidence, payload);
+      // Save to client-side cache
+      lastAnalysisResult = {
+        text: streamedText.trim(),
+        alertLevel,
+        wind_speed: payload.wind_speed,
+        pressure: payload.pressure,
+        cachedAt: Date.now()
+      };
     },
     (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
@@ -762,10 +848,13 @@ async function fetchPiFeed() {
 
     // Populate sensor fields
     const set = (id, val) => { const el = document.getElementById('f-' + id); if (el && val !== null && val !== undefined) el.value = val; };
-    set('wind_speed',              d.wind?.speed_kts?.toFixed(1));
-    set('wind_direction',          Math.round(d.wind?.direction_deg ?? 0));
-    set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));   // fallback to true wind
+    // Calypso sensor measures apparent wind only — populate apparent fields
+    // True wind requires vessel SOG/COG vector math — leave as 0 if not computed
+    set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));
     set('apparent_wind_direction', Math.round(d.wind?.direction_deg ?? 0));
+    // True wind: only set if explicitly provided (not available from Calypso alone)
+    if (d.wind?.true_speed_kts != null) set('wind_speed', d.wind.true_speed_kts.toFixed(1));
+    if (d.wind?.true_direction_deg != null) set('wind_direction', Math.round(d.wind.true_direction_deg));
     set('pressure',                d.barometer?.pressure_mb?.toFixed(1));
     set('barometer_temperature',   d.barometer?.temp_f?.toFixed(1));
     set('humidity',                d.barometer?.humidity_pct);
@@ -845,7 +934,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init sensor grid from default values
   renderSensorGrid(buildPayload());
+
+  // Load FourCastNet forecast on startup
+  fetchForecast();
+  setInterval(fetchForecast, 6 * 60 * 60 * 1000); // refresh every 6h
 });
+
+// ── FourCastNet Forecast Strip ──
+const FCN_FORECAST_URL = 'https://beau.beaufort-ai.com/api/forecast';
+
+function windColor(kts) {
+  if (kts >= 34) return 'fc-red';
+  if (kts >= 22) return 'fc-amber';
+  return 'fc-green';
+}
+
+function windArrow(deg) {
+  // Arrow points in direction wind is going TO (opposite of met convention)
+  const arrows = ['↓','↙','←','↖','↑','↗','→','↘'];
+  return arrows[Math.round(((deg + 180) % 360) / 45) % 8];
+}
+
+function beaufortLabel(kts) {
+  if (kts < 1)  return 'CALM';
+  if (kts < 4)  return 'LIGHT AIR';
+  if (kts < 7)  return 'LIGHT';
+  if (kts < 11) return 'GENTLE';
+  if (kts < 17) return 'MODERATE';
+  if (kts < 22) return 'FRESH';
+  if (kts < 28) return 'STRONG';
+  if (kts < 34) return 'NEAR GALE';
+  return 'GALE';
+}
+
+async function fetchForecast() {
+  // Get vessel position from sensor inputs if available
+  const latEl = document.getElementById('inp-lat');
+  const lonEl = document.getElementById('inp-lon');
+  const lat = latEl ? parseFloat(latEl.value) || -22.17 : -22.17;
+  const lon = lonEl ? parseFloat(lonEl.value) || -40.35 : -40.35;
+
+  try {
+    const res = await fetch(FCN_FORECAST_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({lat, lon, hours_ahead: 72})
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.status === 'success') renderForecast(data);
+  } catch(e) {
+    document.getElementById('forecast-cards-container').innerHTML =
+      '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
+    document.getElementById('forecast-meta').textContent = 'FourCastNet offline';
+  }
+}
+
+function renderForecast(data) {
+  const fc   = data.forecast;
+  const s    = data.summary;
+  const meta = document.getElementById('forecast-meta');
+  const now  = new Date();
+
+  // Header meta
+  const trend = s.press_trend_mb;
+  const trendStr = trend < -3 ? '↓ FALLING' : trend > 3 ? '↑ RISING' : '→ STEADY';
+  meta.textContent = 'Max ' + s.max_wind_kts.toFixed(0) + 'kt  •  ' +
+                     s.min_press_mb.toFixed(0) + 'mb low  •  ' + trendStr +
+                     '  •  Updated ' + now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  meta.style.color = s.max_wind_kts >= 34 ? 'var(--red)' :
+                     s.max_wind_kts >= 22 ? 'var(--amber)' : 'var(--green)';
+
+  // Forecast cards
+  let html = '<div class="forecast-cards">';
+  fc.forEach(f => {
+    const col   = windColor(f.wind_kts);
+    const arrow = windArrow(f.wind_dir_deg);
+    const label = beaufortLabel(f.wind_kts);
+    html += `
+      <div class="forecast-card" title="${label}">
+        <div class="fc-time">+${f.lead_hours}H</div>
+        <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
+        <span class="fc-arrow">${arrow}</span>
+        <div class="fc-dir">${f.wind_dir_deg.toFixed(0)}&deg;</div>
+        <div class="fc-press">${f.pressure_mb.toFixed(0)}mb</div>
+      </div>`;
+  });
+  html += '</div>';
+  document.getElementById('forecast-cards-container').innerHTML = html;
+
+  // Pressure sparkline
+  drawSparkline(fc.map(f => f.pressure_mb));
+
+  // Trend label
+  const trendEl = document.getElementById('press-trend-label');
+  trendEl.textContent = (trend >= 0 ? '+' : '') + trend.toFixed(1) + ' mb/72h';
+  trendEl.style.color = trend < -3 ? 'var(--red)' : trend > 3 ? 'var(--amber)' : 'var(--green)';
+}
+
+function drawSparkline(values) {
+  const canvas = document.getElementById('pressure-sparkline');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth  || 400;
+  canvas.height = canvas.offsetHeight || 28;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const min = Math.min(...values) - 1;
+  const max = Math.max(...values) + 1;
+  const W = canvas.width, H = canvas.height;
+  const pad = 4;
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 1.5;
+  values.forEach((v, i) => {
+    const x = pad + (i / (values.length - 1)) * (W - pad * 2);
+    const y = H - pad - ((v - min) / (max - min)) * (H - pad * 2);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill under line
+  ctx.lineTo(W - pad, H - pad);
+  ctx.lineTo(pad, H - pad);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(59,130,246,0.08)';
+  ctx.fill();
+}
 </script>
 </body>
 </html>
