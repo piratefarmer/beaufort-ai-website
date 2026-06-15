@@ -1,0 +1,3 @@
+name = "beaufort-ai-api"
+main = "src/api-proxy-worker.js"
+compatibility_date = "2026-06-08"

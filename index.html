@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beaufort AI — Predictive Weather Intelligence for Offshore Operations</title>
   <meta name="description" content="BEAU is an edge-deployed AI system that gives offshore vessels 30–90 minutes of predictive weather warning — running entirely on-vessel, no cloud required.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260612b">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -16,16 +16,19 @@
     <div class="nav-inner">
       <div class="nav-logos">
         <a href="#"><img src="images/logo.jpg" alt="Beaufort AI" class="logo-img-lg"></a>
-        <a href="index.html"><img src="images/logo-kirt.jpg" alt="Kirt Chouest" class="logo-img-lg logo-kirt"></a>
+        <a href="index.html" class="logo-kirt-link"><img src="images/logo-kirt.jpg" alt="Kirt Chouest" class="logo-img-lg logo-kirt"></a>
       </div>
-      <div class="nav-links">
+      <div class="nav-links" id="nav-links">
         <a href="#how-it-works">How It Works</a>
         <a href="#about">About</a>
         <a href="weather.html">Live Weather</a>
         <a href="storm-nov2022.html">Case Study</a>
-        <a href="https://beau.beaufort-ai.com" target="_blank" class="btn-nav-dash">Live Dashboard</a>
+        <a href="/dashboard.html" target="_blank" class="btn-nav-dash">Live Dashboard</a>
         <a href="#contact" class="btn-nav">Get Early Access</a>
       </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -38,7 +41,7 @@
       <p class="hero-sub">BEAU gives offshore vessels 30–90 minutes of predictive weather warning — fusing onboard sensors, fleet AIS signals, and edge AI inference. No cloud. No latency. No excuses.</p>
       <div class="hero-cta">
         <a href="#contact" class="btn-primary">Join the Early Access List</a>
-        <a href="https://beau.beaufort-ai.com" target="_blank" class="btn-live"><span class="live-dot"></span>Live Gulf of Mexico Dashboard →</a>
+        <a href="/weather.html" target="_blank" class="btn-live"><span class="live-dot"></span>Live Gulf of Mexico Dashboard →</a>
       </div>
       <div class="hero-stat-row">
         <div class="hero-stat"><span class="stat-num">30–90</span><span class="stat-label">min advance warning</span></div>
@@ -224,5 +227,20 @@
     </div>
   </footer>
 
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  // Close menu when a link is clicked
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+</script>
 </body>
 </html>
