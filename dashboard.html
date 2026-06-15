@@ -950,9 +950,16 @@ function windColor(kts) {
 }
 
 function windArrow(deg) {
-  // Arrow points in direction wind is going TO (opposite of met convention)
+  // Arrow points FROM wind source (standard met convention)
+  // N wind (000) = arrow pointing DOWN (↓), S wind (180) = arrow pointing UP (↑)
   const arrows = ['↓','↙','←','↖','↑','↗','→','↘'];
-  return arrows[Math.round(((deg + 180) % 360) / 45) % 8];
+  return arrows[Math.round(deg / 45) % 8];
+}
+
+function windCardinal(deg) {
+  // 16-point compass cardinal: N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW
+  const pts = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return pts[Math.round(deg / 22.5) % 16];
 }
 
 function beaufortLabel(kts) {
@@ -1008,15 +1015,16 @@ function renderForecast(data) {
   // Forecast cards
   let html = '<div class="forecast-cards">';
   fc.forEach(f => {
-    const col   = windColor(f.wind_kts);
-    const arrow = windArrow(f.wind_dir_deg);
-    const label = beaufortLabel(f.wind_kts);
+    const col      = windColor(f.wind_kts);
+    const arrow    = windArrow(f.wind_dir_deg);
+    const cardinal = windCardinal(f.wind_dir_deg);
+    const label    = beaufortLabel(f.wind_kts);
     html += `
-      <div class="forecast-card" title="${label}">
+      <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°)">
         <div class="fc-time">+${f.lead_hours}H</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
-        <div class="fc-dir">${f.wind_dir_deg.toFixed(0)}&deg;</div>
+        <div class="fc-dir">${cardinal}</div>
         <div class="fc-press">${f.pressure_mb.toFixed(0)}mb</div>
       </div>`;
   });
