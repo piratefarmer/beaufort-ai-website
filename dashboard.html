@@ -145,7 +145,7 @@
     @media(max-width:600px){.sensor-grid{grid-template-columns:1fr 1fr}.site-header{flex-direction:column;justify-content:center;gap:6px;height:auto;padding:12px 20px}body{padding-top:80px}.site-nav{display:none}}
   </style>
 </head>
-<body><a href="https://beaufortai.ai/cdn-cgi/content?id=jrhZEUb0jqO8qaIuZ3B6SpCI29Re_miclUkUy7LRoUk-1781553564.587104-1.2.1.1-lmUU2.JCt.v2HrT8FEycS2aAaZDxJARM.sX7veihkxU" aria-hidden="true" rel="nofollow noopener" style="display: none !important; visibility: hidden !important"></a>
+<body>
 
 <header class="site-header">
   <nav class="site-nav"><a href="/">Home</a><a href="/#how-it-works">How It Works</a><a href="/#about">About</a></nav>
@@ -172,7 +172,7 @@
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
       <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
-      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau-maritime-ai.replit.app</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
@@ -202,7 +202,7 @@
       </div>
       <div class="sensor-inputs">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" value="0" step="0.1" min="0" max="150"></div>
+          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" value="18.3" step="0.1" min="0" max="150"></div>
           <div class="sensor-field"><label>WIND DIR (&deg;)</label><input type="number" id="f-wind_direction" value="225" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -327,7 +327,7 @@
 // ============================================================
 
 // CONFIG
-const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau';
+const BEAU_API_URL = 'https://beau-maritime-ai.replit.app/api/beau';
 const PI_FEED_URL  = 'https://beau-maritime-ai.replit.app/api/pi-sensors';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 const AUTO_DEBOUNCE_MS = 1500; // ms after last change before auto-triggering
@@ -852,11 +852,8 @@ async function fetchPiFeed() {
     // True wind requires vessel SOG/COG vector math — leave as 0 if not computed
     set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));
     set('apparent_wind_direction', Math.round(d.wind?.direction_deg ?? 0));
-    // Use apparent wind as true wind proxy (Calypso doesn't compute true wind)
-    if (d.wind?.speed_kts != null)     set('wind_speed',     d.wind.speed_kts.toFixed(1));
-    if (d.wind?.direction_deg != null) set('wind_direction', Math.round(d.wind.direction_deg));
-    // Override with true wind if explicitly provided
-    if (d.wind?.true_speed_kts != null)     set('wind_speed',     d.wind.true_speed_kts.toFixed(1));
+    // True wind: only set if explicitly provided (not available from Calypso alone)
+    if (d.wind?.true_speed_kts != null) set('wind_speed', d.wind.true_speed_kts.toFixed(1));
     if (d.wind?.true_direction_deg != null) set('wind_direction', Math.round(d.wind.true_direction_deg));
     set('pressure',                d.barometer?.pressure_mb?.toFixed(1));
     set('barometer_temperature',   d.barometer?.temp_f?.toFixed(1));
@@ -894,7 +891,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Manual send button
   document.getElementById('btn-ask').addEventListener('click', () => {
     clearTimeout(autoDebounceTimer);
-    lastAnalysisResult = {};  // force cache bypass on manual click
     runSensorAnalysis();
   });
 
@@ -1069,10 +1065,3 @@ function drawSparkline(values) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
