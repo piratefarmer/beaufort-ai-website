@@ -69,6 +69,8 @@
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
+    .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
+    .sensor-card:hover .sc-tooltip{display:block}
     .sc-value{font-family:var(--font-mono);font-size:22px;font-weight:500;color:#fff;line-height:1.1}.sc-unit{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:3px}
     .analysis-box{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(59,130,246,.02));border:1px solid rgba(59,130,246,.25);border-radius:10px;overflow:hidden;transition:border-color .4s,box-shadow .4s}
     .analysis-box.streaming{border-color:rgba(59,130,246,.6);box-shadow:0 0 0 2px rgba(59,130,246,.08)}
@@ -434,15 +436,17 @@ function renderSensorGrid(p) {
     {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground.toFixed(1),      unit:`kt SOG \u00b7 COG ${p.course_over_ground}\u00b0`},
     {cls:'pressure',label:'PRESSURE',      value:p.pressure.toFixed(1),               unit:`hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}`},
     {cls:'pressure',label:'HUMIDITY',      value:p.humidity.toFixed(0),               unit:'% RH'},
-    {cls:'motion',  label:'ROLL / PITCH',  value:`${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0 / ${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0`, unit:'vessel attitude'},
-    {cls:'motion',  label:'YAW',           value:`${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0`,  unit:`Baro ${p.barometer_temperature.toFixed(1)}\u00b0F`},
+    {cls:'motion',  label:'ROLL / PITCH',  value:`${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0 / ${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0`, unit:'vessel attitude', tip:'Lateral (roll) and fore-aft (pitch) tilt. Positive = starboard / bow up.'},
+    {cls:'motion',  label:'YAW',           value:`${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0`,  unit:`Baro ${p.barometer_temperature.toFixed(1)}\u00b0F`, tip:'Rotational movement around vertical axis. Positive = turning right.'},
+    {cls:'motion',  label:'MAGNITUDE',     value:p.motion_magnitude ? p.motion_magnitude.toFixed(2) : (p.magnitude ? p.magnitude.toFixed(2) : '--'), unit:'g  total accel vector', tip:'Total acceleration (√x²+y²+z²). 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
   ];
   grid.innerHTML = cards.map(c => `
     <div class="sensor-card ${c.cls}">
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
-    </div>`).join('');
+      ${c.tip ? `<div class="sc-tooltip">${c.tip}</div>` : ''}
+    </div>`).join('');'
 }
 
 // ── STREAMING FETCH HELPER ───────────────────────────────────
