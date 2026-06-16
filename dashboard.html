@@ -445,6 +445,7 @@ function renderSensorGrid(p) {
     {cls:'motion',  label:'YAW',           value:`${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0`,   unit:'rotation',       tip:'Rotation around vertical axis. Positive = turning right.'},
     {cls:'motion',  label:'MAGNITUDE',     value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--', unit:'g  total accel',  tip:'Total accel vector. 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
     {cls:'pressure',label:'AIR TEMP',      value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',   unit:'\u00b0F',       tip:'Barometer sensor temperature.'},
+    {cls:'pressure',label:'DEW POINT',     value:(()=>{ if(!(p.air_temp>0) || !(p.humidity>0)) return '--'; const tc=(p.air_temp-32)*5/9; const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100); const td=(237.3*g)/(17.27-g); return ((td*9/5)+32).toFixed(1); })(), unit:'\u00b0F', tip:'Dew point calculated from temp + humidity. When air temp equals dew point = 100% humidity / fog risk.'},
   ];
   function tooltipHtml(tip) { return tip ? '<div class="sc-tooltip">' + tip + '</div>' : ''; }
   grid.innerHTML = cards.filter(c => c.label !== 'ROLL / PITCH TIP').map(c =>
