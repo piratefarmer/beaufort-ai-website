@@ -881,8 +881,21 @@ async function fetchPiFeed() {
     set('magnitude',               d.accel?.magnitude?.toFixed(2));
     set('air_temp',                d.barometer?.temp_f != null ? d.barometer.temp_f.toFixed(1) : null);
 
-    statusEl.textContent = '\uD83D\uDFE2 ' + new Date().toLocaleTimeString();
-    statusEl.style.color = 'var(--green)';
+    // Show data age and stale warning
+    const dataAge = d.data_age_sec || 0;
+    const stale = d.stale || dataAge > 300;
+    const staleWarning = d.stale_warning || null;
+    if (stale) {
+      const ageMin = Math.round(dataAge / 60);
+      statusEl.textContent = '\uD83D\uDD34 SENSOR OFFLINE — last reading ' + ageMin + ' min ago';
+      statusEl.style.color = 'var(--red, #ef4444)';
+      statusEl.style.fontWeight = 'bold';
+    } else {
+      const ageS = dataAge < 60 ? Math.round(dataAge) + 's ago' : Math.round(dataAge / 60) + ' min ago';
+      statusEl.textContent = '\uD83D\uDFE2 Live · updated ' + ageS + ' · ' + new Date().toLocaleTimeString();
+      statusEl.style.color = 'var(--green)';
+      statusEl.style.fontWeight = 'normal';
+    }
 
     // Trigger Beau analysis with fresh data
     if (autoEnabled) {
