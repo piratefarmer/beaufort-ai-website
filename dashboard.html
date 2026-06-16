@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 10000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
