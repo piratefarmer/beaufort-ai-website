@@ -588,7 +588,7 @@ async function runSensorAnalysis() {
       }
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
       }
     },
     (finalData) => {
@@ -706,7 +706,7 @@ async function runQAQuery() {
       if (!streamedText) body.innerHTML = '';
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
       }
     },
     (finalData) => {
