@@ -123,7 +123,7 @@
     .site-footer{max-width:1400px;margin:0 auto;padding:16px 24px 40px}
     .site-footer p{font-family:var(--font-mono);font-size:10px;color:var(--muted2);line-height:1.7;text-align:center}
     @media(max-width:960px){.dash-layout{flex-direction:column}.dash-sidebar{width:100%;position:static}}
-    /* ── FourCastNet Forecast Strip ── */
+    /* ── GraphCast Forecast Strip ── */
     .forecast-strip{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
     .forecast-strip-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(34,197,94,.03)}
     .forecast-strip-title{font-family:var(--font-mono);font-size:11px;color:var(--green);letter-spacing:.12em;font-weight:600}
@@ -252,13 +252,13 @@
 
     <div class="sensor-grid" id="sensor-grid"></div>
 
-    <!-- FOURCASTNET 72H FORECAST STRIP -->
+    <!-- GRAPHCAST 48H FORECAST STRIP -->
     <div class="forecast-strip" id="forecast-strip">
       <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; FOURCASTNET 72-HOUR FORECAST</span>
+        <span class="forecast-strip-title">&#x2B21; GRAPHCAST 48-HOUR FORECAST</span>
         <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
       </div>
-      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from FourCastNet...</div></div>
+      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from GraphCast...</div></div>
       <div class="forecast-sparkline">
         <span class="sparkline-label">PRESSURE TREND</span>
         <canvas class="sparkline-canvas" id="pressure-sparkline"></canvas>
@@ -963,13 +963,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init sensor grid from default values
   renderSensorGrid(buildPayload());
 
-  // Load FourCastNet forecast on startup
+  // Load GraphCast forecast on startup
   fetchForecast();
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // refresh every 6h
 });
 
-// ── FourCastNet Forecast Strip ──
-const FCN_FORECAST_URL = 'https://beau.beaufort-ai.com/api/forecast';
+// ── GraphCast Forecast Strip ──
+const FCN_FORECAST_URL = 'https://beau.beaufort-ai.com/api/beau/forecast';
 
 function windColor(kts) {
   if (kts >= 34) return 'fc-red';
@@ -1021,7 +1021,7 @@ async function fetchForecast() {
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
-    document.getElementById('forecast-meta').textContent = 'FourCastNet offline';
+    document.getElementById('forecast-meta').textContent = 'GraphCast offline';
   }
 }
 
