@@ -69,6 +69,8 @@
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
+    .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
+    .sensor-card:hover .sc-tooltip{display:block}
     .sc-value{font-family:var(--font-mono);font-size:22px;font-weight:500;color:#fff;line-height:1.1}.sc-unit{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:3px}
     .analysis-box{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(59,130,246,.02));border:1px solid rgba(59,130,246,.25);border-radius:10px;overflow:hidden;transition:border-color .4s,box-shadow .4s}
     .analysis-box.streaming{border-color:rgba(59,130,246,.6);box-shadow:0 0 0 2px rgba(59,130,246,.08)}
@@ -121,7 +123,7 @@
     .site-footer{max-width:1400px;margin:0 auto;padding:16px 24px 40px}
     .site-footer p{font-family:var(--font-mono);font-size:10px;color:var(--muted2);line-height:1.7;text-align:center}
     @media(max-width:960px){.dash-layout{flex-direction:column}.dash-sidebar{width:100%;position:static}}
-    /* ── GraphCast Forecast Strip ── */
+    /* ── FourCastNet Forecast Strip ── */
     .forecast-strip{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
     .forecast-strip-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(34,197,94,.03)}
     .forecast-strip-title{font-family:var(--font-mono);font-size:11px;color:var(--green);letter-spacing:.12em;font-weight:600}
@@ -172,7 +174,7 @@
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
       <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
-      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau-maritime-ai.replit.app</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
@@ -202,30 +204,32 @@
       </div>
       <div class="sensor-inputs">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" placeholder="--" step="0.1" min="0" max="150"></div>
-          <div class="sensor-field"><label>WIND DIR (&deg;)</label><input type="number" id="f-wind_direction" placeholder="--" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" value="18.3" step="0.1" min="0" max="150"></div>
+          <div class="sensor-field"><label>WIND DIR (&deg;)</label><input type="number" id="f-wind_direction" value="225" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>APP WIND (kt)</label><input type="number" id="f-apparent_wind_speed" placeholder="--" step="0.1" min="0" max="150"></div>
-          <div class="sensor-field"><label>APP WIND DIR (&deg;)</label><input type="number" id="f-apparent_wind_direction" placeholder="--" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>APP WIND (kt)</label><input type="number" id="f-apparent_wind_speed" value="21.7" step="0.1" min="0" max="150"></div>
+          <div class="sensor-field"><label>APP WIND DIR (&deg;)</label><input type="number" id="f-apparent_wind_direction" value="210" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>LAT (&deg;)</label><input type="number" id="f-latitude" placeholder="--" step="0.001"></div>
-          <div class="sensor-field"><label>LON (&deg;)</label><input type="number" id="f-longitude" placeholder="--" step="0.001"></div>
+          <div class="sensor-field"><label>LAT (&deg;)</label><input type="number" id="f-latitude" value="27.84" step="0.001"></div>
+          <div class="sensor-field"><label>LON (&deg;)</label><input type="number" id="f-longitude" value="-89.41" step="0.001"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>SOG (kt)</label><input type="number" id="f-speed_over_ground" placeholder="--" step="0.1" min="0" max="30"></div>
-          <div class="sensor-field"><label>COG (&deg;)</label><input type="number" id="f-course_over_ground" placeholder="--" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>SOG (kt)</label><input type="number" id="f-speed_over_ground" value="8.5" step="0.1" min="0" max="30"></div>
+          <div class="sensor-field"><label>COG (&deg;)</label><input type="number" id="f-course_over_ground" value="185" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>PRESSURE (hPa)</label><input type="number" id="f-pressure" placeholder="--" step="0.1"></div>
-          <div class="sensor-field"><label>BARO TEMP (&deg;F)</label><input type="number" id="f-barometer_temperature" placeholder="--" step="0.1"></div>
+          <div class="sensor-field"><label>PRESSURE (hPa)</label><input type="number" id="f-pressure" value="1007.4" step="0.1"></div>
+          <div class="sensor-field"><label>BARO TEMP (&deg;F)</label><input type="number" id="f-barometer_temperature" value="28.5" step="0.1"></div>
         </div>
-        <div class="sensor-field"><label>HUMIDITY (%)</label><input type="number" id="f-humidity" placeholder="--" step="1" min="0" max="100"></div>
+        <div class="sensor-field"><label>HUMIDITY (%)</label><input type="number" id="f-humidity" value="72" step="1" min="0" max="100"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>ROLL (&deg;)</label><input type="number" id="f-roll" placeholder="--" step="0.1"></div>
-          <div class="sensor-field"><label>PITCH (&deg;)</label><input type="number" id="f-pitch" placeholder="--" step="0.1"></div>
-          <div class="sensor-field"><label>YAW (&deg;)</label><input type="number" id="f-yaw" placeholder="--" step="0.1"></div>
+          <div class="sensor-field"><label>ROLL (&deg;)</label><input type="number" id="f-roll" value="2.1" step="0.1"></div>
+          <div class="sensor-field"><label>PITCH (&deg;)</label><input type="number" id="f-pitch" value="-1.5" step="0.1"></div>
+          <div class="sensor-field"><label>YAW (&deg;)</label><input type="number" id="f-yaw" value="0.3" step="0.1"></div>
+          <input type="hidden" id="f-magnitude" value="1.0">
+          <input type="hidden" id="f-air_temp" value="0">
         </div>
       </div>
       <button class="btn-ask-beau" id="btn-ask">SEND TO BEAU &rarr;</button>
@@ -248,13 +252,13 @@
 
     <div class="sensor-grid" id="sensor-grid"></div>
 
-    <!-- GRAPHCAST 48H FORECAST STRIP -->
+    <!-- FOURCASTNET 72H FORECAST STRIP -->
     <div class="forecast-strip" id="forecast-strip">
       <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; GRAPHCAST 48-HOUR FORECAST</span>
+        <span class="forecast-strip-title">&#x2B21; FOURCASTNET 72-HOUR FORECAST</span>
         <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
       </div>
-      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from GraphCast...</div></div>
+      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from FourCastNet...</div></div>
       <div class="forecast-sparkline">
         <span class="sparkline-label">PRESSURE TREND</span>
         <canvas class="sparkline-canvas" id="pressure-sparkline"></canvas>
@@ -382,9 +386,7 @@ function renderCachedAnalysis() {
 // HELPERS
 function getField(id) {
   const el = document.getElementById('f-' + id);
-  if (!el || el.value === '' || el.value === null) return null;
-  const v = parseFloat(el.value);
-  return isNaN(v) ? null : v;
+  return el ? parseFloat(el.value) || 0 : 0;
 }
 function setEl(id, text) {
   const el = document.getElementById(id);
@@ -422,6 +424,8 @@ function buildPayload() {
     roll:                    getField('roll'),
     pitch:                   getField('pitch'),
     yaw:                     getField('yaw'),
+    magnitude:               getField('magnitude'),
+    air_temp:                getField('air_temp'),
   };
 }
 
@@ -430,21 +434,28 @@ function renderSensorGrid(p) {
   const grid = document.getElementById('sensor-grid');
   if (!grid) return;
   const cards = [
-    {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed != null ? p.wind_speed.toFixed(1) : '--',              unit:p.wind_speed != null ? `kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)` : 'no data'},
-    {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed != null ? p.apparent_wind_speed.toFixed(1) : '--', unit:p.apparent_wind_speed != null ? `kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)` : 'no data'},
-    {cls:'position',label:'POSITION',      value:p.latitude != null ? decToDMS(p.latitude, true) : '--',  unit:p.longitude != null ? decToDMS(p.longitude, false) : 'no data'},
-    {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground != null ? p.speed_over_ground.toFixed(1) : '--', unit:p.speed_over_ground != null ? `kt SOG \u00b7 COG ${p.course_over_ground}\u00b0` : 'no data'},
-    {cls:'pressure',label:'PRESSURE',      value:p.pressure != null ? p.pressure.toFixed(1) : '--',       unit:p.pressure != null ? `hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}` : 'no data'},
-    {cls:'pressure',label:'HUMIDITY',      value:p.humidity != null ? p.humidity.toFixed(0) : '--',       unit:p.humidity != null ? '% RH' : 'no data'},
-    {cls:'motion',  label:'ROLL / PITCH',  value:p.roll != null ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0 / ${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0` : '--', unit:p.roll != null ? 'vessel attitude' : 'no data'},
-    {cls:'motion',  label:'YAW',           value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0` : '--', unit:p.barometer_temperature != null ? `Baro ${p.barometer_temperature.toFixed(1)}\u00b0F` : 'no data'},
+    {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed > 0 ? p.wind_speed.toFixed(1) : '--',              unit:p.wind_speed > 0 ? `kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)` : 'not available'},
+    {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed.toFixed(1),     unit:`kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)`},
+    {cls:'position',label:'POSITION',      value:decToDMS(p.latitude, true),          unit:decToDMS(p.longitude, false)},
+    {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground.toFixed(1),      unit:`kt SOG \u00b7 COG ${p.course_over_ground}\u00b0`},
+    {cls:'pressure',label:'PRESSURE',      value:p.pressure.toFixed(1),               unit:`hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}`},
+    {cls:'pressure',label:'HUMIDITY',      value:p.humidity.toFixed(0),               unit:'% RH'},
+    {cls:'motion',  label:'ROLL',          value:`${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0`,   unit:'lateral tilt', tip:'Side-to-side tilt. Positive = starboard down.'},
+    {cls:'motion',  label:'PITCH',         value:`${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0`, unit:'fore-aft tilt',  tip:'Fore and aft tilt. Positive = bow up.'},
+    {cls:'motion',  label:'YAW',           value:`${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0`,   unit:'rotation',       tip:'Rotation around vertical axis. Positive = turning right.'},
+    {cls:'motion',  label:'MAGNITUDE',     value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--', unit:'g  total accel',  tip:'Total accel vector. 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
+    {cls:'pressure',label:'AIR TEMP',      value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',   unit:'\u00b0F',       tip:'Barometer sensor temperature.'},
+    {cls:'pressure',label:'DEW POINT',     value:(()=>{ if(!(p.air_temp>0) || !(p.humidity>0)) return '--'; const tc=(p.air_temp-32)*5/9; const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100); const td=(237.3*g)/(17.27-g); return ((td*9/5)+32).toFixed(1); })(), unit:'\u00b0F', tip:'Dew point calculated from temp + humidity. When air temp equals dew point = 100% humidity / fog risk.'},
   ];
-  grid.innerHTML = cards.map(c => `
-    <div class="sensor-card ${c.cls}">
-      <div class="sc-label">${c.label}</div>
-      <div class="sc-value">${c.value}</div>
-      <div class="sc-unit">${c.unit}</div>
-    </div>`).join('');
+  function tooltipHtml(tip) { return tip ? '<div class="sc-tooltip">' + tip + '</div>' : ''; }
+  grid.innerHTML = cards.filter(c => c.label !== 'ROLL / PITCH TIP').map(c =>
+    '<div class="sensor-card ' + c.cls + '">' +
+    '<div class="sc-label">' + c.label + '</div>' +
+    '<div class="sc-value">' + c.value + '</div>' +
+    '<div class="sc-unit">' + c.unit + '</div>' +
+    tooltipHtml(c.tip) +
+    '</div>'
+  ).join('');
 }
 
 // ── STREAMING FETCH HELPER ───────────────────────────────────
@@ -577,7 +588,7 @@ async function runSensorAnalysis() {
       }
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
       }
     },
     (finalData) => {
@@ -695,7 +706,7 @@ async function runQAQuery() {
       if (!streamedText) body.innerHTML = '';
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
       }
     },
     (finalData) => {
@@ -850,12 +861,13 @@ async function fetchPiFeed() {
 
     // Populate sensor fields
     const set = (id, val) => { const el = document.getElementById('f-' + id); if (el && val !== null && val !== undefined) el.value = val; };
-    // Calypso provides true wind — populate true wind fields directly
-    set('wind_speed',              d.wind?.speed_kts?.toFixed(1));
-    set('wind_direction',          Math.round(d.wind?.direction_deg ?? 0));
-    // Apparent wind: use same values (Calypso = true wind on this vessel)
+    // Calypso sensor measures apparent wind only — populate apparent fields
+    // True wind requires vessel SOG/COG vector math — leave as 0 if not computed
     set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));
     set('apparent_wind_direction', Math.round(d.wind?.direction_deg ?? 0));
+    // True wind: only set if explicitly provided (not available from Calypso alone)
+    if (d.wind?.true_speed_kts != null) set('wind_speed', d.wind.true_speed_kts.toFixed(1));
+    if (d.wind?.true_direction_deg != null) set('wind_direction', Math.round(d.wind.true_direction_deg));
     set('pressure',                d.barometer?.pressure_mb?.toFixed(1));
     set('barometer_temperature',   d.barometer?.temp_f?.toFixed(1));
     set('humidity',                d.barometer?.humidity_pct);
@@ -866,9 +878,24 @@ async function fetchPiFeed() {
     set('roll',                    d.accel?.roll?.toFixed(1));
     set('pitch',                   d.accel?.pitch?.toFixed(1));
     set('yaw',                     d.accel?.yaw?.toFixed(1));
+    set('magnitude',               d.accel?.magnitude?.toFixed(2));
+    set('air_temp',                d.barometer?.temp_f != null ? d.barometer.temp_f.toFixed(1) : null);
 
-    statusEl.textContent = '\uD83D\uDFE2 ' + new Date().toLocaleTimeString();
-    statusEl.style.color = 'var(--green)';
+    // Show data age and stale warning
+    const dataAge = d.data_age_sec || 0;
+    const stale = d.stale || dataAge > 300;
+    const staleWarning = d.stale_warning || null;
+    if (stale) {
+      const ageMin = Math.round(dataAge / 60);
+      statusEl.textContent = '\uD83D\uDD34 SENSOR OFFLINE — last reading ' + ageMin + ' min ago';
+      statusEl.style.color = 'var(--red, #ef4444)';
+      statusEl.style.fontWeight = 'bold';
+    } else {
+      const ageS = dataAge < 60 ? Math.round(dataAge) + 's ago' : Math.round(dataAge / 60) + ' min ago';
+      statusEl.textContent = '\uD83D\uDFE2 Live · updated ' + ageS + ' · ' + new Date().toLocaleTimeString();
+      statusEl.style.color = 'var(--green)';
+      statusEl.style.fontWeight = 'normal';
+    }
 
     // Trigger Beau analysis with fresh data
     if (autoEnabled) {
@@ -906,7 +933,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 10000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -936,13 +963,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init sensor grid from default values
   renderSensorGrid(buildPayload());
 
-  // Load GraphCast forecast on startup
+  // Load FourCastNet forecast on startup
   fetchForecast();
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // refresh every 6h
 });
 
-// ── GraphCast Forecast Strip ──
-const FCN_FORECAST_URL = 'https://beau.beaufort-ai.com/api/beau/forecast';
+// ── FourCastNet Forecast Strip ──
+const FCN_FORECAST_URL = 'https://beau.beaufort-ai.com/api/forecast';
 
 function windColor(kts) {
   if (kts >= 34) return 'fc-red';
@@ -994,7 +1021,7 @@ async function fetchForecast() {
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
-    document.getElementById('forecast-meta').textContent = 'GraphCast offline';
+    document.getElementById('forecast-meta').textContent = 'FourCastNet offline';
   }
 }
 
