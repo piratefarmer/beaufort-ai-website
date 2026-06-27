@@ -472,29 +472,72 @@ function buildPayload() {
 function renderSensorGrid(p) {
   const grid = document.getElementById('sensor-grid');
   if (!grid) return;
-  const cards = [
-    {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed > 0 ? p.wind_speed.toFixed(1) : '--',              unit:p.wind_speed > 0 ? `kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)` : 'not available'},
-    {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed > 0 ? p.apparent_wind_speed.toFixed(1) : '--', unit:p.apparent_wind_speed > 0 ? `kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)` : 'not available'},
-    {cls:'position',label:'POSITION',      value:(p.latitude && p.longitude) ? decToDMS(p.latitude, true) : '--', unit:(p.latitude && p.longitude) ? decToDMS(p.longitude, false) : 'no GPS fix'},
-    {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--', unit:p.speed_over_ground > 0 ? `kt SOG \u00b7 COG ${p.course_over_ground}\u00b0` : 'at rest'},
-    {cls:'pressure',label:'PRESSURE',      value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',  unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}` : 'sensor offline'},
-    {cls:'pressure',label:'HUMIDITY',      value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',  unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
-    {cls:'motion',  label:'ROLL',          value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0` : '--',  unit:'lateral tilt', tip:'Side-to-side tilt. Positive = starboard down.'},
-    {cls:'motion',  label:'PITCH',         value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0` : '--', unit:'fore-aft tilt', tip:'Fore and aft tilt. Positive = bow up.'},
-    {cls:'motion',  label:'YAW',           value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0` : '--', unit:'rotation', tip:'Rotation around vertical axis. Positive = turning right.'},
-    {cls:'motion',  label:'MAGNITUDE',     value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--', unit:'g  total accel', tip:'Total accel vector. 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
-    {cls:'pressure',label:'AIR TEMP',      value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',  unit:p.air_temp > 0 ? '\u00b0F' : 'sensor offline', tip:'Barometer sensor temperature.'},
-    {cls:'pressure',label:'DEW POINT',     value:(()=>{ if(!(p.air_temp>0) || !(p.humidity>0)) return '--'; const tc=(p.air_temp-32)*5/9; const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100); const td=(237.3*g)/(17.27-g); return ((td*9/5)+32).toFixed(1); })(), unit:(p.air_temp>0 && p.humidity>0) ? '\u00b0F' : 'sensor offline', tip:'Dew point calculated from temp + humidity. When air temp equals dew point = 100% humidity / fog risk.'},
-  ];
+  // Helper: dew point calc
+  const dewPt = (()=>{
+    if(!(p.air_temp>0) || !(p.humidity>0)) return '--';
+    const tc=(p.air_temp-32)*5/9;
+    const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100);
+    const td=(237.3*g)/(17.27-g);
+    return ((td*9/5)+32).toFixed(1);
+  })();
+
+  // Helper: tooltip wrapper
   function tooltipHtml(tip) { return tip ? '<div class="sc-tooltip">' + tip + '</div>' : ''; }
-  grid.innerHTML = cards.filter(c => c.label !== 'ROLL / PITCH TIP').map(c =>
-    '<div class="sensor-card ' + c.cls + '">' +
-    '<div class="sc-label">' + c.label + '</div>' +
-    '<div class="sc-value">' + c.value + '</div>' +
-    '<div class="sc-unit">' + c.unit + '</div>' +
-    tooltipHtml(c.tip) +
-    '</div>'
+
+  // POSITION card — single card, both coords same size
+  const posCard = `<div class="sensor-card position">
+    <div class="sc-label">POSITION</div>
+    <div class="sc-value" style="font-size:18px">${(p.latitude && p.longitude) ? decToDMS(p.latitude, true) : '--'}</div>
+    <div class="sc-value" style="font-size:18px;margin-top:4px">${(p.latitude && p.longitude) ? decToDMS(p.longitude, false) : '--'}</div>
+    <div class="sc-unit">${(p.latitude && p.longitude) ? '' : 'no GPS fix'}</div>
+  </div>`;
+
+  // VESSEL MOTION card
+  const motionCard = `<div class="sensor-card position">
+    <div class="sc-label">VESSEL MOTION</div>
+    <div class="sc-value">${p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--'}</div>
+    <div class="sc-unit">${p.speed_over_ground > 0 ? 'kt SOG &middot; COG ' + p.course_over_ground + '&deg;' : 'at rest'}</div>
+  </div>`;
+
+  // WEATHERDOT group (gold) — pressure, humidity, air temp, dew point
+  const weatherCards = [
+    {label:'PRESSURE', value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',
+     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline'},
+    {label:'HUMIDITY',  value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',
+     unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
+    {label:'AIR TEMP',  value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',
+     unit:p.air_temp > 0 ? '°F' : 'sensor offline',
+     tip:'Barometer sensor temperature.'},
+    {label:'DEW POINT', value:dewPt,
+     unit:(p.air_temp>0 && p.humidity>0) ? '°F' : 'sensor offline',
+     tip:'When air temp ≈ dew point → fog risk.'},
+  ].map(c =>
+    `<div class="sensor-card pressure">${tooltipHtml(c.tip)}
+      <div class="sc-label">${c.label}</div>
+      <div class="sc-value">${c.value}</div>
+      <div class="sc-unit">${c.unit}</div>
+    </div>`
   ).join('');
+
+  // IMU group (purple) — roll, pitch, yaw, magnitude
+  const imuCards = [
+    {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}°` : '--',
+     unit:'lateral tilt', tip:'Positive = starboard down.'},
+    {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}°` : '--',
+     unit:'fore-aft tilt', tip:'Positive = bow up.'},
+    {label:'YAW',       value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}°` : '--',
+     unit:'rotation', tip:'Positive = turning right.'},
+    {label:'MAGNITUDE', value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--',
+     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.'},
+  ].map(c =>
+    `<div class="sensor-card motion">${tooltipHtml(c.tip)}
+      <div class="sc-label">${c.label}</div>
+      <div class="sc-value">${c.value}</div>
+      <div class="sc-unit">${c.unit}</div>
+    </div>`
+  ).join('');
+
+  grid.innerHTML = posCard + motionCard + weatherCards + imuCards;
 }
 
 // ── STREAMING FETCH HELPER ───────────────────────────────────
