@@ -206,29 +206,29 @@
       </div>
       <div class="sensor-inputs">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" value="18.3" step="0.1" min="0" max="150"></div>
-          <div class="sensor-field"><label>WIND DIR (&deg;)</label><input type="number" id="f-wind_direction" value="225" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>WIND SPEED (kt)</label><input type="number" id="f-wind_speed" placeholder="--" step="0.1" min="0" max="150"></div>
+          <div class="sensor-field"><label>WIND DIR (&deg;)</label><input type="number" id="f-wind_direction" placeholder="--" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>APP WIND (kt)</label><input type="number" id="f-apparent_wind_speed" value="21.7" step="0.1" min="0" max="150"></div>
-          <div class="sensor-field"><label>APP WIND DIR (&deg;)</label><input type="number" id="f-apparent_wind_direction" value="210" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>APP WIND (kt)</label><input type="number" id="f-apparent_wind_speed" placeholder="--" step="0.1" min="0" max="150"></div>
+          <div class="sensor-field"><label>APP WIND DIR (&deg;)</label><input type="number" id="f-apparent_wind_direction" placeholder="--" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>LAT (&deg;)</label><input type="number" id="f-latitude" value="27.84" step="0.001"></div>
-          <div class="sensor-field"><label>LON (&deg;)</label><input type="number" id="f-longitude" value="-89.41" step="0.001"></div>
+          <div class="sensor-field"><label>LAT (&deg;)</label><input type="number" id="f-latitude" placeholder="--" step="0.001"></div>
+          <div class="sensor-field"><label>LON (&deg;)</label><input type="number" id="f-longitude" placeholder="--" step="0.001"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>SOG (kt)</label><input type="number" id="f-speed_over_ground" value="8.5" step="0.1" min="0" max="30"></div>
-          <div class="sensor-field"><label>COG (&deg;)</label><input type="number" id="f-course_over_ground" value="185" step="1" min="0" max="359"></div>
+          <div class="sensor-field"><label>SOG (kt)</label><input type="number" id="f-speed_over_ground" placeholder="--" step="0.1" min="0" max="30"></div>
+          <div class="sensor-field"><label>COG (&deg;)</label><input type="number" id="f-course_over_ground" placeholder="--" step="1" min="0" max="359"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>PRESSURE (hPa)</label><input type="number" id="f-pressure" value="1007.4" step="0.1"></div>
-          <div class="sensor-field"><label>BARO TEMP (&deg;F)</label><input type="number" id="f-barometer_temperature" value="28.5" step="0.1"></div>
+          <div class="sensor-field"><label>PRESSURE (hPa)</label><input type="number" id="f-pressure" placeholder="--" step="0.1"></div>
+          <div class="sensor-field"><label>BARO TEMP (&deg;F)</label><input type="number" id="f-barometer_temperature" placeholder="--" step="0.1"></div>
         </div>
         <div class="sensor-field"><label>HUMIDITY (%)</label><input type="number" id="f-humidity" value="72" step="1" min="0" max="100"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div class="sensor-field"><label>ROLL (&deg;)</label><input type="number" id="f-roll" value="2.1" step="0.1"></div>
-          <div class="sensor-field"><label>PITCH (&deg;)</label><input type="number" id="f-pitch" value="-1.5" step="0.1"></div>
+          <div class="sensor-field"><label>ROLL (&deg;)</label><input type="number" id="f-roll" placeholder="--" step="0.1"></div>
+          <div class="sensor-field"><label>PITCH (&deg;)</label><input type="number" id="f-pitch" placeholder="--" step="0.1"></div>
           <div class="sensor-field"><label>YAW (&deg;)</label><input type="number" id="f-yaw" value="0.3" step="0.1"></div>
           <input type="hidden" id="f-magnitude" value="1.0">
           <input type="hidden" id="f-air_temp" value="0">
@@ -862,7 +862,15 @@ async function fetchPiFeed() {
     if (d.error) throw new Error(d.error);
 
     // Populate sensor fields
-    const set = (id, val) => { const el = document.getElementById('f-' + id); if (el && val !== null && val !== undefined) el.value = val; };
+    const set = (id, val) => {
+      const el = document.getElementById('f-' + id);
+      if (!el) return;
+      if (val !== null && val !== undefined && val !== 'null' && !isNaN(parseFloat(val))) {
+        el.value = val;
+      } else {
+        el.value = '';  // shows placeholder "--"
+      }
+    };
     // Calypso sensor measures apparent wind only — populate apparent fields
     // True wind requires vessel SOG/COG vector math — leave as 0 if not computed
     set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));
@@ -873,8 +881,8 @@ async function fetchPiFeed() {
     set('pressure',                d.barometer?.pressure_mb?.toFixed(1));
     set('barometer_temperature',   d.barometer?.temp_f?.toFixed(1));
     set('humidity',                d.barometer?.humidity_pct);
-    set('latitude',                d.gps?.lat?.toFixed(5));
-    set('longitude',               d.gps?.lon?.toFixed(5));
+    set('latitude',                (d.gps?.lat && d.gps.lat !== 0) ? d.gps.lat.toFixed(5) : null);
+    set('longitude',               (d.gps?.lon && d.gps.lon !== 0) ? d.gps.lon.toFixed(5) : null);
     set('speed_over_ground',       d.gps?.speed_kts?.toFixed(1));
     set('course_over_ground',      Math.round(d.gps?.cog ?? 0));
     set('roll',                    d.accel?.roll?.toFixed(1));
