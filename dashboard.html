@@ -139,6 +139,8 @@
     .fc-arrow{font-size:22px;margin:6px 0;display:block;transition:transform .3s}
     .fc-dir{font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin-bottom:4px}
     .fc-press{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+    .fc-wave{font-family:var(--font-mono);font-size:11px;color:#38bdf8;margin-top:3px}
+    .fc-temp{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px}
     .fc-green{color:var(--green)}.fc-amber{color:var(--amber)}.fc-red{color:var(--red)}
     .forecast-sparkline{padding:6px 16px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
     .sparkline-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap}
@@ -1047,13 +1049,17 @@ function renderForecast(data) {
     const arrow    = windArrow(f.wind_dir_deg);
     const cardinal = windCardinal(f.wind_dir_deg);
     const label    = beaufortLabel(f.wind_kts);
+    const waveStr  = f.wave_height_m != null ? `${f.wave_height_m.toFixed(1)}m ${f.wave_period_s != null ? f.wave_period_s.toFixed(0)+'s' : ''}` : '—';
+    const tempStr  = f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '';
     html += `
-      <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°)">
+      <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
         <div class="fc-time">+${f.lead_hours}H</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
         <div class="fc-dir">${cardinal}</div>
         <div class="fc-press">${f.pressure_mb.toFixed(0)}mb</div>
+        <div class="fc-wave">&#x1F30A; ${waveStr}</div>
+        <div class="fc-temp">${tempStr}</div>
       </div>`;
   });
   html += '</div>';
