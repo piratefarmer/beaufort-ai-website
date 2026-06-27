@@ -919,17 +919,16 @@ async function fetchPiFeed() {
     const sog = d.gps?.speed_kts ?? 0;
     const cog = d.gps?.cog ?? 0;  // degrees true
     if (aws > 0) {
-      // Apparent wind direction is relative to vessel bow — convert to true bearing
-      const awaTrue = (awa + cog) % 360;
-      // Resolve apparent wind to X/Y components (geographic)
-      const awRad = awaTrue * Math.PI / 180;
+      // Calypso reports AWA as degrees TRUE (geographic north reference)
+      // so no need to add COG — resolve directly to X/Y components
+      const awRad = awa * Math.PI / 180;
       const awX = aws * Math.sin(awRad);
       const awY = aws * Math.cos(awRad);
       // Vessel velocity components
       const cogRad = cog * Math.PI / 180;
       const vX = sog * Math.sin(cogRad);
       const vY = sog * Math.cos(cogRad);
-      // True wind = apparent wind - vessel velocity
+      // True wind = apparent wind vector - vessel velocity vector
       const twX = awX - vX;
       const twY = awY - vY;
       const tws = Math.sqrt(twX * twX + twY * twY);
