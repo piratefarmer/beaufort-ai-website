@@ -919,9 +919,11 @@ async function fetchPiFeed() {
     const sog = d.gps?.speed_kts ?? 0;
     const cog = d.gps?.cog ?? 0;  // degrees true
     if (aws > 0) {
-      // Calypso reports AWA as degrees TRUE (geographic north reference)
-      // so no need to add COG — resolve directly to X/Y components
-      const awRad = awa * Math.PI / 180;
+      // Calypso AWA is relative to bow (0° = dead ahead, 90° = starboard beam)
+      // Convert to geographic true bearing by adding COG
+      const awaTrue = (awa + cog + 360) % 360;
+      // Resolve apparent wind to X/Y geographic components
+      const awRad = awaTrue * Math.PI / 180;
       const awX = aws * Math.sin(awRad);
       const awY = aws * Math.cos(awRad);
       // Vessel velocity components
@@ -1285,8 +1287,11 @@ function drawWindRose() {
   // AWA needle (gold — apparent wind, relative to bow=0°)
   if (_wrAws > 0) drawNeedle(_wrAwa, 0.72, '#f59e0b', 3);
 
-  // TWD needle (blue — true wind direction, geographic)
-  if (_wrTws > 0) drawNeedle(_wrTwd, 0.60, '#38bdf8', 2.5, 'dashed');
+  // TWD needle (blue — true wind, rotated to vessel-relative for rose display)
+  if (_wrTws > 0) {
+    const twdRelative = (_wrTwd - _wrCog + 360) % 360;
+    drawNeedle(twdRelative, 0.60, '#38bdf8', 2.5, 'dashed');
+  }
 
   // Vessel bow marker (white triangle at top)
   ctx.beginPath();
