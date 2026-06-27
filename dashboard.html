@@ -1036,9 +1036,10 @@ function renderForecast(data) {
   // Header meta
   const trend = s.press_trend_mb;
   const trendStr = trend < -3 ? '↓ FALLING' : trend > 3 ? '↑ RISING' : '→ STEADY';
+  const fetchedAt = data.fetched_at ? new Date(data.fetched_at * 1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZoneName:'short'}) : now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZoneName:'short'});
   meta.textContent = 'Max ' + s.max_wind_kts.toFixed(0) + 'kt  •  ' +
                      s.min_press_mb.toFixed(0) + 'mb low  •  ' + trendStr +
-                     '  •  Updated ' + now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+                     '  •  Valid from ' + fetchedAt;
   meta.style.color = s.max_wind_kts >= 34 ? 'var(--red)' :
                      s.max_wind_kts >= 22 ? 'var(--amber)' : 'var(--green)';
 
@@ -1050,10 +1051,11 @@ function renderForecast(data) {
     const cardinal = windCardinal(f.wind_dir_deg);
     const label    = beaufortLabel(f.wind_kts);
     const waveStr  = f.wave_height_m != null ? `${f.wave_height_m.toFixed(1)}m ${f.wave_period_s != null ? f.wave_period_s.toFixed(0)+'s' : ''}` : '—';
-    const tempStr  = f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '';
+    const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
+    const timeLabel = f.valid_time || `+${f.lead_hours}H`;
     html += `
       <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
-        <div class="fc-time">+${f.lead_hours}H</div>
+        <div class="fc-time">${timeLabel}</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
         <div class="fc-dir">${cardinal}</div>
