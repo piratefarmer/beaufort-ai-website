@@ -176,7 +176,7 @@
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
       <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
-      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau-maritime-ai.replit.app</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
@@ -225,7 +225,7 @@
           <div class="sensor-field"><label>PRESSURE (hPa)</label><input type="number" id="f-pressure" placeholder="--" step="0.1"></div>
           <div class="sensor-field"><label>BARO TEMP (&deg;F)</label><input type="number" id="f-barometer_temperature" placeholder="--" step="0.1"></div>
         </div>
-        <div class="sensor-field"><label>HUMIDITY (%)</label><input type="number" id="f-humidity" value="72" step="1" min="0" max="100"></div>
+        <div class="sensor-field"><label>HUMIDITY (%)</label><input type="number" id="f-humidity" placeholder="--" step="1" min="0" max="100"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           <div class="sensor-field"><label>ROLL (&deg;)</label><input type="number" id="f-roll" placeholder="--" step="0.1"></div>
           <div class="sensor-field"><label>PITCH (&deg;)</label><input type="number" id="f-pitch" placeholder="--" step="0.1"></div>
@@ -437,17 +437,17 @@ function renderSensorGrid(p) {
   if (!grid) return;
   const cards = [
     {cls:'wind',    label:'TRUE WIND',     value:p.wind_speed > 0 ? p.wind_speed.toFixed(1) : '--',              unit:p.wind_speed > 0 ? `kt  ${dirLabel(p.wind_direction)} (${p.wind_direction}\u00b0)` : 'not available'},
-    {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed.toFixed(1),     unit:`kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)`},
-    {cls:'position',label:'POSITION',      value:decToDMS(p.latitude, true),          unit:decToDMS(p.longitude, false)},
-    {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground.toFixed(1),      unit:`kt SOG \u00b7 COG ${p.course_over_ground}\u00b0`},
-    {cls:'pressure',label:'PRESSURE',      value:p.pressure.toFixed(1),               unit:`hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}`},
-    {cls:'pressure',label:'HUMIDITY',      value:p.humidity.toFixed(0),               unit:'% RH'},
-    {cls:'motion',  label:'ROLL',          value:`${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0`,   unit:'lateral tilt', tip:'Side-to-side tilt. Positive = starboard down.'},
-    {cls:'motion',  label:'PITCH',         value:`${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0`, unit:'fore-aft tilt',  tip:'Fore and aft tilt. Positive = bow up.'},
-    {cls:'motion',  label:'YAW',           value:`${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0`,   unit:'rotation',       tip:'Rotation around vertical axis. Positive = turning right.'},
-    {cls:'motion',  label:'MAGNITUDE',     value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--', unit:'g  total accel',  tip:'Total accel vector. 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
-    {cls:'pressure',label:'AIR TEMP',      value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',   unit:'\u00b0F',       tip:'Barometer sensor temperature.'},
-    {cls:'pressure',label:'DEW POINT',     value:(()=>{ if(!(p.air_temp>0) || !(p.humidity>0)) return '--'; const tc=(p.air_temp-32)*5/9; const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100); const td=(237.3*g)/(17.27-g); return ((td*9/5)+32).toFixed(1); })(), unit:'\u00b0F', tip:'Dew point calculated from temp + humidity. When air temp equals dew point = 100% humidity / fog risk.'},
+    {cls:'wind',    label:'APPARENT WIND', value:p.apparent_wind_speed > 0 ? p.apparent_wind_speed.toFixed(1) : '--', unit:p.apparent_wind_speed > 0 ? `kt  ${dirLabel(p.apparent_wind_direction)} (${p.apparent_wind_direction}\u00b0)` : 'not available'},
+    {cls:'position',label:'POSITION',      value:(p.latitude && p.longitude) ? decToDMS(p.latitude, true) : '--', unit:(p.latitude && p.longitude) ? decToDMS(p.longitude, false) : 'no GPS fix'},
+    {cls:'position',label:'VESSEL MOTION', value:p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--', unit:p.speed_over_ground > 0 ? `kt SOG \u00b7 COG ${p.course_over_ground}\u00b0` : 'at rest'},
+    {cls:'pressure',label:'PRESSURE',      value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',  unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' \u2193' : p.pressure > 1018 ? ' \u2191' : ''}` : 'sensor offline'},
+    {cls:'pressure',label:'HUMIDITY',      value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',  unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
+    {cls:'motion',  label:'ROLL',          value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}\u00b0` : '--',  unit:'lateral tilt', tip:'Side-to-side tilt. Positive = starboard down.'},
+    {cls:'motion',  label:'PITCH',         value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}\u00b0` : '--', unit:'fore-aft tilt', tip:'Fore and aft tilt. Positive = bow up.'},
+    {cls:'motion',  label:'YAW',           value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}\u00b0` : '--', unit:'rotation', tip:'Rotation around vertical axis. Positive = turning right.'},
+    {cls:'motion',  label:'MAGNITUDE',     value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--', unit:'g  total accel', tip:'Total accel vector. 1.0g = flat calm. ~2.0g = moderate seas. 3.0g+ = heavy weather.'},
+    {cls:'pressure',label:'AIR TEMP',      value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',  unit:p.air_temp > 0 ? '\u00b0F' : 'sensor offline', tip:'Barometer sensor temperature.'},
+    {cls:'pressure',label:'DEW POINT',     value:(()=>{ if(!(p.air_temp>0) || !(p.humidity>0)) return '--'; const tc=(p.air_temp-32)*5/9; const g=(17.27*tc)/(237.3+tc)+Math.log(p.humidity/100); const td=(237.3*g)/(17.27-g); return ((td*9/5)+32).toFixed(1); })(), unit:(p.air_temp>0 && p.humidity>0) ? '\u00b0F' : 'sensor offline', tip:'Dew point calculated from temp + humidity. When air temp equals dew point = 100% humidity / fog risk.'},
   ];
   function tooltipHtml(tip) { return tip ? '<div class="sc-tooltip">' + tip + '</div>' : ''; }
   grid.innerHTML = cards.filter(c => c.label !== 'ROLL / PITCH TIP').map(c =>
