@@ -871,13 +871,39 @@ async function fetchPiFeed() {
         el.value = '';  // shows placeholder "--"
       }
     };
-    // Calypso sensor measures apparent wind only — populate apparent fields
-    // True wind requires vessel SOG/COG vector math — leave as 0 if not computed
-    set('apparent_wind_speed',     d.wind?.speed_kts?.toFixed(1));
-    set('apparent_wind_direction', Math.round(d.wind?.direction_deg ?? 0));
-    // True wind: only set if explicitly provided (not available from Calypso alone)
-    if (d.wind?.true_speed_kts != null) set('wind_speed', d.wind.true_speed_kts.toFixed(1));
-    if (d.wind?.true_direction_deg != null) set('wind_direction', Math.round(d.wind.true_direction_deg));
+    // Calypso measures apparent wind. Populate apparent fields directly.
+    const aws = d.wind?.speed_kts ?? 0;
+    const awa = d.wind?.direction_deg ?? 0;  // degrees, relative to bow (0=head-on)
+    set('apparent_wind_speed',     aws > 0 ? aws.toFixed(1) : null);
+    set('apparent_wind_direction', aws > 0 ? Math.round(awa) : null);
+
+    // True wind vector math: TWS/TWD from AWS/AWA + SOG/COG
+    // Formula: resolve apparent wind to geographic, subtract vessel velocity vector
+    const sog = d.gps?.speed_kts ?? 0;
+    const cog = d.gps?.cog ?? 0;  // degrees true
+    if (aws > 0) {
+      // Apparent wind direction is relative to vessel bow — convert to true bearing
+      const awaTrue = (awa + cog) % 360;
+      // Resolve apparent wind to X/Y components (geographic)
+      const awRad = awaTrue * Math.PI / 180;
+      const awX = aws * Math.sin(awRad);
+      const awY = aws * Math.cos(awRad);
+      // Vessel velocity components
+      const cogRad = cog * Math.PI / 180;
+      const vX = sog * Math.sin(cogRad);
+      const vY = sog * Math.cos(cogRad);
+      // True wind = apparent wind - vessel velocity
+      const twX = awX - vX;
+      const twY = awY - vY;
+      const tws = Math.sqrt(twX * twX + twY * twY);
+      let twd = Math.atan2(twX, twY) * 180 / Math.PI;
+      if (twd < 0) twd += 360;
+      set('wind_speed',     tws.toFixed(1));
+      set('wind_direction', Math.round(twd));
+    } else {
+      set('wind_speed',     null);
+      set('wind_direction', null);
+    }
     set('pressure',                d.barometer?.pressure_mb?.toFixed(1));
     set('barometer_temperature',   d.barometer?.temp_f?.toFixed(1));
     set('humidity',                d.barometer?.humidity_pct);
