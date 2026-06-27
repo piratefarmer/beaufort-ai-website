@@ -907,6 +907,9 @@ async function fetchPiFeed() {
       statusEl.style.fontWeight = 'normal';
     }
 
+    // Refresh sensor display cards with live Pi data
+    renderSensorGrid(buildPayload());
+
     // Trigger Beau analysis with fresh data
     if (autoEnabled) {
       clearTimeout(autoDebounceTimer);
