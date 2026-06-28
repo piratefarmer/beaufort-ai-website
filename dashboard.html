@@ -391,6 +391,26 @@ let autoDebounceTimer = null;
 let autoEnabled = true;
 let lastBeauPayloadHash = null;  // prevents re-firing when sensor data unchanged
 const BEAU_CHANGE_THRESHOLDS = { wind_speed: 2.0, wind_direction: 15, pressure: 1.0, latitude: 0.01, longitude: 0.01 };
+const BEAU_SUSTAIN_MS = 30000;   // wind must hold change for 30s before triggering Beau
+let sensorBuffer = [];           // rolling 30s buffer of {ts, ws, wd, pr} readings
+let sustainedHash = null;        // hash of last 30s-sustained reading that triggered Beau
+
+function updateSensorBuffer(ws, wd, pr, lat, lon) {
+  const now = Date.now();
+  sensorBuffer.push({ts: now, ws, wd, pr, lat, lon});
+  // Trim to last 30 seconds
+  sensorBuffer = sensorBuffer.filter(r => now - r.ts <= BEAU_SUSTAIN_MS);
+  if (sensorBuffer.length < 3) return null; // not enough data yet
+  // Average over buffer
+  const avg = arr => arr.reduce((a,b) => a+b, 0) / arr.length;
+  return {
+    ws:  avg(sensorBuffer.map(r => r.ws)),
+    wd:  avg(sensorBuffer.map(r => r.wd)),
+    pr:  avg(sensorBuffer.map(r => r.pr)),
+    lat: avg(sensorBuffer.map(r => r.lat)),
+    lon: avg(sensorBuffer.map(r => r.lon)),
+  };
+}
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
@@ -1028,20 +1048,29 @@ async function fetchPiFeed() {
     const _twd = parseFloat(document.getElementById('f-wind_direction')?.value) || 0;
     updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0);
 
-    // Trigger Beau analysis only if data changed meaningfully
+    // Trigger Beau only if sustained 30s average has changed meaningfully
     if (autoEnabled) {
       const payload = buildPayload();
-      const hash = JSON.stringify({
-        ws:  Math.round((payload.wind_speed_kts  || 0) / BEAU_CHANGE_THRESHOLDS.wind_speed)  * BEAU_CHANGE_THRESHOLDS.wind_speed,
-        wd:  Math.round((payload.wind_dir_deg    || 0) / BEAU_CHANGE_THRESHOLDS.wind_direction) * BEAU_CHANGE_THRESHOLDS.wind_direction,
-        pr:  Math.round((payload.pressure_mb     || 0) / BEAU_CHANGE_THRESHOLDS.pressure)   * BEAU_CHANGE_THRESHOLDS.pressure,
-        lat: Math.round((payload.latitude        || 0) / BEAU_CHANGE_THRESHOLDS.latitude)   * BEAU_CHANGE_THRESHOLDS.latitude,
-        lon: Math.round((payload.longitude       || 0) / BEAU_CHANGE_THRESHOLDS.longitude)  * BEAU_CHANGE_THRESHOLDS.longitude,
-      });
-      if (hash !== lastBeauPayloadHash) {
-        lastBeauPayloadHash = hash;
-        clearTimeout(autoDebounceTimer);
-        autoDebounceTimer = setTimeout(runSensorAnalysis, AUTO_DEBOUNCE_MS);
+      const avg = updateSensorBuffer(
+        payload.wind_speed_kts || 0,
+        payload.wind_dir_deg   || 0,
+        payload.pressure_mb    || 0,
+        payload.latitude       || 0,
+        payload.longitude      || 0
+      );
+      if (avg) {
+        const hash = JSON.stringify({
+          ws:  Math.round(avg.ws  / BEAU_CHANGE_THRESHOLDS.wind_speed)     * BEAU_CHANGE_THRESHOLDS.wind_speed,
+          wd:  Math.round(avg.wd  / BEAU_CHANGE_THRESHOLDS.wind_direction)  * BEAU_CHANGE_THRESHOLDS.wind_direction,
+          pr:  Math.round(avg.pr  / BEAU_CHANGE_THRESHOLDS.pressure)        * BEAU_CHANGE_THRESHOLDS.pressure,
+          lat: Math.round(avg.lat / BEAU_CHANGE_THRESHOLDS.latitude)        * BEAU_CHANGE_THRESHOLDS.latitude,
+          lon: Math.round(avg.lon / BEAU_CHANGE_THRESHOLDS.longitude)       * BEAU_CHANGE_THRESHOLDS.longitude,
+        });
+        if (hash !== sustainedHash) {
+          sustainedHash = hash;
+          clearTimeout(autoDebounceTimer);
+          autoDebounceTimer = setTimeout(runSensorAnalysis, AUTO_DEBOUNCE_MS);
+        }
       }
     }
   } catch(e) {
