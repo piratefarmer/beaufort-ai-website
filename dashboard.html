@@ -389,29 +389,7 @@ let sensorRequestInFlight = false;
 let qaRequestInFlight = false;
 let autoDebounceTimer = null;
 let autoEnabled = true;
-let lastBeauPayloadHash = null;  // prevents re-firing when sensor data unchanged
-let piFeedUpdating = false;      // suppress input events during Pi feed programmatic updates
-const BEAU_CHANGE_THRESHOLDS = { wind_speed: 2.0, wind_direction: 15, pressure: 1.0, latitude: 0.01, longitude: 0.01 };
-const BEAU_SUSTAIN_MS = 30000;   // wind must hold change for 30s before triggering Beau
-let sensorBuffer = [];           // rolling 30s buffer of {ts, ws, wd, pr} readings
-let sustainedHash = null;        // hash of last 30s-sustained reading that triggered Beau
 
-function updateSensorBuffer(ws, wd, pr, lat, lon) {
-  const now = Date.now();
-  sensorBuffer.push({ts: now, ws, wd, pr, lat, lon});
-  // Trim to last 30 seconds
-  sensorBuffer = sensorBuffer.filter(r => now - r.ts <= BEAU_SUSTAIN_MS);
-  if (sensorBuffer.length < 3) return null; // not enough data yet
-  // Average over buffer
-  const avg = arr => arr.reduce((a,b) => a+b, 0) / arr.length;
-  return {
-    ws:  avg(sensorBuffer.map(r => r.ws)),
-    wd:  avg(sensorBuffer.map(r => r.wd)),
-    pr:  avg(sensorBuffer.map(r => r.pr)),
-    lat: avg(sensorBuffer.map(r => r.lat)),
-    lon: avg(sensorBuffer.map(r => r.lon)),
-  };
-}
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
@@ -857,7 +835,6 @@ function onSensorFieldChange(inputEl) {
 
   if (!autoEnabled) return;
   if (sensorRequestInFlight) return;
-  if (piFeedUpdating) return;  // Pi feed handles sustain logic — ignore programmatic updates
 
   // Update badge to pending
   const badge = document.getElementById('auto-badge');
@@ -969,8 +946,7 @@ async function fetchPiFeed() {
     const d = await res.json();
     if (d.error) throw new Error(d.error);
 
-    // Populate sensor fields — suppress input events during batch update
-    piFeedUpdating = true;
+    // Populate sensor fields
     const set = (id, val) => {
       const el = document.getElementById('f-' + id);
       if (!el) return;
@@ -1051,36 +1027,9 @@ async function fetchPiFeed() {
     const _twd = parseFloat(document.getElementById('f-wind_direction')?.value) || 0;
     updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0);
 
-    // Trigger Beau only if sustained 30s average has changed meaningfully
-    if (autoEnabled) {
-      const payload = buildPayload();
-      const avg = updateSensorBuffer(
-        payload.wind_speed_kts || 0,
-        payload.wind_dir_deg   || 0,
-        payload.pressure_mb    || 0,
-        payload.latitude       || 0,
-        payload.longitude      || 0
-      );
-      if (avg) {
-        const hash = JSON.stringify({
-          ws:  Math.round(avg.ws  / BEAU_CHANGE_THRESHOLDS.wind_speed)     * BEAU_CHANGE_THRESHOLDS.wind_speed,
-          wd:  Math.round(avg.wd  / BEAU_CHANGE_THRESHOLDS.wind_direction)  * BEAU_CHANGE_THRESHOLDS.wind_direction,
-          pr:  Math.round(avg.pr  / BEAU_CHANGE_THRESHOLDS.pressure)        * BEAU_CHANGE_THRESHOLDS.pressure,
-          lat: Math.round(avg.lat / BEAU_CHANGE_THRESHOLDS.latitude)        * BEAU_CHANGE_THRESHOLDS.latitude,
-          lon: Math.round(avg.lon / BEAU_CHANGE_THRESHOLDS.longitude)       * BEAU_CHANGE_THRESHOLDS.longitude,
-        });
-        if (hash !== sustainedHash) {
-          sustainedHash = hash;
-          clearTimeout(autoDebounceTimer);
-          autoDebounceTimer = setTimeout(runSensorAnalysis, AUTO_DEBOUNCE_MS);
-        }
-      }
-    }
   } catch(e) {
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
-  } finally {
-    piFeedUpdating = false;
   }
 }
 
@@ -1142,6 +1091,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load GraphCast forecast on startup
   fetchForecast();
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // refresh every 6h
+
+  // Auto-analysis: run Beau every 5 minutes on a fixed timer
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  // Run once on load after a short delay
+  setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
 
 // ── GraphCast Forecast Strip ──
