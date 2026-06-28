@@ -390,6 +390,7 @@ let qaRequestInFlight = false;
 let autoDebounceTimer = null;
 let autoEnabled = true;
 let lastBeauPayloadHash = null;  // prevents re-firing when sensor data unchanged
+let piFeedUpdating = false;      // suppress input events during Pi feed programmatic updates
 const BEAU_CHANGE_THRESHOLDS = { wind_speed: 2.0, wind_direction: 15, pressure: 1.0, latitude: 0.01, longitude: 0.01 };
 const BEAU_SUSTAIN_MS = 30000;   // wind must hold change for 30s before triggering Beau
 let sensorBuffer = [];           // rolling 30s buffer of {ts, ws, wd, pr} readings
@@ -856,6 +857,7 @@ function onSensorFieldChange(inputEl) {
 
   if (!autoEnabled) return;
   if (sensorRequestInFlight) return;
+  if (piFeedUpdating) return;  // Pi feed handles sustain logic — ignore programmatic updates
 
   // Update badge to pending
   const badge = document.getElementById('auto-badge');
@@ -967,7 +969,8 @@ async function fetchPiFeed() {
     const d = await res.json();
     if (d.error) throw new Error(d.error);
 
-    // Populate sensor fields
+    // Populate sensor fields — suppress input events during batch update
+    piFeedUpdating = true;
     const set = (id, val) => {
       const el = document.getElementById('f-' + id);
       if (!el) return;
@@ -1076,6 +1079,8 @@ async function fetchPiFeed() {
   } catch(e) {
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
+  } finally {
+    piFeedUpdating = false;
   }
 }
 
