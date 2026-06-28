@@ -389,6 +389,8 @@ let sensorRequestInFlight = false;
 let qaRequestInFlight = false;
 let autoDebounceTimer = null;
 let autoEnabled = true;
+let lastBeauPayloadHash = null;  // prevents re-firing when sensor data unchanged
+const BEAU_CHANGE_THRESHOLDS = { wind_speed: 2.0, wind_direction: 15, pressure: 1.0, latitude: 0.01, longitude: 0.01 };
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
@@ -1026,10 +1028,21 @@ async function fetchPiFeed() {
     const _twd = parseFloat(document.getElementById('f-wind_direction')?.value) || 0;
     updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0);
 
-    // Trigger Beau analysis with fresh data
+    // Trigger Beau analysis only if data changed meaningfully
     if (autoEnabled) {
-      clearTimeout(autoDebounceTimer);
-      autoDebounceTimer = setTimeout(runSensorAnalysis, AUTO_DEBOUNCE_MS);
+      const payload = buildPayload();
+      const hash = JSON.stringify({
+        ws:  Math.round((payload.wind_speed_kts  || 0) / BEAU_CHANGE_THRESHOLDS.wind_speed)  * BEAU_CHANGE_THRESHOLDS.wind_speed,
+        wd:  Math.round((payload.wind_dir_deg    || 0) / BEAU_CHANGE_THRESHOLDS.wind_direction) * BEAU_CHANGE_THRESHOLDS.wind_direction,
+        pr:  Math.round((payload.pressure_mb     || 0) / BEAU_CHANGE_THRESHOLDS.pressure)   * BEAU_CHANGE_THRESHOLDS.pressure,
+        lat: Math.round((payload.latitude        || 0) / BEAU_CHANGE_THRESHOLDS.latitude)   * BEAU_CHANGE_THRESHOLDS.latitude,
+        lon: Math.round((payload.longitude       || 0) / BEAU_CHANGE_THRESHOLDS.longitude)  * BEAU_CHANGE_THRESHOLDS.longitude,
+      });
+      if (hash !== lastBeauPayloadHash) {
+        lastBeauPayloadHash = hash;
+        clearTimeout(autoDebounceTimer);
+        autoDebounceTimer = setTimeout(runSensorAnalysis, AUTO_DEBOUNCE_MS);
+      }
     }
   } catch(e) {
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
