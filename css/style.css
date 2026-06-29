@@ -98,6 +98,21 @@ body {
   padding: 120px 0 80px;
   position: relative;
   overflow: hidden;
+  background-image: url('../images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(10,10,10,0.72) 0%, rgba(10,10,10,0.55) 50%, rgba(10,10,10,0.80) 100%);
+  z-index: 0;
+}
+.hero .container {
+  position: relative;
+  z-index: 1;
 }
 .hero-bg-grid {
   position: absolute;
@@ -552,6 +567,23 @@ body {
 .contact-direct p { color: var(--muted); font-size: 14px; }
 .contact-direct a { color: var(--accent); text-decoration: none; }
 .contact-direct a:hover { text-decoration: underline; }
+
+/* ROADMAP */
+.section-intro { color: var(--muted); font-size: 17px; max-width: 640px; margin: 0 0 48px; line-height: 1.7; }
+.roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.roadmap-col { background: var(--dark2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+.roadmap-col-header { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.roadmap-live { color: var(--accent-green); }
+.roadmap-progress { color: var(--accent); }
+.roadmap-coming { color: var(--muted); }
+.roadmap-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.roadmap-list li { font-size: 14px; color: var(--muted); line-height: 1.6; padding-left: 16px; position: relative; }
+.roadmap-list li::before { content: '—'; position: absolute; left: 0; color: var(--border); }
+.roadmap-list a { color: var(--accent); text-decoration: none; }
+.roadmap-list a:hover { text-decoration: underline; }
+.hero-deploy { font-size: 15px; color: var(--accent-green); margin-top: -8px; margin-bottom: 8px; }
+.contact-cta { margin: 32px 0 16px; }
+@media(max-width:768px) { .roadmap-grid { grid-template-columns: 1fr; } }
 
 /* FOOTER */
 .footer {
