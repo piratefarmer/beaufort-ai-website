@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart Correction Tracker | Beaufort AI</title>
+  <meta name="description" content="Digital NIMA Form 8660-9 chart correction record. Fill out online, save locally, print when full.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#060910;color:#eef2ff;font-family:'Inter',sans-serif}
+    .nav{background:#080e18;border-bottom:1px solid #1e3a5f;padding:18px 0;position:sticky;top:0;z-index:100}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+    .logo-img-lg{height:38px;width:auto}
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links a{font-size:13px;color:#94a3b8;text-decoration:none;transition:color .2s}
+    .nav-links a:hover,.nav-links a.active{color:#e2e8f0}
+    .btn-nav{background:#1d4ed8;color:#fff!important;padding:8px 18px;border-radius:6px;font-weight:600;font-size:13px!important}
+    .header{text-align:center;padding:80px 24px 48px;background:linear-gradient(160deg,#0a1628 0%,#060910 80%)}
+    .header-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.5px}
+    .header-sub{margin-top:14px;font-size:15px;color:#64748b;line-height:1.7;max-width:560px;margin-left:auto;margin-right:auto}
+    .header-note{margin-top:10px;font-size:12px;color:#4a6a8a;font-style:italic}
+    .main-wrap{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:background .2s,opacity .2s}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-primary{background:#1d4ed8;color:#fff}
+    .btn-primary:hover:not(:disabled){background:#2563eb}
+    .btn-outline{background:transparent;color:#7dd3fc;border:1px solid #1e3a5f}
+    .btn-outline:hover:not(:disabled){border-color:#2d5f9e;background:#0d1829}
+    .btn-danger{background:transparent;color:#f87171;border:1px solid #7f1d1d}
+    .btn-danger:hover:not(:disabled){background:#1c0606}
+    .btn-success{background:#166534;color:#bbf7d0}
+    .btn-success:hover:not(:disabled){background:#15803d}
+    .data-bar{background:#0d1829;border:1px solid #1e3a5f;border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .data-bar span{font-size:13px;color:#64748b}
+    .data-bar .spacer{flex:1}
+    .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    .toolbar h2{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:600;color:#cbd5e1;flex:1}
+    .chart-selector{background:#0d1829;border:1px solid #1e3a5f;border-radius:12px;padding:16px 20px;margin-bottom:28px}
+    .chart-selector-inner{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .chart-selector label{font-size:13px;color:#94a3b8;white-space:nowrap}
+    .chart-selector select{background:#060910;color:#e2e8f0;border:1px solid #1e3a5f;border-radius:6px;padding:8px 12px;font-size:13px;font-family:inherit;flex:1;min-width:200px;cursor:pointer}
+    .chart-selector select:focus{outline:none;border-color:#2d5f9e}
+    .chart-count{font-size:12px;color:#4a6a8a;margin-left:auto;white-space:nowrap}
+    .card-wrap{background:#0a1220;border:1px solid #1e3a5f;border-radius:16px;overflow:hidden}
+    .nima-header{background:#0d1829;border-bottom:1px solid #1e3a5f;padding:24px}
+    .nima-form-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#4a6a8a;margin-bottom:14px}
+    .nima-fields-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px}
+    .field-group{display:flex;flex-direction:column;gap:5px}
+    .field-group label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#4a6a8a}
+    .field-group input{background:#060910;color:#e2e8f0;border:1px solid #1e3a5f;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;transition:border-color .2s}
+    .field-group input:focus{outline:none;border-color:#2d5f9e}
+    .field-group input::placeholder{color:#1e3a5f}
+    .grid-wrap{overflow-x:auto}
+    .correction-table{width:100%;border-collapse:collapse;min-width:650px}
+    .correction-table thead tr{background:#080e18}
+    .correction-table th{padding:11px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#4a6a8a;text-align:left;border-bottom:1px solid #1e3a5f;white-space:nowrap}
+    .correction-table th:first-child{width:36px;text-align:center}
+    .correction-table th:last-child{width:40px}
+    .correction-table td{padding:3px 4px;border-bottom:1px solid #0d1829}
+    .correction-table tr:last-child td{border-bottom:none}
+    .correction-table tr:hover td{background:#0d1829}
+    .row-num{font-size:11px;color:#2d4a6e;text-align:center}
+    .cell-input{width:100%;background:transparent;color:#e2e8f0;border:none;padding:8px 6px;font-size:13px;font-family:inherit}
+    .cell-input:focus{outline:none;background:#060910;border-radius:4px}
+    .cell-input::placeholder{color:#1e3a5f}
+    .cell-del{background:none;border:none;cursor:pointer;color:#2d4a6e;font-size:16px;padding:4px 8px;border-radius:4px;transition:color .2s,background .2s}
+    .cell-del:hover{color:#f87171;background:#1c0606}
+    .add-row-bar{padding:12px 16px;display:flex;align-items:center;gap:10px;border-top:1px solid #1e3a5f;flex-wrap:wrap}
+    .row-count{font-size:12px;color:#4a6a8a;margin-left:auto}
+    .card-footer{padding:18px 24px;background:#080e18;border-top:1px solid #1e3a5f;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .save-status{font-size:12px;color:#4a6a8a;flex:1}
+    .save-status.saved{color:#4ade80}
+    .save-status.unsaved{color:#fbbf24}
+    .empty-state{text-align:center;padding:80px 24px;color:#4a6a8a}
+    .empty-state .icon{font-size:48px;margin-bottom:16px}
+    .empty-state h3{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;color:#64748b;margin-bottom:10px}
+    .empty-state p{font-size:13px;line-height:1.7;max-width:400px;margin:0 auto 20px}
+    .footer{background:#080e18;border-top:1px solid #1e3a5f;padding:24px;text-align:center;font-size:12px;color:#334155}
+    .footer a{color:#4a9eff;text-decoration:none}
+    @media(max-width:640px){.nav-links{display:none}.nima-fields-row{grid-template-columns:1fr 1fr}.toolbar{gap:8px}}
+    @media print{
+      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{background:#fff!important;color:#000!important}
+      .nav,.toolbar,.chart-selector,.data-bar,.add-row-bar .btn,.card-footer .btn,.cell-del,.footer{display:none!important}
+      .main-wrap{padding:0!important;max-width:100%}
+      .header{padding:10px 0 6px!important;background:#fff!important}
+      .header-title{font-size:16px!important;color:#000!important}
+      .header-sub,.header-note{display:none!important}
+      .card-wrap{border:1px solid #999!important;border-radius:0!important;background:#fff!important}
+      .nima-header{background:#f5f5f5!important;border-bottom:1px solid #ccc!important;padding:10px!important}
+      .nima-form-label{color:#555!important}
+      .field-group label{color:#555!important;font-size:9px!important}
+      .field-group input{background:#fff!important;color:#000!important;border:1px solid #999!important;font-size:11px!important;padding:4px 6px!important}
+      .correction-table th{background:#eee!important;color:#333!important;font-size:9px!important;padding:5px 6px!important;border-bottom:1px solid #999!important}
+      .correction-table td{border-bottom:1px solid #ddd!important}
+      .correction-table tr:hover td{background:none!important}
+      .row-num{color:#999!important}
+      .cell-input{color:#000!important;font-size:11px!important;padding:5px 4px!important}
+      .card-footer{background:#f5f5f5!important;border-top:1px solid #ccc!important}
+      .save-status{color:#666!important}
+      .add-row-bar{display:none!important}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logos"><a href="index.html"><img src="images/logo.jpg" alt="Beaufort AI" class="logo-img-lg"></a></div>
+      <div class="nav-links">
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="library.html">Ship's Library</a>
+        <a href="why-beaufort.html">Why Beaufort?</a>
+        <a href="weather.html">Live Weather</a>
+        <a href="index.html#contact" class="btn-nav">Get Early Access</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="header">
+    <h1 class="header-title">📋 Chart Correction Tracker</h1>
+    <p class="header-sub">Digital NIMA Form 8660-9 — fill out online, save to your device, print when full.</p>
+    <p class="header-note">Data stays in your browser's local storage — never transmitted, no account required.</p>
+  </header>
+
+  <main class="main-wrap">
+    <div class="data-bar">
+      <span>💾 Saves automatically as you type</span>
+      <div class="spacer"></div>
+      <button class="btn btn-outline" onclick="exportAllJSON()">⬇ Export All (JSON)</button>
+      <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">⬆ Import JSON</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+    </div>
+
+    <div class="toolbar">
+      <h2>My Charts</h2>
+      <button class="btn btn-primary" onclick="newCard()">＋ New Chart Card</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print This Card</button>
+    </div>
+
+    <div class="chart-selector">
+      <div class="chart-selector-inner">
+        <label for="chart-select">Viewing:</label>
+        <select id="chart-select" onchange="loadCard(this.value)">
+          <option value="">— Select a chart —</option>
+        </select>
+        <span class="chart-count" id="chart-count"></span>
+        <button class="btn btn-danger" id="delete-card-btn" onclick="deleteCard()" style="display:none">🗑 Delete</button>
+      </div>
+    </div>
+
+    <div id="card-area">
+      <div class="empty-state">
+        <div class="icon">🗺️</div>
+        <h3>No chart cards yet</h3>
+        <p>Click <strong>+ New Chart Card</strong> to create your first correction record. Each card tracks one chart or publication.</p>
+        <button class="btn btn-primary" onclick="newCard()">＋ New Chart Card</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Beaufort AI · <a href="library.html">Ship's Library</a> · <a href="index.html">Home</a></p>
+    <p style="margin-top:6px">Form based on NIMA Form 8660-9. Data stored locally in your browser — never transmitted.</p>
+  </footer>
+
+
+<script>
+  const DB_KEY = 'beaufort-chart-corrections';
+  const chartSelect = document.getElementById('chart-select');
+  const cardArea = document.getElementById('card-area');
+  const deleteBtn = document.getElementById('delete-card-btn');
+  const chartCountSpan = document.getElementById('chart-count');
+
+  let appState = {
+    cards: [],
+    currentCardId: null,
+  };
+
+  function saveData() {
+    localStorage.setItem(DB_KEY, JSON.stringify(appState));
+    // Small visual cue could be added here later if needed
+  }
+
+  function loadData() {
+    const data = localStorage.getItem(DB_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return { cards: [], currentCardId: null };
+  }
+
+  function generateCardHTML(card) {
+    const rowsHTML = card.rows.map((row, index) => generateRowHTML(row, index)).join('');
+    const saveStatusClass = card.hasUnsavedChanges ? 'unsaved' : 'saved';
+    const saveStatusText = card.hasUnsavedChanges ? 'Unsaved changes...' : 'Saved locally';
+
+    return `
+    <div class="card-wrap" data-card-id="${card.id}">
+      <div class="nima-header">
+        <div class="nima-form-label">CHART CORRECTION RECORD (NIMA FORM 8660-9)</div>
+        <div class="nima-fields-row">
+          <div class="field-group">
+            <label for="chart-no-${card.id}">CHART/PUB. NO.</label>
+            <input type="text" id="chart-no-${card.id}" value="${card.header.chartNo}" oninput="handleHeaderInput(event, 'chartNo')">
+          </div>
+          <div class="field-group">
+            <label for="portfolio-${card.id}">PORTFOLIO NO.</label>
+            <input type="text" id="portfolio-${card.id}" value="${card.header.portfolio}" oninput="handleHeaderInput(event, 'portfolio')">
+          </div>
+          <div class="field-group">
+            <label for="edition-${card.id}">EDITION NO. / DATE</label>
+            <input type="text" id="edition-${card.id}" value="${card.header.edition}" oninput="handleHeaderInput(event, 'edition')">
+          </div>
+          <div class="field-group">
+            <label for="class-${card.id}">CLASS</label>
+            <input type="text" id="class-${card.id}" value="${card.header.class}" oninput="handleHeaderInput(event, 'class')">
+          </div>
+          <div class="field-group">
+            <label for="price-${card.id}">PRICE</label>
+            <input type="text" id="price-${card.id}" value="${card.header.price}" oninput="handleHeaderInput(event, 'price')">
+          </div>
+          <div class="field-group">
+            <label for="corrected-thru-${card.id}">CORRECTED THRU</label>
+            <input type="text" id="corrected-thru-${card.id}" value="${card.header.correctedThru}" oninput="handleHeaderInput(event, 'correctedThru')">
+          </div>
+        </div>
+      </div>
+      <div class="grid-wrap">
+        <table class="correction-table">
+          <thead>
+            <tr>
+              <th>NO.</th>
+              <th>N.M. / YR</th>
+              <th>PUBS. PAGE NO.</th>
+              <th>DATE</th>
+              <th>INITIAL</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+      </div>
+      <div class="add-row-bar">
+         <button class="btn btn-outline" onclick="addRow()">+ Add Row</button>
+         <span class="row-count">${card.rows.length} entries</span>
+      </div>
+       <div class="card-footer">
+        <span class="save-status ${saveStatusClass}" id="save-status">${saveStatusText}</span>
+        <!-- Footer buttons can be added here -->
+      </div>
+    </div>`;
+  }
+
+  function generateRowHTML(row, index) {
+    return `
+      <tr data-row-index="${index}">
+        <td><div class="row-num">${index + 1}</div></td>
+        <td><input type="text" class="cell-input" placeholder="27/26" value="${row.nmYr}" oninput="handleCellInput(event, ${index}, 'nmYr')"></td>
+        <td><input type="text" class="cell-input" placeholder="1.14" value="${row.pageNo}" oninput="handleCellInput(event, ${index}, 'pageNo')"></td>
+        <td><input type="text" class="cell-input" placeholder="Jul 3" value="${row.date}" oninput="handleCellInput(event, ${index}, 'date')"></td>
+        <td><input type="text" class="cell-input" placeholder="BD" value="${row.initial}" oninput="handleCellInput(event, ${index}, 'initial')"></td>
+        <td><button class="cell-del" onclick="deleteRow(${index})">&times;</button></td>
+      </tr>`;
+  }
+  
+  function updateSaveStatus(isUnsaved) {
+      const statusEl = document.getElementById('save-status');
+      if (!statusEl) return;
+      if (isUnsaved) {
+          statusEl.textContent = 'Unsaved changes...';
+          statusEl.classList.add('unsaved');
+          statusEl.classList.remove('saved');
+      } else {
+          statusEl.textContent = 'Saved locally';
+          statusEl.classList.add('saved');
+          statusEl.classList.remove('unsaved');
+      }
+  }
+
+  function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+          const context = this;
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(context, args), delay);
+      };
+  }
+  
+  const debouncedSave = debounce(() => {
+    const card = appState.cards.find(c => c.id === appState.currentCardId);
+    if(card) card.hasUnsavedChanges = false;
+    saveData();
+    if(card) updateSaveStatus(false);
+  }, 500);
+
+
+  function handleHeaderInput(event, field) {
+    const card = appState.cards.find(c => c.id === appState.currentCardId);
+    if (card) {
+      card.header[field] = event.target.value;
+      card.hasUnsavedChanges = true;
+      updateSaveStatus(true);
+      debouncedSave();
+    }
+  }
+
+  function handleCellInput(event, rowIndex, field) {
+    const card = appState.cards.find(c => c.id === appState.currentCardId);
+    if (card && card.rows[rowIndex]) {
+      card.rows[rowIndex][field] = event.target.value;
+      card.hasUnsavedChanges = true;
+      updateSaveStatus(true);
+      debouncedSave();
+    }
+  }
+
+  function renderCard(cardId) {
+    const card = appState.cards.find(c => c.id === cardId);
+    if (card) {
+      cardArea.innerHTML = generateCardHTML(card);
+      deleteBtn.style.display = 'inline-flex';
+    } else {
+      cardArea.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🗺️</div>
+          <h3>No chart selected</h3>
+          <p>Select a chart from the dropdown above, or create a new one to get started.</p>
+        </div>`;
+      deleteBtn.style.display = 'none';
+    }
+  }
+
+  function populateSelector() {
+    chartSelect.innerHTML = '<option value="">— Select a chart —</option>';
+    appState.cards.forEach(card => {
+      const option = document.createElement('option');
+      option.value = card.id;
+      option.textContent = card.header.chartNo || `Card ${card.id.substring(0,4)}`;
+      if (card.id === appState.currentCardId) {
+        option.selected = true;
+      }
+      chartSelect.appendChild(option);
+    });
+    chartCountSpan.textContent = `${appState.cards.length} card(s)`;
+  }
+
+  function loadCard(cardId) {
+    appState.currentCardId = cardId;
+    renderCard(cardId);
+    saveData(); // Save the current selection
+  }
+
+  function newCard() {
+    const chartNo = prompt("Enter the new Chart or Publication number:");
+    if (!chartNo || chartNo.trim() === '') return;
+    
+    if (appState.cards.some(c => c.header.chartNo.toLowerCase() === chartNo.toLowerCase().trim())) {
+        alert('A card with this number already exists.');
+        return;
+    }
+
+    const newCard = {
+      id: `card_${Date.now()}`,
+      header: {
+        chartNo: chartNo.trim(),
+        portfolio: '', edition: '', class: '', price: '', correctedThru: ''
+      },
+      rows: Array(1).fill().map(() => ({ nmYr: '', pageNo: '', date: '', initial: '' })),
+      hasUnsavedChanges: false,
+    };
+    appState.cards.unshift(newCard);
+    appState.currentCardId = newCard.id;
+    populateSelector();
+    renderCard(newCard.id);
+    saveData();
+  }
+  
+  function addRow() {
+      const card = appState.cards.find(c => c.id === appState.currentCardId);
+      if (card) {
+          card.rows.push({ nmYr: '', pageNo: '', date: '', initial: '' });
+          saveData();
+          renderCard(card.id);
+          // Focus the first input of the new row
+          const newRowIndex = card.rows.length - 1;
+          const firstInput = document.querySelector(`tr[data-row-index="${newRowIndex}"] .cell-input`);
+          if (firstInput) firstInput.focus();
+      }
+  }
+  
+  function deleteRow(rowIndex) {
+      const card = appState.cards.find(c => c.id === appState.currentCardId);
+      if (card) {
+          card.rows.splice(rowIndex, 1);
+          saveData();
+          renderCard(card.id);
+      }
+  }
+
+  function deleteCard() {
+    const card = appState.cards.find(c => c.id === appState.currentCardId);
+    if (card && confirm(`Are you sure you want to permanently delete the card for chart "${card.header.chartNo}"?`)) {
+      appState.cards = appState.cards.filter(c => c.id !== appState.currentCardId);
+      appState.currentCardId = appState.cards.length > 0 ? appState.cards[0].id : null;
+      saveData();
+      init();
+    }
+  }
+
+  function exportAllJSON() {
+    if (appState.cards.length === 0) {
+      alert('No cards to export.');
+      return;
+    }
+    const dataStr = JSON.stringify(appState, null, 2);
+    const dataBlob = new Blob([dataStr], {type: "application/json"});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    link.download = `beaufort_chart_corrections_${date}.json`;
+    link.href = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  }
+
+  function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        if (importedData && Array.isArray(importedData.cards)) {
+          if (confirm(`This will replace all your current chart cards with the data from the imported file. Are you sure you want to continue?`)) {
+            appState = importedData;
+            appState.currentCardId = appState.cards.length > 0 ? appState.cards[0].id : null;
+            saveData();
+            init();
+            alert(`Successfully imported ${appState.cards.length} chart card(s).`);
+          }
+        } else {
+          alert('Invalid file format.');
+        }
+      } catch (error) {
+        alert('Error reading or parsing the file.');
+        console.error("Import error:", error);
+      }
+    };
+    reader.readAsText(file);
+    // Reset the file input so the same file can be loaded again
+    event.target.value = null;
+  }
+
+  function init() {
+    appState = loadData();
+    populateSelector();
+    renderCard(appState.currentCardId);
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

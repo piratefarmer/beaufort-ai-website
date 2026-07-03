@@ -1,0 +1,7 @@
+/dashboard.html
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
+
+/*.html
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
