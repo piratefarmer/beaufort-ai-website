@@ -11,6 +11,7 @@
   <title>BEAU Live Dashboard - Beaufort AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/leaflet/leaflet.css">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -155,6 +156,31 @@
     #wind-rose{border-radius:50%;background:#0a0f14}
     .forecast-loading{padding:20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
     @media(max-width:600px){.sensor-grid{grid-template-columns:1fr 1fr}.site-header{flex-direction:column;justify-content:center;gap:6px;height:auto;padding:12px 20px}body{padding-top:80px}.site-nav{display:none}}
+    /* ── AIS Fleet Map ── */
+    .ais-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .ais-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.03)}
+    .ais-title{font-family:var(--font-mono);font-size:11px;color:var(--blue);letter-spacing:.12em;font-weight:600}
+    .ais-meta{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    #ais-map{height:420px;width:100%;background:#0a0f14}
+    .ais-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;border-top:1px solid var(--border)}
+    .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    .ais-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s}
+    .ais-reset-btn:hover{border-color:var(--blue);color:var(--blue)}
+    .ais-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    .ais-vessel-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) var(--border);border-top:1px solid var(--border)}
+    .ais-vessel-list::-webkit-scrollbar{width:4px}.ais-vessel-list::-webkit-scrollbar-track{background:var(--border)}.ais-vessel-list::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
+    .ais-vessel-row{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border2);font-family:var(--font-mono);font-size:11px}
+    .ais-vessel-row:last-child{border-bottom:none}
+    .ais-vessel-name{color:var(--text)}
+    .ais-vessel-meta{color:var(--muted);white-space:nowrap;margin-left:8px}
+    .ais-empty{padding:14px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-style:italic}
+    /* iOS Safari: let Leaflet handle all touch gestures on the map */
+    .leaflet-container{touch-action:pan-x pan-y;background:#0a0f14 !important}
+    .leaflet-grab{touch-action:pan-x pan-y}
+    .leaflet-control-attribution{background:rgba(10,15,20,.7) !important;color:var(--muted) !important;font-size:9px !important}
+    .leaflet-control-attribution a{color:var(--text-dim) !important}
+    .leaflet-control-zoom a{background:var(--surface) !important;color:var(--text) !important;border-color:var(--border) !important}
+    .leaflet-control-zoom a:hover{background:var(--border) !important}
   </style>
 </head>
 <body>
@@ -310,6 +336,28 @@
       </div>
     </div>
 
+    <!-- AIS FLEET MAP -->
+    <div class="ais-box" id="ais-box">
+      <div class="ais-header">
+        <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
+        <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
+      </div>
+      <div id="ais-map"></div>
+      <div class="ais-footer">
+        <span class="ais-zone-label" id="ais-zone-label">Drag circle to reposition &bull; drag edge handle to resize &bull; watching vessels inside the zone</span>
+        <button class="ais-reset-btn" onclick="aisResetZone()">&#8630; Reset Zone</button>
+      </div>
+      <div class="ais-legend">
+        <span>&#128994; Underway</span>
+        <span>&#128993; Slow / stopped</span>
+        <span>&#9875; Moored / anchored</span>
+        <span id="ais-vessel-count-label">0 vessels in zone</span>
+      </div>
+      <div class="ais-vessel-list" id="ais-vessel-list">
+        <div class="ais-empty">Awaiting AIS traffic in zone...</div>
+      </div>
+    </div>
+
     <!-- MODE 1: SENSOR ANALYSIS (blue) -->
     <div class="analysis-box" id="analysis-box">
       <div class="analysis-header">
@@ -366,6 +414,7 @@
   Not for navigational use. Always rely on certified navigation equipment and qualified officers for operational decisions.</p>
 </footer>
 
+<script src="/leaflet/leaflet.js"></script>
 <script>
 // ============================================================
 // BEAU DASHBOARD v2.0 — Dual Mode Engine
@@ -1407,6 +1456,252 @@ function updateWindRose(aws, awa, tws, twd, cog) {
 
 // Initial draw
 drawWindRose();
+
+// ============================================================
+// AIS FLEET MAP
+// Adapted from the historical working model (projects/beau/ui/templates/
+// dashboard.html) — same draggable/resizable zone-circle interaction,
+// ported onto the current dark theme + polling-only architecture
+// (no Socket.IO in this deployment; /api/ais is polled every 10s).
+// ============================================================
+const AIS_API_URL      = 'https://beau.beaufort-ai.com/api/ais';
+const AIS_ZONE_API_URL = 'https://beau.beaufort-ai.com/api/ais_zone';
+
+const aisMap = L.map('ais-map', {
+    center: [29.1, -90.2],   // Port Fourchon, Gulf of Mexico (default until zone loads)
+    zoom: 8,
+    zoomControl: true,
+    attributionControl: true,
+    zoomAnimation: false,
+    fadeAnimation: false,
+    markerZoomAnimation: false
+});
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 14,
+    opacity: 0.7
+}).addTo(aisMap);
+
+L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenSeaMap',
+    maxZoom: 14,
+    opacity: 0.9
+}).addTo(aisMap);
+
+let aisVesselMarkers = {};
+let aisZoneCircle = null;
+let aisZoneMarker = null;      // drag handle at zone center
+let aisZoneEdgeMarker = null;  // drag handle at zone edge (resize)
+let aisCurrentZone = {};
+let aisZoneUserAdjusted = false;
+let aisMapCenteredOnce = false;
+let aisOwnVesselMarker = null;
+
+function aisVesselIcon(color) {
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:10px;height:10px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>`,
+        iconSize: [10, 10], iconAnchor: [5, 5]
+    });
+}
+
+function aisOwnVesselIcon() {
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px #3b82f6;"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8]
+    });
+}
+
+function aisUpdateVesselList(fleet) {
+    const vessels = (fleet || {}).vessels || [];
+    const listEl = document.getElementById('ais-vessel-list');
+    const countEl = document.getElementById('ais-vessel-count-label');
+    if (!listEl || !countEl) return;
+
+    countEl.textContent = `${vessels.length} vessel${vessels.length !== 1 ? 's' : ''} in zone`;
+
+    if (vessels.length === 0) {
+        listEl.innerHTML = '<div class="ais-empty">Awaiting AIS traffic in zone...</div>';
+        return;
+    }
+
+    const sorted = [...vessels].sort((a, b) => (b.sog || 0) - (a.sog || 0));
+    listEl.innerHTML = sorted.map(v => {
+        const sog = (v.sog !== null && v.sog !== undefined) ? v.sog.toFixed(1) + ' kt' : '--';
+        const cog = (v.cog !== null && v.cog !== undefined) ? Math.round(v.cog) + '\u00b0' : '--';
+        const name = (v.name || ('MMSI ' + v.mmsi)).trim();
+        const moving = (v.sog || 0) > 1.0;
+        const dot = moving ? '\u{1F7E2}' : '\u26D3';
+        return `<div class="ais-vessel-row"><span class="ais-vessel-name">${dot} ${name}</span><span class="ais-vessel-meta">${sog} ${cog}</span></div>`;
+    }).join('');
+}
+
+function aisUpdateChart(data) {
+    if (!data || !data.fleet) return;
+    aisUpdateVesselList(data.fleet);
+
+    const vessels = data.fleet.vessels || [];
+    document.getElementById('ais-status').textContent =
+        `${data.fleet.active_vessels || 0} vessels tracked | Last update: ${new Date().toLocaleTimeString()}`;
+
+    const seenMmsis = new Set();
+    vessels.forEach(v => {
+        if (v.lat === null || v.lat === undefined || v.lon === null || v.lon === undefined) return;
+        const mmsi = String(v.mmsi);
+        seenMmsis.add(mmsi);
+
+        const sog = v.sog || 0;
+        let color = '#22c55e';           // green = underway
+        if (sog < 0.5) color = '#f59e0b'; // amber = stopped/anchored
+
+        const popup = `<b>${v.name || 'Unknown vessel'}</b><br>MMSI: ${mmsi}<br>SOG: ${sog ? sog.toFixed(1) : '--'} kts<br>COG: ${v.cog ? Math.round(v.cog) : '--'}\u00b0`;
+
+        if (aisVesselMarkers[mmsi]) {
+            aisVesselMarkers[mmsi].setLatLng([v.lat, v.lon]);
+            aisVesselMarkers[mmsi].setIcon(aisVesselIcon(color));
+            aisVesselMarkers[mmsi].getPopup().setContent(popup);
+        } else {
+            aisVesselMarkers[mmsi] = L.marker([v.lat, v.lon], { icon: aisVesselIcon(color) })
+                .bindPopup(popup).addTo(aisMap);
+        }
+    });
+
+    Object.keys(aisVesselMarkers).forEach(mmsi => {
+        if (!seenMmsis.has(mmsi)) {
+            aisMap.removeLayer(aisVesselMarkers[mmsi]);
+            delete aisVesselMarkers[mmsi];
+        }
+    });
+}
+
+function aisDrawZoneCircle(lat, lon, radiusNm) {
+    const radiusM = radiusNm * 1852;
+
+    if (aisZoneCircle) {
+        aisZoneCircle.setLatLng([lat, lon]);
+        aisZoneCircle.setRadius(radiusM);
+    } else {
+        aisZoneCircle = L.circle([lat, lon], {
+            radius: radiusM, color: '#3b82f6', fillColor: '#3b82f6',
+            fillOpacity: 0.05, weight: 2, dashArray: '8, 6'
+        }).addTo(aisMap);
+        aisZoneCircle.on('dblclick', function() { aisResetZone(); });
+    }
+
+    const centerIcon = L.divIcon({
+        html: '<div style="font-size:1.3rem;cursor:grab;user-select:none;color:#3b82f6;text-shadow:0 0 4px #000;">&#10011;</div>',
+        iconSize: [24, 24], iconAnchor: [12, 12], className: ''
+    });
+    if (aisZoneMarker) {
+        aisZoneMarker.setLatLng([lat, lon]);
+    } else {
+        aisZoneMarker = L.marker([lat, lon], { icon: centerIcon, draggable: true, zIndexOffset: 1000 }).addTo(aisMap);
+        aisZoneMarker.on('drag', function(e) {
+            const p = e.target.getLatLng();
+            aisZoneCircle.setLatLng(p);
+            if (aisZoneEdgeMarker) {
+                const r = aisZoneCircle.getRadius();
+                const edgeLon = p.lng + (r / 1852) / Math.cos(p.lat * Math.PI / 180) * (180 / Math.PI);
+                aisZoneEdgeMarker.setLatLng([p.lat, edgeLon]);
+            }
+        });
+        aisZoneMarker.on('dragend', function(e) {
+            const p = e.target.getLatLng();
+            const rNm = aisZoneCircle.getRadius() / 1852;
+            aisZoneUserAdjusted = true;
+            aisPushZoneUpdate(p.lat, p.lng, rNm);
+            aisUpdateZoneLabel('User adjusted \u2014 double-tap circle to reset');
+        });
+    }
+
+    const edgeIcon = L.divIcon({
+        html: '<div style="width:26px;height:26px;background:#3b82f6;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;font-weight:700;cursor:ew-resize;box-shadow:0 0 6px rgba(0,0,0,.5);">\u2194</div>',
+        iconSize: [26, 26], iconAnchor: [13, 13], className: ''
+    });
+    const edgeLon = lon + (radiusNm / 60) / Math.cos(lat * Math.PI / 180);
+    if (aisZoneEdgeMarker) {
+        aisZoneEdgeMarker.setLatLng([lat, edgeLon]);
+    } else {
+        aisZoneEdgeMarker = L.marker([lat, edgeLon], { icon: edgeIcon, draggable: true, zIndexOffset: 1000 }).addTo(aisMap);
+        aisZoneEdgeMarker.on('drag', function(e) {
+            const center = aisZoneMarker.getLatLng();
+            const edge = e.target.getLatLng();
+            aisZoneCircle.setRadius(aisMap.distance(center, edge));
+        });
+        aisZoneEdgeMarker.on('dragend', function(e) {
+            const center = aisZoneMarker.getLatLng();
+            const edge = e.target.getLatLng();
+            const rNm = aisMap.distance(center, edge) / 1852;
+            aisZoneUserAdjusted = true;
+            aisPushZoneUpdate(center.lat, center.lng, rNm);
+            aisUpdateZoneLabel(`User adjusted: ${rNm.toFixed(0)}nm radius \u2014 double-tap circle to reset`);
+        });
+    }
+}
+
+function aisResetZone() {
+    aisZoneUserAdjusted = false;
+    if (aisCurrentZone.center_lat !== undefined) {
+        aisDrawZoneCircle(aisCurrentZone.center_lat, aisCurrentZone.center_lon, aisCurrentZone.radius_nm);
+        aisPushZoneUpdate(aisCurrentZone.center_lat, aisCurrentZone.center_lon, aisCurrentZone.radius_nm);
+        aisUpdateZoneLabel('Default monitoring zone');
+    }
+}
+
+function aisPushZoneUpdate(lat, lon, radiusNm) {
+    fetch(AIS_ZONE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ center_lat: lat, center_lon: lon, radius_nm: radiusNm })
+    }).catch(e => console.error('AIS zone update failed:', e));
+}
+
+function aisUpdateZoneLabel(text) {
+    const el = document.getElementById('ais-zone-label');
+    if (el) el.textContent = text;
+}
+
+function aisUpdateOwnVessel(zone) {
+    if (zone.vessel_lat && zone.vessel_lon) {
+        if (aisOwnVesselMarker) {
+            aisOwnVesselMarker.setLatLng([zone.vessel_lat, zone.vessel_lon]);
+        } else {
+            aisOwnVesselMarker = L.marker([zone.vessel_lat, zone.vessel_lon], {
+                icon: aisOwnVesselIcon(), zIndexOffset: 1000
+            }).bindPopup('<b>Your Vessel</b><br>GPS position').addTo(aisMap);
+        }
+    }
+}
+
+function aisUpdateZone(zone) {
+    if (!zone || zone.center_lat === undefined || zone.center_lat === null) return;
+    if (aisZoneUserAdjusted) return;  // don't override a manual adjustment mid-poll
+
+    aisCurrentZone = zone;
+    aisDrawZoneCircle(zone.center_lat, zone.center_lon, zone.radius_nm);
+    aisUpdateOwnVessel(zone);
+
+    if (!aisMapCenteredOnce) {
+        aisMapCenteredOnce = true;
+        aisMap.setView([zone.center_lat, zone.center_lon], 8, { animate: false });
+    }
+}
+
+async function aisPoll() {
+    try {
+        const res = await fetch(AIS_API_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        aisUpdateChart(data);
+        aisUpdateZone(data.zone);
+    } catch (e) {
+        document.getElementById('ais-status').textContent = 'AIS feed unavailable';
+    }
+}
+setInterval(aisPoll, 10000);
+aisPoll(); // immediate first load
 </script>
 </body>
 </html>
