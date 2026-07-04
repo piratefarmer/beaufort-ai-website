@@ -228,7 +228,7 @@
     <div class="auto-toggle-row" style="border-top:1px solid var(--border);">
       <span class="auto-toggle-label">🛰 KIRT LIVE FEED &nbsp;<span id="pi-feed-status" style="color:var(--muted)">OFFLINE</span></span>
       <label class="toggle-switch">
-        <input type="checkbox" id="pi-feed-toggle">
+        <input type="checkbox" id="pi-feed-toggle" checked>
         <span class="toggle-slider"></span>
       </label>
     </div>
@@ -442,6 +442,8 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
+let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
+let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
 
 // ANALYSIS CACHE — only re-run Beau when conditions change meaningfully
@@ -1052,6 +1054,25 @@ async function fetchPiFeed() {
     set('magnitude',               d.accel?.magnitude?.toFixed(2));
     set('air_temp',                d.barometer?.temp_f != null ? d.barometer.temp_f.toFixed(1) : null);
 
+    // BUGFIX (2026-07-04): fetchForecast() only ran once at page load (before
+    // any real GPS fix existed) and then every 6h after that — so on a fresh
+    // page load it silently forecast the hardcoded Brazil fallback position
+    // for hours instead of the vessel's real position. Re-trigger it here as
+    // soon as a real GPS fix arrives or the vessel has moved >~3nm, so the
+    // forecast strip tracks the actual vessel position.
+    const realLat = (d.gps?.lat && d.gps.lat !== 0) ? d.gps.lat : null;
+    const realLon = (d.gps?.lon && d.gps.lon !== 0) ? d.gps.lon : null;
+    if (realLat !== null && realLon !== null) {
+      const moved = (lastForecastLat === null) ||
+        (Math.abs(lastForecastLat - realLat) > 0.05) ||
+        (Math.abs(lastForecastLon - realLon) > 0.05);
+      if (moved) {
+        lastForecastLat = realLat;
+        lastForecastLon = realLon;
+        fetchForecast();
+      }
+    }
+
     // Show data age and stale warning
     const dataAge = d.data_age_sec || 0;
     const stale = d.stale || dataAge > 300;
@@ -1137,9 +1158,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init sensor grid from default values
   renderSensorGrid(buildPayload());
 
-  // Load GraphCast forecast on startup
+  // BUGFIX (2026-07-04): KIRT LIVE FEED toggle now defaults to checked=true
+  // in the HTML, but a checked attribute alone does not fire the 'change'
+  // listener above on page load — that listener is what actually starts the
+  // fetchPiFeed() polling loop. Without this, live GPS/sensor data (and the
+  // position-aware forecast trigger below) silently never started unless a
+  // visitor manually re-toggled the switch.
+  const piFeedToggleEl = document.getElementById('pi-feed-toggle');
+  if (piFeedToggleEl && piFeedToggleEl.checked) {
+    piFeedEnabled = true;
+    fetchPiFeed();
+    piFeedInterval = setInterval(fetchPiFeed, 2000);
+  }
+
+  // Load GraphCast forecast on startup (falls back to a placeholder position
+  // until fetchPiFeed() above delivers a real GPS fix, which re-triggers this
+  // via the lastForecastLat/Lon position-change check).
   fetchForecast();
-  setInterval(fetchForecast, 6 * 60 * 60 * 1000); // refresh every 6h
+  setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
   setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
@@ -1182,9 +1218,14 @@ function beaufortLabel(kts) {
 }
 
 async function fetchForecast() {
-  // Get vessel position from sensor inputs if available
-  const latEl = document.getElementById('inp-lat');
-  const lonEl = document.getElementById('inp-lon');
+  // Get vessel position from live GPS sensor fields (populated from Pi feed
+  // by pollSensors() -> set('latitude'/'longitude') into #f-latitude/#f-longitude).
+  // BUGFIX (2026-07-04): this previously read #inp-lat/#inp-lon, elements that
+  // don't exist anywhere on this page, so it silently always fell back to the
+  // hardcoded Brazil test coordinates (-22.17,-40.35) regardless of the
+  // vessel's real position — GraphCast forecast never matched actual location.
+  const latEl = document.getElementById('f-latitude');
+  const lonEl = document.getElementById('f-longitude');
   const lat = latEl ? parseFloat(latEl.value) || -22.17 : -22.17;
   const lon = lonEl ? parseFloat(lonEl.value) || -40.35 : -40.35;
 
