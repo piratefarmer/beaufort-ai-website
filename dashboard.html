@@ -1611,6 +1611,11 @@ function aisOwnVesselIcon() {
 }
 
 function aisUpdateVesselList(fleet) {
+    // Per Cap's scope (2026-07-04): this list is for vessel-BEHAVIOR signal
+    // relevant to weather prediction — name, COG, SOG, HDG, range only.
+    // MMSI/lat/lon are deliberately NOT shown here (onboard nav unit is the
+    // source of truth for position); they're still used by the separate
+    // Leaflet map/aisUpdateChart() below to plot pins.
     const vessels = (fleet || {}).vessels || [];
     const listEl = document.getElementById('ais-vessel-list');
     const countEl = document.getElementById('ais-vessel-count-label');
@@ -1623,14 +1628,23 @@ function aisUpdateVesselList(fleet) {
         return;
     }
 
-    const sorted = [...vessels].sort((a, b) => (b.sog || 0) - (a.sog || 0));
+    // Server already sorts by range_nm ascending (closest first); fall back
+    // to SOG-descending order if range isn't available for some contacts.
+    const sorted = [...vessels].sort((a, b) => {
+        const ar = (a.range_nm === null || a.range_nm === undefined) ? Infinity : a.range_nm;
+        const br = (b.range_nm === null || b.range_nm === undefined) ? Infinity : b.range_nm;
+        if (ar !== br) return ar - br;
+        return (b.sog || 0) - (a.sog || 0);
+    });
     listEl.innerHTML = sorted.map(v => {
         const sog = (v.sog !== null && v.sog !== undefined) ? v.sog.toFixed(1) + ' kt' : '--';
         const cog = (v.cog !== null && v.cog !== undefined) ? Math.round(v.cog) + '\u00b0' : '--';
-        const name = (v.name || ('MMSI ' + v.mmsi)).trim();
+        const hdg = (v.heading !== null && v.heading !== undefined && v.heading !== 511) ? Math.round(v.heading) + '\u00b0' : '--';
+        const range = (v.range_nm !== null && v.range_nm !== undefined) ? v.range_nm.toFixed(1) + 'nm' : '--';
+        const name = (v.name || 'UNKNOWN VESSEL').trim();
         const moving = (v.sog || 0) > 1.0;
         const dot = moving ? '\u{1F7E2}' : '\u26D3';
-        return `<div class="ais-vessel-row"><span class="ais-vessel-name">${dot} ${name}</span><span class="ais-vessel-meta">${sog} ${cog}</span></div>`;
+        return `<div class="ais-vessel-row"><span class="ais-vessel-name">${dot} ${name}</span><span class="ais-vessel-meta">${range} · COG ${cog} · SOG ${sog} · HDG ${hdg}</span></div>`;
     }).join('');
 }
 
