@@ -289,7 +289,13 @@
     <div class="sensor-grid" id="sensor-grid"></div>
 
     <!-- WIND COMPASS ROSE -->
-    <div class="wind-rose-wrap">
+    <div class="wind-rose-wrap" style="flex-direction:column">
+      <div class="wr-box" id="heading-box" style="min-width:180px;position:relative">
+        <div class="wr-label">BNO085 HEADING <span id="heading-cal-badge" style="font-size:8px;padding:1px 5px;border-radius:8px;letter-spacing:.05em;background:rgba(58,69,85,.2);color:var(--muted);border:1px solid rgba(58,69,85,.3)">--</span></div>
+        <div class="wr-value" id="heading-value" style="font-size:30px">--</div>
+        <div class="wr-unit" id="heading-unit">DEG MAG &middot; magnetometer-fused</div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
       <div class="wind-rose-readouts">
         <div class="wr-box">
           <div class="wr-label">TWS</div>
@@ -314,6 +320,7 @@
           <div class="wr-value" id="wr-twd">--</div>
           <div class="wr-unit">DEG</div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1092,10 +1099,12 @@ async function fetchPiFeed() {
     // Refresh sensor display cards with live Pi data
     renderSensorGrid(buildPayload());
 
-    // Update wind compass rose
+    // Update wind compass rose (+ BNO085 heading, uncalibrated until dynamic
+    // calibration is run in final mounted position + validated vs GPS COG)
     const _tws = parseFloat(document.getElementById('f-wind_speed')?.value) || 0;
     const _twd = parseFloat(document.getElementById('f-wind_direction')?.value) || 0;
-    updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0);
+    updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0,
+      d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
@@ -1171,10 +1180,20 @@ document.addEventListener('DOMContentLoaded', () => {
     piFeedInterval = setInterval(fetchPiFeed, 2000);
   }
 
-  // Load GraphCast forecast on startup (falls back to a placeholder position
-  // until fetchPiFeed() above delivers a real GPS fix, which re-triggers this
-  // via the lastForecastLat/Lon position-change check).
-  fetchForecast();
+  // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
+  // when the live feed is on. It would fire once with the hardcoded fallback
+  // position (-22.17,-40.35) BEFORE fetchPiFeed() delivers a real GPS fix.
+  // That fallback call kicks off a slow (~26s) GraphCast background refresh
+  // for the WRONG position, which can complete and silently overwrite the
+  // server-side cache *after* the real-position forecast already succeeded —
+  // the backend's position-change hard-stale gate then sees a mismatched
+  // cached position and 503s the next real-position request, producing a
+  // 200/503 flap. When live feed is enabled, let fetchPiFeed()'s
+  // position-change trigger fire the FIRST (and only correct-position) call.
+  // Only fetch the fallback immediately when live feed is off (manual mode).
+  if (!(piFeedToggleEl && piFeedToggleEl.checked)) {
+    fetchForecast();
+  }
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
@@ -1353,6 +1372,7 @@ function drawSparkline(pressValues) {
 
 // ── Wind Compass Rose ──
 let _wrAws = 0, _wrAwa = 0, _wrTws = 0, _wrTwd = 0, _wrCog = 0;
+let _wrHeading = null, _wrHeadingCal = 0, _wrHeadingCalLabel = 'UNRELIABLE';
 
 function drawWindRose() {
   const canvas = document.getElementById('wind-rose');
@@ -1448,6 +1468,13 @@ function drawWindRose() {
     ctx.fill();
   };
 
+  // Heading needle (white/gray dashed — BNO085 magnetic heading, relative to bow=0°
+  // since bow is always drawn at top; heading itself is absolute compass bearing)
+  if (_wrHeading !== null) {
+    const headingColor = _wrHeadingCal >= 2 ? '#e2e8f0' : '#64748b';
+    drawNeedle(0, 0.85, headingColor, 2, 'dashed'); // bow-relative marker stays at top; value shown in box above
+  }
+
   // AWA needle (gold — apparent wind, relative to bow=0°)
   if (_wrAws > 0) drawNeedle(_wrAwa, 0.72, '#f59e0b', 3);
 
@@ -1486,13 +1513,41 @@ function drawWindRose() {
   document.getElementById('wr-twd').textContent = _wrTws > 0 ? Math.round(_wrTwd) + '°' : '--';
 }
 
-function updateWindRose(aws, awa, tws, twd, cog) {
+function updateWindRose(aws, awa, tws, twd, cog, heading, headingCal, headingCalLabel) {
   _wrAws = aws || 0;
   _wrAwa = awa || 0;
   _wrTws = tws || 0;
   _wrTwd = twd || 0;
   _wrCog = cog || 0;
+  _wrHeading = (heading !== undefined && heading !== null) ? heading : null;
+  _wrHeadingCal = headingCal || 0;
+  _wrHeadingCalLabel = headingCalLabel || 'UNRELIABLE';
   drawWindRose();
+  updateHeadingBox();
+}
+
+function updateHeadingBox() {
+  const valEl = document.getElementById('heading-value');
+  const badgeEl = document.getElementById('heading-cal-badge');
+  if (!valEl || !badgeEl) return;
+  if (_wrHeading === null) {
+    valEl.textContent = '--';
+    badgeEl.textContent = '--';
+    return;
+  }
+  valEl.textContent = Math.round(_wrHeading) + '\u00b0';
+  badgeEl.textContent = _wrHeadingCalLabel;
+  const calColors = {
+    0: ['rgba(239,68,68,.15)', 'var(--red)', 'rgba(239,68,68,.3)'],
+    1: ['rgba(245,158,11,.15)', 'var(--amber)', 'rgba(245,158,11,.3)'],
+    2: ['rgba(245,158,11,.1)', 'var(--amber)', 'rgba(245,158,11,.2)'],
+    3: ['rgba(34,197,94,.15)', 'var(--green)', 'rgba(34,197,94,.3)'],
+  };
+  const [bg, color, border] = calColors[_wrHeadingCal] || calColors[0];
+  badgeEl.style.background = bg;
+  badgeEl.style.color = color;
+  badgeEl.style.borderColor = border;
+  valEl.style.color = _wrHeadingCal >= 2 ? '#fff' : 'var(--amber)';
 }
 
 // Initial draw
