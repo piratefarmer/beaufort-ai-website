@@ -64,6 +64,15 @@
     .btn-qa-submit{background:rgba(139,92,246,.75);border:none;border-left:1px solid rgba(139,92,246,.3);border-top:1px solid rgba(139,92,246,.12);color:#fff;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;padding:0 14px;cursor:pointer;white-space:nowrap;transition:background .2s}
     .btn-qa-submit:hover:not(:disabled){background:rgba(139,92,246,.95)}.btn-qa-submit:disabled{opacity:.4;cursor:not-allowed}
     .dash-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
+    /* ── Tabs (added 2026-07-04): pure show/hide, no reload, no data-flow change ── */
+    .dash-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:-4px;flex-wrap:wrap}
+    .dash-tab-btn{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px 12px;cursor:pointer;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
+    .dash-tab-btn:hover{color:var(--text-dim)}
+    .dash-tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+    .dash-tab-btn .tab-badge{font-size:9px;background:rgba(59,130,246,.15);color:var(--blue);border-radius:9px;padding:1px 6px;min-width:16px;text-align:center;display:none}
+    .dash-tab-btn .tab-badge.show{display:inline-block}
+    .dash-tab-panel{display:none;flex-direction:column;gap:20px}
+    .dash-tab-panel.active{display:flex}
     .sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
@@ -286,6 +295,16 @@
 
   <main class="dash-main">
 
+    <div class="dash-tabs">
+      <button class="dash-tab-btn active" data-tab="conditions" onclick="dashSwitchTab('conditions')">&#9673; CONDITIONS</button>
+      <button class="dash-tab-btn" data-tab="ais" onclick="dashSwitchTab('ais')">&#9673; AIS <span class="tab-badge" id="tab-badge-ais"></span></button>
+      <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
+      <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
+    </div>
+
+    <!-- TAB: CONDITIONS -->
+    <div class="dash-tab-panel active" id="tab-conditions">
+
     <div class="sensor-grid" id="sensor-grid"></div>
 
     <!-- WIND COMPASS ROSE -->
@@ -343,6 +362,12 @@
       </div>
     </div>
 
+    </div>
+    <!-- /TAB: CONDITIONS -->
+
+    <!-- TAB: AIS -->
+    <div class="dash-tab-panel" id="tab-ais">
+
     <!-- AIS FLEET MAP -->
     <div class="ais-box" id="ais-box">
       <div class="ais-header">
@@ -364,6 +389,12 @@
         <div class="ais-empty">Awaiting AIS traffic in zone...</div>
       </div>
     </div>
+
+    </div>
+    <!-- /TAB: AIS -->
+
+    <!-- TAB: BEAU ANALYSIS -->
+    <div class="dash-tab-panel" id="tab-beau">
 
     <!-- MODE 1: SENSOR ANALYSIS (blue) -->
     <div class="analysis-box" id="analysis-box">
@@ -402,6 +433,12 @@
       <div class="analysis-confidence" id="qa-analysis-confidence"></div>
     </div>
 
+    </div>
+    <!-- /TAB: BEAU ANALYSIS -->
+
+    <!-- TAB: HISTORY -->
+    <div class="dash-tab-panel" id="tab-history">
+
     <!-- HISTORY -->
     <div class="history-box">
       <div class="history-header">
@@ -412,6 +449,9 @@
         <div class="history-empty" id="history-empty">No queries yet.</div>
       </div>
     </div>
+
+    </div>
+    <!-- /TAB: HISTORY -->
 
   </main>
 </div>
@@ -906,11 +946,51 @@ function onSensorFieldChange(inputEl) {
   }, AUTO_DEBOUNCE_MS);
 }
 
+// ── TABS (added 2026-07-04) ─────────────────────────────────
+// Pure show/hide of existing panels — no reload, no re-fetch. All
+// polling (/api/sensors, /api/ais, forecast) keeps running in the
+// background regardless of which tab is visible, so nothing goes
+// stale when switching back.
+let dashActiveTab = 'conditions';
+const dashTabBadgeCounts = { ais: 0, history: 0 };
+
+function dashSwitchTab(tabName) {
+  dashActiveTab = tabName;
+  document.querySelectorAll('.dash-tab-panel').forEach(el => {
+    el.classList.toggle('active', el.id === 'tab-' + tabName);
+  });
+  document.querySelectorAll('.dash-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  // Clear the badge for the tab we just opened
+  if (tabName in dashTabBadgeCounts) {
+    dashTabBadgeCounts[tabName] = 0;
+    dashUpdateTabBadge(tabName);
+  }
+}
+
+function dashBumpTabBadge(tabName) {
+  // Only show a badge if the operator is looking at a different tab —
+  // avoids badge noise while already viewing that data.
+  if (dashActiveTab === tabName) return;
+  dashTabBadgeCounts[tabName] = (dashTabBadgeCounts[tabName] || 0) + 1;
+  dashUpdateTabBadge(tabName);
+}
+
+function dashUpdateTabBadge(tabName) {
+  const el = document.getElementById('tab-badge-' + tabName);
+  if (!el) return;
+  const n = dashTabBadgeCounts[tabName] || 0;
+  el.textContent = n > 9 ? '9+' : String(n);
+  el.classList.toggle('show', n > 0);
+}
+
 // ── HISTORY ──────────────────────────────────────────────────
 function addHistory(type, level, text, confidence, payload) {
   queryHistory.unshift({type, level, text, confidence, payload:JSON.stringify(payload,null,2), time:now()});
   if (queryHistory.length > 20) queryHistory.pop();
   renderHistory();
+  dashBumpTabBadge('history');
 }
 
 function renderHistory() {
@@ -1620,6 +1700,22 @@ function aisUpdateVesselList(fleet) {
     const listEl = document.getElementById('ais-vessel-list');
     const countEl = document.getElementById('ais-vessel-count-label');
     if (!listEl || !countEl) return;
+
+    // Bump the AIS tab badge only when a NEW vessel (by MMSI) enters the
+    // zone — not on every poll, so the badge stays meaningful rather than
+    // constantly incrementing on identical repeat data.
+    if (typeof dashBumpTabBadge === 'function') {
+        const seenMmsis = new Set(vessels.map(v => v.mmsi));
+        if (!window._aisKnownMmsis) window._aisKnownMmsis = new Set();
+        const isFirstLoad = window._aisKnownMmsis.size === 0 && seenMmsis.size > 0 && !window._aisSeenOnce;
+        window._aisSeenOnce = true;
+        for (const m of seenMmsis) {
+            if (!window._aisKnownMmsis.has(m)) {
+                if (!isFirstLoad) dashBumpTabBadge('ais');
+                window._aisKnownMmsis.add(m);
+            }
+        }
+    }
 
     countEl.textContent = `${vessels.length} vessel${vessels.length !== 1 ? 's' : ''} in zone`;
 
