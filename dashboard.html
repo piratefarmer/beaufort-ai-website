@@ -208,6 +208,19 @@
   <nav class="site-nav"><a href="/#contact">Contact</a><a href="/weather.html">Weather</a></nav>
 </header>
 
+<!-- Live-systems maintenance banner (added 2026-07-05). Hidden by default;
+     shown automatically by checkLiveSystemsStatus() below whenever
+     /api/beau/health is unreachable or reports a degraded/offline state.
+     Purpose: this dashboard's live data (sensors, GraphCast forecast, AIS,
+     Beau Q&A) depends on beau_server.py on the DGX, which is intentionally
+     stopped during benchmark runs and other maintenance. Rather than let a
+     visitor see raw broken-looking error states (SENSOR OFFLINE, forecast
+     stuck on "unavailable", failed Q&A), show one clear, honest, deliberate
+     message instead. -->
+<div id="maintenance-banner" style="display:none;background:#1a1410;border-bottom:1px solid #d97706;color:#fbbf24;font-family:var(--font-mono,monospace);font-size:12px;text-align:center;padding:9px 16px;">
+  &#x1F527; Live systems (sensors, forecast, AIS) are temporarily offline &mdash; we run active R&amp;D and benchmark experiments directly on this platform. Check back shortly, or read more about what we're building below.
+</div>
+
 <div class="dash-header">
   <div class="dash-header-inner">
     <div>
@@ -481,6 +494,38 @@
 // ============================================================
 
 // CONFIG
+// ── Live-systems maintenance banner (added 2026-07-05) ──────────────────
+// Polls the existing /api/beau/health endpoint. Shows the banner if the
+// request fails outright (server down / DGX unreachable) or comes back
+// non-"ready" (Ollama down, etc). Hides it once healthy again. Runs
+// independently of the sensor/forecast/AIS polling loops so it works even
+// if those are erroring out.
+let maintenanceBannerVisible = false;
+async function checkLiveSystemsStatus() {
+  const banner = document.getElementById('maintenance-banner');
+  if (!banner) return;
+  try {
+    const res = await fetch('https://beau.beaufort-ai.com/api/beau/health', { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    const healthy = d.status === 'ready';
+    if (healthy && maintenanceBannerVisible) {
+      banner.style.display = 'none';
+      maintenanceBannerVisible = false;
+    } else if (!healthy && !maintenanceBannerVisible) {
+      banner.style.display = 'block';
+      maintenanceBannerVisible = true;
+    }
+  } catch (e) {
+    // Unreachable entirely (server stopped, network error, timeout) — same
+    // treatment as an unhealthy response.
+    if (!maintenanceBannerVisible) {
+      banner.style.display = 'block';
+      maintenanceBannerVisible = true;
+    }
+  }
+}
+
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
@@ -1296,6 +1341,11 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchForecast();
   }
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
+
+  // Maintenance banner: check immediately on load, then every 30s so it
+  // shows/hides promptly around benchmark runs and other server restarts.
+  checkLiveSystemsStatus();
+  setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
   setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
