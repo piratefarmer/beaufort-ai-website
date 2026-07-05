@@ -175,6 +175,9 @@
     .ais-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.03)}
     .ais-title{font-family:var(--font-mono);font-size:11px;color:var(--blue);letter-spacing:.12em;font-weight:600}
     .ais-meta{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    .ais-radar-toggle{background:none;border:1px solid var(--border);border-radius:8px;padding:3px 10px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+    .ais-radar-toggle:hover{border-color:var(--blue);color:var(--blue)}
+    .ais-radar-toggle.active{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)}
     #ais-map{height:420px;width:100%;background:#0a0f14}
     .ais-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;border-top:1px solid var(--border)}
     .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
@@ -366,6 +369,7 @@
     <div class="ais-box" id="ais-box">
       <div class="ais-header">
         <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
+        <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
       </div>
       <div id="ais-map"></div>
@@ -1681,6 +1685,73 @@ L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 14,
     opacity: 0.9
 }).addTo(aisMap);
+
+// ── Weather Radar Overlay (RainViewer, free public API) ─────────────────
+// Ground-based composite radar (NEXRAD-class). Coverage is land-station
+// based, so it thins out offshore beyond ~100-150nm from the coast — most
+// useful for coastal transit/approach, not mid-Gulf/Campos Basin transit.
+// Docs: https://www.rainviewer.com/api/weather-maps-api.html
+let aisRadarLayer = null;
+let aisRadarEnabled = false;
+let aisRadarRefreshTimer = null;
+
+async function aisLoadRadarLayer() {
+    try {
+        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+        const data = await res.json();
+        const frames = (data.radar && data.radar.past) || [];
+        if (!frames.length) return null;
+        const latest = frames[frames.length - 1]; // most recent past frame
+        const host = data.host;
+        // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
+        const url = `${host}${latest.path}/512/{z}/{x}/{y}/2/1_1.png`;
+        return L.tileLayer(url, {
+            attribution: '&copy; RainViewer',
+            opacity: 0.55,
+            maxZoom: 12,
+            zIndex: 5
+        });
+    } catch (e) {
+        console.warn('RainViewer radar fetch failed:', e);
+        return null;
+    }
+}
+
+async function aisToggleRadar() {
+    const btn = document.getElementById('ais-radar-toggle');
+    aisRadarEnabled = !aisRadarEnabled;
+
+    if (aisRadarEnabled) {
+        btn.textContent = '\u{1F327}\uFE0F Radar: Loading...';
+        const layer = await aisLoadRadarLayer();
+        if (layer) {
+            aisRadarLayer = layer;
+            aisRadarLayer.addTo(aisMap);
+            btn.textContent = '\u{1F327}\uFE0F Radar: ON';
+            btn.classList.add('active');
+            // Refresh the radar frame every 10 minutes (RainViewer's cadence)
+            if (aisRadarRefreshTimer) clearInterval(aisRadarRefreshTimer);
+            aisRadarRefreshTimer = setInterval(async () => {
+                if (!aisRadarEnabled) return;
+                const fresh = await aisLoadRadarLayer();
+                if (fresh) {
+                    if (aisRadarLayer) aisMap.removeLayer(aisRadarLayer);
+                    aisRadarLayer = fresh;
+                    aisRadarLayer.addTo(aisMap);
+                }
+            }, 10 * 60 * 1000);
+        } else {
+            aisRadarEnabled = false;
+            btn.textContent = '\u{1F327}\uFE0F Radar: unavailable';
+            setTimeout(() => { btn.textContent = '\u{1F327}\uFE0F Radar: OFF'; }, 3000);
+        }
+    } else {
+        if (aisRadarLayer) { aisMap.removeLayer(aisRadarLayer); aisRadarLayer = null; }
+        if (aisRadarRefreshTimer) { clearInterval(aisRadarRefreshTimer); aisRadarRefreshTimer = null; }
+        btn.textContent = '\u{1F327}\uFE0F Radar: OFF';
+        btn.classList.remove('active');
+    }
+}
 
 let aisVesselMarkers = {};
 let aisZoneCircle = null;
