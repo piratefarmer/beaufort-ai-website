@@ -1708,7 +1708,13 @@ async function aisLoadRadarLayer() {
         return L.tileLayer(url, {
             attribution: '&copy; RainViewer',
             opacity: 0.55,
-            maxZoom: 12,
+            maxZoom: 18,       // let the map itself zoom in freely for AIS work
+            maxNativeZoom: 7,  // RainViewer's tile server tops out at z7; above
+                                // that Leaflet upscales/stretches the z7 tile
+                                // instead of requesting a nonexistent zoom level
+                                // (was capped at 12 with no maxNativeZoom, which
+                                // caused "zoom level not supported" at AIS-useful
+                                // zoom levels like z8-14)
             zIndex: 5
         });
     } catch (e) {
