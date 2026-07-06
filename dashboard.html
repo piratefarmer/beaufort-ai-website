@@ -112,6 +112,38 @@
     .stream-cursor{display:inline-block;width:8px;height:14px;background:var(--blue);vertical-align:middle;animation:blink .7s step-end infinite;margin-left:2px}
     .stream-cursor.purple{background:var(--purple)}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+    /* ── Flag Issue widget (added 2026-07-06): lets operators report a
+       wrong/unclear Beau answer or a general site bug. Submits to the
+       beau-feedback Worker, which emails piratefarmer2@gmail.com — same
+       inbox already used for photo/video submissions. ── */
+    .flag-issue-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--font-mono);font-size:10px;letter-spacing:.04em;padding:3px 9px;cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap}
+    .flag-issue-btn:hover{border-color:var(--amber);color:var(--amber)}
+    .flag-issue-footer{display:flex;justify-content:flex-end;padding:0 20px 14px}
+    .flag-modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,7,10,.72);z-index:1000;align-items:center;justify-content:center;padding:20px}
+    .flag-modal-overlay.open{display:flex}
+    .flag-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .flag-modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .flag-modal-title{font-family:var(--font-mono);font-size:12px;color:var(--amber);letter-spacing:.1em;font-weight:600}
+    .flag-modal-close{background:none;border:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+    .flag-modal-close:hover{color:var(--text)}
+    .flag-modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+    .flag-field label{display:block;font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.1em;margin-bottom:6px}
+    .flag-context-preview{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+    .flag-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none}
+    .flag-select:focus{border-color:var(--amber)}
+    .flag-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;resize:vertical;min-height:80px;line-height:1.5}
+    .flag-textarea:focus{border-color:var(--amber)}
+    .flag-textarea::placeholder{color:var(--muted)}
+    .flag-modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border)}
+    .flag-btn-cancel{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text-dim);font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.06em;padding:9px 16px;cursor:pointer}
+    .flag-btn-cancel:hover{border-color:var(--muted)}
+    .flag-btn-submit{background:var(--amber);border:none;border-radius:6px;color:#1a1410;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;padding:9px 18px;cursor:pointer;transition:opacity .2s}
+    .flag-btn-submit:hover:not(:disabled){opacity:.85}
+    .flag-btn-submit:disabled{opacity:.5;cursor:not-allowed}
+    .flag-status-msg{font-family:var(--font-mono);font-size:11px;padding:0 20px 4px;display:none}
+    .flag-status-msg.success{color:var(--green);display:block}
+    .flag-status-msg.error{color:var(--red);display:block}
     .thinking-state{display:flex;align-items:center;gap:12px;color:var(--muted)}
     .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
     .spinner.purple{border-top-color:var(--purple)}
@@ -427,6 +459,7 @@
         <button class="payload-toggle" id="payload-toggle" onclick="togglePayload()">&#9658; SHOW LAST PAYLOAD</button>
         <pre class="payload-json" id="payload-json" style="display:none"></pre>
       </div>
+      <div class="flag-issue-footer"><button class="flag-issue-btn" onclick="openFlagModal('sensor')">&#x1F6A9; FLAG ISSUE</button></div>
     </div>
 
     <!-- Q&A INPUT (moved 2026-07-04 per Cap: input card sits above its response card) -->
@@ -454,6 +487,7 @@
         <span style="color:var(--muted);font-style:italic">Type a maritime question in the Q&amp;A panel and press ASK to query Beau.</span>
       </div>
       <div class="analysis-confidence" id="qa-analysis-confidence"></div>
+      <div class="flag-issue-footer"><button class="flag-issue-btn" onclick="openFlagModal('qa')">&#x1F6A9; FLAG ISSUE</button></div>
     </div>
 
     </div>
@@ -481,8 +515,44 @@
 
 <footer class="site-footer">
   <p>Beaufort AI LLC &mdash; Maritime Intelligence Platform. Real-time vessel sensor data analyzed by Beau AI engine.<br>
-  Not for navigational use. Always rely on certified navigation equipment and qualified officers for operational decisions.</p>
+  Not for navigational use. Always rely on certified navigation equipment and qualified officers for operational decisions.<br>
+  <button class="flag-issue-btn" style="margin-top:8px" onclick="openFlagModal('general')">&#x1F6A9; FLAG AN ISSUE WITH THIS SITE</button></p>
 </footer>
+
+<!-- Flag Issue modal (added 2026-07-06) -->
+<div class="flag-modal-overlay" id="flag-modal-overlay" onclick="if(event.target===this) closeFlagModal()">
+  <div class="flag-modal">
+    <div class="flag-modal-header">
+      <span class="flag-modal-title">&#x1F6A9; FLAG AN ISSUE</span>
+      <button class="flag-modal-close" onclick="closeFlagModal()">&times;</button>
+    </div>
+    <div class="flag-modal-body">
+      <div class="flag-field" id="flag-context-wrap" style="display:none">
+        <label>FLAGGED CONTENT</label>
+        <div class="flag-context-preview" id="flag-context-preview"></div>
+      </div>
+      <div class="flag-field">
+        <label>CATEGORY</label>
+        <select class="flag-select" id="flag-category">
+          <option value="Wrong or Inaccurate Answer">Wrong or Inaccurate Answer</option>
+          <option value="Missing Information">Missing Information</option>
+          <option value="Unclear / Confusing Response">Unclear / Confusing Response</option>
+          <option value="Website or Dashboard Bug">Website or Dashboard Bug</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="flag-field">
+        <label>COMMENTS</label>
+        <textarea class="flag-textarea" id="flag-comment" placeholder="Describe the issue — what's wrong, what you expected instead, or any other detail that would help us fix it."></textarea>
+      </div>
+    </div>
+    <div class="flag-status-msg" id="flag-status-msg"></div>
+    <div class="flag-modal-footer">
+      <button class="flag-btn-cancel" onclick="closeFlagModal()">CANCEL</button>
+      <button class="flag-btn-submit" id="flag-btn-submit" onclick="submitFlagIssue()">SUBMIT &rarr;</button>
+    </div>
+  </div>
+</div>
 
 <script src="/leaflet/leaflet.js"></script>
 <script>
@@ -528,6 +598,7 @@ async function checkLiveSystemsStatus() {
 
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
+const FEEDBACK_API_URL = 'https://beau-feedback.capt-barrett.workers.dev/';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 const AUTO_DEBOUNCE_MS = 1500; // ms after last change before auto-triggering
 
@@ -1126,6 +1197,104 @@ function togglePayload() {
   const tg = document.getElementById('payload-toggle');
   if (pj) pj.style.display = payloadVisible ? 'block' : 'none';
   if (tg) tg.textContent = (payloadVisible ? '\u25bc HIDE' : '\u25b6 SHOW') + ' LAST PAYLOAD';
+}
+
+// ── FLAG ISSUE WIDGET (added 2026-07-06) ─────────────────────
+// Lets operators flag a wrong/unclear Beau answer or a general site bug.
+// Submits to the beau-feedback Cloudflare Worker, which emails
+// piratefarmer2@gmail.com (same inbox already used for photo/video
+// submissions) via Cloudflare's native send_email binding.
+let flagModalSource = 'general'; // 'sensor' | 'qa' | 'general'
+
+function openFlagModal(source) {
+  flagModalSource = source;
+  const overlay = document.getElementById('flag-modal-overlay');
+  const ctxWrap = document.getElementById('flag-context-wrap');
+  const ctxPreview = document.getElementById('flag-context-preview');
+  const statusMsg = document.getElementById('flag-status-msg');
+  const commentEl = document.getElementById('flag-comment');
+  const categoryEl = document.getElementById('flag-category');
+
+  // Reset form state each time it's opened
+  if (statusMsg) { statusMsg.textContent = ''; statusMsg.className = 'flag-status-msg'; }
+  if (commentEl) commentEl.value = '';
+  if (categoryEl) categoryEl.value = 'Wrong or Inaccurate Answer';
+
+  if (source === 'qa') {
+    const q = (document.getElementById('qa-question-display')?.textContent || '').trim();
+    const a = (document.getElementById('qa-analysis-body')?.textContent || '').trim();
+    if (q || a) {
+      ctxPreview.textContent = (q ? 'Q: ' + q + '\n\n' : '') + (a ? 'A: ' + a : '');
+      ctxWrap.style.display = 'block';
+    } else {
+      ctxWrap.style.display = 'none';
+    }
+  } else if (source === 'sensor') {
+    const a = (document.getElementById('analysis-body')?.textContent || '').trim();
+    if (a) {
+      ctxPreview.textContent = 'Beau sensor analysis: ' + a;
+      ctxWrap.style.display = 'block';
+    } else {
+      ctxWrap.style.display = 'none';
+    }
+    categoryEl.value = 'Wrong or Inaccurate Answer';
+  } else {
+    ctxWrap.style.display = 'none';
+    categoryEl.value = 'Website or Dashboard Bug';
+  }
+
+  if (overlay) overlay.classList.add('open');
+}
+
+function closeFlagModal() {
+  const overlay = document.getElementById('flag-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+async function submitFlagIssue() {
+  const btn = document.getElementById('flag-btn-submit');
+  const statusMsg = document.getElementById('flag-status-msg');
+  const category = document.getElementById('flag-category')?.value || '';
+  const comment = (document.getElementById('flag-comment')?.value || '').trim();
+
+  if (!comment) {
+    if (statusMsg) { statusMsg.textContent = 'Please add a comment describing the issue.'; statusMsg.className = 'flag-status-msg error'; }
+    return;
+  }
+
+  let question = '', answer = '';
+  if (flagModalSource === 'qa') {
+    question = (document.getElementById('qa-question-display')?.textContent || '').replace(/^[\u201c\u201d"]|[\u201c\u201d"]$/g,'').trim();
+    answer = (document.getElementById('qa-analysis-body')?.textContent || '').trim();
+  } else if (flagModalSource === 'sensor') {
+    answer = (document.getElementById('analysis-body')?.textContent || '').trim();
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'SENDING...'; }
+  if (statusMsg) { statusMsg.textContent = ''; statusMsg.className = 'flag-status-msg'; }
+
+  try {
+    const res = await fetch(FEEDBACK_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category,
+        comment,
+        question,
+        answer,
+        page_url: window.location.href,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    if (statusMsg) { statusMsg.textContent = '\u2713 Thanks \u2014 your feedback has been sent to the team.'; statusMsg.className = 'flag-status-msg success'; }
+    setTimeout(closeFlagModal, 1600);
+  } catch (e) {
+    if (statusMsg) { statusMsg.textContent = 'Failed to send: ' + e.message + '. Please try again.'; statusMsg.className = 'flag-status-msg error'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'SUBMIT \u2192'; }
+  }
 }
 
 // ── WIRE UP EVENTS ───────────────────────────────────────────
