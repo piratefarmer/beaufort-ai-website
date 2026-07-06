@@ -11,6 +11,8 @@
  *     comment: string,         // required, operator's free-text note
  *     question: string,        // optional, the Q&A question that was asked
  *     answer: string,          // optional, Beau's response being flagged
+ *     vessel_name: string,     // optional, operator-entered vessel name (pattern tracking)
+ *     operator_name: string,   // optional, operator-entered name (pattern tracking)
  *     page_url: string,        // optional, which page/tab this came from
  *   }
  */
@@ -74,6 +76,8 @@ export default {
     const comment = esc(body.comment).trim();
     const question = esc(body.question).trim();
     const answer = esc(body.answer).trim();
+    const vesselName = esc(body.vessel_name).trim().slice(0, 200);
+    const operatorName = esc(body.operator_name).trim().slice(0, 200);
     const pageUrl = esc(body.page_url).trim();
 
     if (!category || !CATEGORIES.has(category)) {
@@ -100,6 +104,8 @@ export default {
     const lines = [];
     lines.push(`Category: ${category}`);
     lines.push(`Submitted: ${nowIso}`);
+    if (vesselName) lines.push(`Vessel: ${vesselName}`);
+    if (operatorName) lines.push(`Operator: ${operatorName}`);
     if (pageUrl) lines.push(`Page: ${pageUrl}`);
     lines.push("");
     if (question) {

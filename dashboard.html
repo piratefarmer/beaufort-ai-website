@@ -132,6 +132,11 @@
     .flag-context-preview{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
     .flag-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none}
     .flag-select:focus{border-color:var(--amber)}
+    .flag-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none}
+    .flag-input:focus{border-color:var(--amber)}
+    .flag-input::placeholder{color:var(--muted)}
+    .flag-field-row{display:flex;gap:12px}
+    .flag-field-row .flag-field{flex:1;min-width:0}
     .flag-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;resize:vertical;min-height:80px;line-height:1.5}
     .flag-textarea:focus{border-color:var(--amber)}
     .flag-textarea::placeholder{color:var(--muted)}
@@ -530,6 +535,16 @@
       <div class="flag-field" id="flag-context-wrap" style="display:none">
         <label>FLAGGED CONTENT</label>
         <div class="flag-context-preview" id="flag-context-preview"></div>
+      </div>
+      <div class="flag-field-row">
+        <div class="flag-field">
+          <label>VESSEL NAME (OPTIONAL)</label>
+          <input type="text" class="flag-input" id="flag-vessel" placeholder="e.g. Kirt Chouest">
+        </div>
+        <div class="flag-field">
+          <label>OPERATOR NAME (OPTIONAL)</label>
+          <input type="text" class="flag-input" id="flag-operator" placeholder="Your name">
+        </div>
       </div>
       <div class="flag-field">
         <label>CATEGORY</label>
@@ -1214,11 +1229,16 @@ function openFlagModal(source) {
   const statusMsg = document.getElementById('flag-status-msg');
   const commentEl = document.getElementById('flag-comment');
   const categoryEl = document.getElementById('flag-category');
+  const vesselEl = document.getElementById('flag-vessel');
+  const operatorEl = document.getElementById('flag-operator');
 
   // Reset form state each time it's opened
   if (statusMsg) { statusMsg.textContent = ''; statusMsg.className = 'flag-status-msg'; }
   if (commentEl) commentEl.value = '';
   if (categoryEl) categoryEl.value = 'Wrong or Inaccurate Answer';
+  // Prefill vessel/operator from last submission on this browser (optional, spot-patterns aid)
+  if (vesselEl) vesselEl.value = localStorage.getItem('beauFlagVessel') || '';
+  if (operatorEl) operatorEl.value = localStorage.getItem('beauFlagOperator') || '';
 
   if (source === 'qa') {
     const q = (document.getElementById('qa-question-display')?.textContent || '').trim();
@@ -1256,6 +1276,8 @@ async function submitFlagIssue() {
   const statusMsg = document.getElementById('flag-status-msg');
   const category = document.getElementById('flag-category')?.value || '';
   const comment = (document.getElementById('flag-comment')?.value || '').trim();
+  const vesselName = (document.getElementById('flag-vessel')?.value || '').trim();
+  const operatorName = (document.getElementById('flag-operator')?.value || '').trim();
 
   if (!comment) {
     if (statusMsg) { statusMsg.textContent = 'Please add a comment describing the issue.'; statusMsg.className = 'flag-status-msg error'; }
@@ -1282,11 +1304,17 @@ async function submitFlagIssue() {
         comment,
         question,
         answer,
+        vessel_name: vesselName,
+        operator_name: operatorName,
         page_url: window.location.href,
       }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    // Remember vessel/operator for next time (optional, saved locally only)
+    if (vesselName) localStorage.setItem('beauFlagVessel', vesselName); else localStorage.removeItem('beauFlagVessel');
+    if (operatorName) localStorage.setItem('beauFlagOperator', operatorName); else localStorage.removeItem('beauFlagOperator');
 
     if (statusMsg) { statusMsg.textContent = '\u2713 Thanks \u2014 your feedback has been sent to the team.'; statusMsg.className = 'flag-status-msg success'; }
     setTimeout(closeFlagModal, 1600);
