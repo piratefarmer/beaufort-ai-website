@@ -548,7 +548,8 @@ body {
 .waitlist-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
-.waitlist-form input {
+.waitlist-form input,
+.waitlist-form textarea {
   background: var(--dark2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -559,10 +560,19 @@ body {
   outline: none;
   transition: border-color 0.2s;
   width: 100%;
+  box-sizing: border-box;
 }
-.waitlist-form input:focus { border-color: var(--accent); }
-.waitlist-form input::placeholder { color: var(--muted); }
+.waitlist-form textarea { resize: vertical; min-height: 100px; }
+.waitlist-form input:focus,
+.waitlist-form textarea:focus { border-color: var(--accent); }
+.waitlist-form input::placeholder,
+.waitlist-form textarea::placeholder { color: var(--muted); }
+.waitlist-form .contact-cta { margin: 4px 0 0; }
+.waitlist-form button:disabled { opacity: 0.6; cursor: not-allowed; }
 .form-note { font-size: 13px; color: var(--muted); text-align: center; margin-top: 12px; }
+.form-status { font-size: 14px; text-align: center; margin: 4px 0 0; min-height: 20px; }
+.form-status.success { color: var(--accent-green); }
+.form-status.error { color: #ff6b6b; }
 .contact-direct { margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border); }
 .contact-direct p { color: var(--muted); font-size: 14px; }
 .contact-direct a { color: var(--accent); text-decoration: none; }

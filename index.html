@@ -25,8 +25,8 @@
         <a href="weather.html">Gulf of America Weather</a>
         <a href="storm-nov2022.html">Case Study</a>
         <a href="/why-beaufort.html" class="btn-nav">Why Beaufort?</a>
-        <a href="/dashboard.html" target="_blank" class="btn-nav-dash">Vessel Bridge</a>
-        <a href="mailto:Barrett@beaufortai.ai" class="btn-nav">Learn More</a>
+        <a href="/dashboard.html" class="btn-nav-dash">Vessel Bridge</a>
+        <a href="#contact" class="btn-nav">Learn More</a>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -38,13 +38,13 @@
   <section class="hero">
     <div class="hero-bg-grid"></div>
     <div class="container">
-      <div class="hero-badge">Now in development · Patent Filed · NSF SBIR applicant</div>
+      <div class="hero-badge">Now in development · Patent Filed · Navy SBIR applicant</div>
       <h1 class="hero-title">Weather doesn't wait.<br><span class="accent">Neither should you.</span></h1>
       <p class="hero-sub">BEAU gives offshore vessels 30–90 minutes of predictive weather warning — fusing onboard sensors, fleet AIS signals, and edge AI inference. No cloud. No latency. No excuses.</p>
       <p class="hero-sub hero-deploy">Currently deployed and running live aboard an active offshore subsea construction vessel in Brazil.</p>
       <div class="hero-cta">
-        <a href="/dashboard.html" target="_blank" class="btn-primary">See Beau in Action</a>
-        <a href="/weather.html" target="_blank" class="btn-live"><span class="live-dot"></span>Gulf of America Weather →</a>
+        <a href="/dashboard.html" class="btn-primary">See Beau in Action</a>
+        <a href="/weather.html" class="btn-live"><span class="live-dot"></span>Gulf of America Weather →</a>
       </div>
       <div class="hero-stat-row">
         <div class="hero-stat"><span class="stat-num">30–90</span><span class="stat-label">min advance warning</span></div>
@@ -134,7 +134,7 @@
             <li>Real-time weather Q&amp;A — ask Beau anything about current conditions</li>
             <li>Live vessel sensor data — wind, pressure, GPS, roll, pitch</li>
             <li>Predictive weather forecasting from onboard sensor fusion</li>
-            <li>Maritime operational Q&amp;A — ask Beau about deck procedures, safety, and navigation rules. <a href="/dashboard.html" target="_blank">Try it live on the Vessel Bridge →</a></li>
+            <li>Maritime operational Q&amp;A — ask Beau about deck procedures, safety, and navigation rules. <a href="/dashboard.html">Try it live on the Vessel Bridge →</a></li>
             <li>AIS vessel tracking and fleet awareness</li>
             <li>Barometric trend analysis and pressure rate alerts</li>
             <li>Edge deployment — runs entirely on vessel hardware</li>
@@ -246,9 +246,18 @@
         <div class="section-label">Get In Touch</div>
         <h2>Interested in BEAU for your fleet?</h2>
         <p>We're building a small group of early access partners — offshore operators, fleet managers, and DP vessels interested in participating in Phase I validation and early deployment. No commitment required.</p>
-        <div class="contact-cta">
-          <a href="mailto:Barrett@beaufortai.ai" class="btn-primary">Learn More</a>
-        </div>
+        <form class="waitlist-form" id="contact-form">
+          <div class="form-row">
+            <input type="text" id="contact-name" name="name" placeholder="Your name" autocomplete="name">
+            <input type="text" id="contact-company" name="company" placeholder="Company / Vessel (optional)" autocomplete="organization">
+          </div>
+          <input type="email" id="contact-email" name="email" placeholder="Your email" autocomplete="email" required>
+          <textarea id="contact-message" name="message" placeholder="Tell us a bit about your fleet or what you're interested in" rows="4" required></textarea>
+          <div class="contact-cta">
+            <button type="submit" class="btn-primary" id="contact-submit">Send</button>
+          </div>
+          <p class="form-status" id="contact-status" aria-live="polite"></p>
+        </form>
         <p class="form-note">No spam. No sales calls. Just a conversation.</p>
         <div class="contact-direct">
           <p>Or reach us directly: <a href="mailto:Barrett@beaufortai.ai">Barrett@beaufortai.ai</a></p>
@@ -287,6 +296,44 @@
       navLinks.classList.remove('open');
     });
   });
+
+  // ── CONTACT FORM ──────────────────────────────────────────
+  // Submits to the beau-contact Cloudflare Worker, which emails
+  // piratefarmer2@gmail.com via Cloudflare's native send_email binding
+  // (same pattern as the dashboard's beau-feedback worker).
+  const CONTACT_API_URL = 'https://beau-contact.capt-barrett.workers.dev/';
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('contact-submit');
+      const status = document.getElementById('contact-status');
+      const name = document.getElementById('contact-name').value.trim();
+      const company = document.getElementById('contact-company').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+
+      if (status) { status.textContent = ''; status.className = 'form-status'; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+      try {
+        const res = await fetch(CONTACT_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, company, message, page_url: window.location.href }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        if (status) { status.textContent = '\u2713 Thanks \u2014 we\u2019ll be in touch soon.'; status.className = 'form-status success'; }
+        contactForm.reset();
+      } catch (err) {
+        if (status) { status.textContent = 'Failed to send: ' + err.message + '. Please try again, or email Barrett@beaufortai.ai directly.'; status.className = 'form-status error'; }
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+      }
+    });
+  }
 </script>
 </body>
 </html>

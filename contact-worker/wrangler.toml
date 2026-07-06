@@ -1,0 +1,7 @@
+name = "beau-contact"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+[[send_email]]
+name = "SEB"
+destination_address = "piratefarmer2@gmail.com"
