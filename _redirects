@@ -1,10 +1,4 @@
 /dashboard.html /dashboard.html 200
 /weather.html /weather.html 200
 /storm-nov2022.html /storm-nov2022.html 200
-# Clean-URL aliases (no .html) — added 2026-07-06 so links without the
-# extension don't silently fall through to the homepage catch-all below.
-/dashboard /dashboard.html 200
-/weather /weather.html 200
-/why-beaufort /why-beaufort.html 200
-/library /library.html 200
 /* /index.html 200
