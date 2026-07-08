@@ -347,6 +347,7 @@
       <button class="dash-tab-btn" data-tab="ais" onclick="dashSwitchTab('ais')">&#9673; AIS <span class="tab-badge" id="tab-badge-ais"></span></button>
       <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
       <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
+      <button class="dash-tab-btn" data-tab="library" onclick="dashSwitchTab('library')">&#9673; SHIP'S LIBRARY</button>
     </div>
 
     <!-- TAB: CONDITIONS -->
@@ -514,6 +515,19 @@
 
     </div>
     <!-- /TAB: HISTORY -->
+
+    <!-- TAB: SHIP'S LIBRARY (added 2026-07-08) -->
+    <!-- Embedded via iframe pointing at the existing standalone library.html
+         rather than duplicating its content here. Single source of truth --
+         if the publication list/links are updated on the marketing site,
+         this tab picks up the change automatically with zero extra edits,
+         and there's no risk of the two copies drifting out of sync. -->
+    <div class="dash-tab-panel" id="tab-library">
+      <div style="background:#0d1829;border:1px solid #1e3a5f;border-radius:12px;overflow:hidden;height:calc(100vh - 220px);min-height:500px">
+        <iframe src="library.html" title="Ship's Library" style="width:100%;height:100%;border:none;display:block" loading="lazy"></iframe>
+      </div>
+    </div>
+    <!-- /TAB: SHIP'S LIBRARY -->
 
   </main>
 </div>
