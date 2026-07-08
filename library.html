@@ -80,14 +80,14 @@
             <h3 class="pub-title">Bowditch Vol 1: American Practical Navigator</h3>
             <p class="pub-desc">The essential encyclopedia of navigation, a foundational text for all mariners.</p>
           </div>
-          <a href="https://msi.nga.mil/api/publications/download?key=16694312/SFH00000/Bowditch-2019Vol1.pdf&type=view" target="_blank" class="pub-btn">Open PDF →</a>
+          <a href="https://msi.nga.mil/api/publications/download?key=16693975/SFH00000/Bowditch_Vol_1.pdf&type=view" target="_blank" class="pub-btn">Open PDF →</a>
         </div>
         <div class="pub-card">
           <div>
             <h3 class="pub-title">Bowditch Vol 2</h3>
             <p class="pub-desc">Volume 2, containing useful tables, formulas, and supplemental materials.</p>
           </div>
-          <a href="https://msi.nga.mil/api/publications/download?key=16694312/SFH00000/Bowditch-2019Vol2.pdf&type=view" target="_blank" class="pub-btn">Open PDF →</a>
+          <a href="https://msi.nga.mil/api/publications/download?key=16693975/SFH00000/Bowditch_Vol_2.pdf&type=view" target="_blank" class="pub-btn">Open PDF →</a>
         </div>
         <!-- Chart No. 1 -->
         <div class="pub-card">
@@ -95,7 +95,7 @@
             <h3 class="pub-title">Chart No. 1</h3>
             <p class="pub-desc">Definitive guide to all symbols, abbreviations and terms used on nautical charts.</p>
           </div>
-          <a href="https://nauticalcharts.noaa.gov/publications/chartno1/chartno1.pdf" target="_blank" class="pub-btn">Open PDF →</a>
+          <a href="https://nauticalcharts.noaa.gov/publications/docs/us-chart-1/ChartNo1.pdf" target="_blank" class="pub-btn">Open PDF →</a>
         </div>
         <!-- Coast Pilots -->
         <div class="pub-card">
@@ -229,7 +229,7 @@
         </div>
         <div class="pub-card">
           <h3 class="pub-title">NOAA Tidal Current Predictions</h3>
-          <a href="https://tidesandcurrents.noaa.gov/currents_pred.shtml" target="_blank" class="pub-btn">Open →</a>
+          <a href="https://tidesandcurrents.noaa.gov/products.html" target="_blank" class="pub-btn">Open →</a>
         </div>
         <div class="pub-card">
           <h3 class="pub-title">NOAA Water Levels</h3>
@@ -242,14 +242,22 @@
         <h2 class="section-title">⚓ Regulations & Safety</h2>
         <div class="pub-grid">
             <div class="pub-card"><h3 class="pub-title">COLREGS (72 COLREGS)</h3><a href="https://www.navcen.uscg.gov/sites/default/files/pdf/navRules/navrules.pdf" target="_blank" class="pub-btn">Open PDF →</a></div>
-            <div class="pub-card"><h3 class="pub-title">Navigation Rules (Inland + International)</h3><a href="https://www.navcen.uscg.gov/navigation-rules" target="_blank" class="pub-btn">Open →</a></div>
+            <div class="pub-card"><h3 class="pub-title">Navigation Rules (Inland + International, Amalgamated)</h3><a href="https://www.navcen.uscg.gov/navigation-rules-amalgamated" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><h3 class="pub-title">33 CFR (eCFR)</h3><a href="https://www.ecfr.gov/current/title-33" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><h3 class="pub-title">46 CFR (eCFR)</h3><a href="https://www.ecfr.gov/current/title-46" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><div><h3 class="pub-title">46 CFR Subchapter L — Offshore Supply Vessels</h3><p class="pub-desc">OSV-specific construction, equipment, and manning requirements (Parts 125–137) — direct rule for OSV-type vessels like the Kirt Chouest.</p></div><a href="https://www.ecfr.gov/current/title-46/chapter-I/subchapter-L" target="_blank" class="pub-btn">Open →</a></div>
-            <div class="pub-card"><div><h3 class="pub-title">SOLAS (Consolidated)</h3><p class="pub-desc">International Convention for the Safety of Life at Sea — the primary treaty covering ship construction, equipment, and operation.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=solas+consolidated" target="_blank" class="pub-btn">Buy from IMO →</a></div>
-            <div class="pub-card"><div><h3 class="pub-title">MARPOL (Consolidated)</h3><p class="pub-desc">International Convention for the Prevention of Pollution from Ships — Annexes I–VI covering oil, noxious liquids, sewage, air pollution, and more.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=marpol+consolidated" target="_blank" class="pub-btn">Buy from IMO →</a></div>
-            <div class="pub-card"><div><h3 class="pub-title">STCW Convention & Code</h3><p class="pub-desc">Standards of Training, Certification and Watchkeeping — the global standard for seafarer competency and certification.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=stcw+2010+manila" target="_blank" class="pub-btn">Buy from IMO →</a></div>
-            <div class="pub-card"><div><h3 class="pub-title">ISM Code</h3><p class="pub-desc">International Safety Management Code — required for all vessels over 500 GT on international voyages.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=ISM+code" target="_blank" class="pub-btn">Buy from IMO →</a></div>
+            <!-- Corrected 2026-07-08: the old IMO SearchByKeyword.aspx URLs
+                 all returned HTTP 500 -- confirmed IMO's search endpoint
+                 itself is broken server-side (site shell renders, no
+                 results). Replaced with IMO's real dedicated convention/code
+                 pages, verified live individually. These are informational
+                 pages, not the purchasable consolidated-edition PDFs (IMO
+                 sells those, doesn't publish full text free) -- button label
+                 updated from "Buy from IMO" to "View on IMO" to match. -->
+            <div class="pub-card"><div><h3 class="pub-title">SOLAS (Consolidated)</h3><p class="pub-desc">International Convention for the Safety of Life at Sea — the primary treaty covering ship construction, equipment, and operation.</p></div><a href="https://www.imo.org/en/about/conventions/pages/international-convention-for-the-safety-of-life-at-sea-(solas),-1974.aspx" target="_blank" class="pub-btn">View on IMO →</a></div>
+            <div class="pub-card"><div><h3 class="pub-title">MARPOL (Consolidated)</h3><p class="pub-desc">International Convention for the Prevention of Pollution from Ships — Annexes I–VI covering oil, noxious liquids, sewage, air pollution, and more.</p></div><a href="https://www.imo.org/en/about/conventions/pages/international-convention-for-the-prevention-of-pollution-from-ships-(marpol).aspx" target="_blank" class="pub-btn">View on IMO →</a></div>
+            <div class="pub-card"><div><h3 class="pub-title">STCW Convention & Code</h3><p class="pub-desc">Standards of Training, Certification and Watchkeeping — the global standard for seafarer competency and certification.</p></div><a href="https://www.imo.org/en/about/conventions/pages/international-convention-on-standards-of-training,-certification-and-watchkeeping-for-seafarers-(stcw).aspx" target="_blank" class="pub-btn">View on IMO →</a></div>
+            <div class="pub-card"><div><h3 class="pub-title">ISM Code</h3><p class="pub-desc">International Safety Management Code — required for all vessels over 500 GT on international voyages.</p></div><a href="https://www.imo.org/en/ourwork/humanelement/pages/ismcode.aspx" target="_blank" class="pub-btn">View on IMO →</a></div>
         </div>
     </div>
 
@@ -267,8 +275,8 @@
         <h2 class="section-title">📡 GMDSS & Communications</h2>
         <div class="pub-grid">
             <div class="pub-card"><h3 class="pub-title">ITU Radio Regulations</h3><a href="https://www.itu.int/en/publications/ITU-R/pages/publications.aspx?parent=R-REG-RR" target="_blank" class="pub-btn">Open →</a></div>
-            <div class="pub-card"><h3 class="pub-title">ALRS Vol 1 (GMDSS)</h3><a href="https://www.admiralty.co.uk/maritime-data-solutions/digital-services/admiralty-list-of-radio-signals" target="_blank" class="pub-btn">Open →</a></div>
-            <div class="pub-card"><h3 class="pub-title">GMDSS Handbook</h3><a href="https://www.imo.org/en/OurWork/Safety/Pages/GMDSS.aspx" target="_blank" class="pub-btn">Open →</a></div>
+            <div class="pub-card"><h3 class="pub-title">ALRS Vol 1 (GMDSS)</h3><a href="https://www.admiralty.co.uk/publications/publications-and-reference-guides/admiralty-list-of-radio-signals" target="_blank" class="pub-btn">Open →</a></div>
+            <div class="pub-card"><h3 class="pub-title">GMDSS Handbook</h3><a href="https://www.imo.org/en/ourwork/safety/pages/introduction-history.aspx" target="_blank" class="pub-btn">Open →</a></div>
         </div>
     </div>
 
