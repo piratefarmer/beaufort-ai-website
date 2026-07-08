@@ -202,28 +202,20 @@
       <h2 class="section-title">📋 Notices to Mariners</h2>
       <p class="section-sub">Weekly updates for corrections to nautical charts, publications, and other critical safety information.</p>
       <div class="pub-grid">
-        <div class="pub-card">
-          <h3 class="pub-title">Week 27 (Current)</h3>
-          <a href="https://www.navcen.uscg.gov/sites/default/files/pdf/ntm/2026/27/ntm2026_27.pdf" target="_blank" class="pub-btn">Open PDF →</a>
-        </div>
-        <div class="pub-card">
-          <h3 class="pub-title">Week 26</h3>
-          <a href="https://www.navcen.uscg.gov/sites/default/files/pdf/ntm/2026/26/ntm2026_26.pdf" target="_blank" class="pub-btn">Open PDF →</a>
-        </div>
-        <div class="pub-card">
-          <h3 class="pub-title">Week 25</h3>
-          <a href="https://www.navcen.uscg.gov/sites/default/files/pdf/ntm/2026/25/ntm2026_25.pdf" target="_blank" class="pub-btn">Open PDF →</a>
-        </div>
-        <div class="pub-card">
-          <h3 class="pub-title">Week 24</h3>
-          <a href="https://www.navcen.uscg.gov/sites/default/files/pdf/ntm/2026/24/ntm2026_24.pdf" target="_blank" class="pub-btn">Open PDF →</a>
-        </div>
+        <!-- Corrected 2026-07-08: USCG no longer publishes a single national
+             weekly "Week NN" NtM PDF -- the old ntm2026_NN.pdf links here were
+             confirmed dead (404) on the live USCG site. Notices to Mariners
+             are published per Coast Guard District via an interactive map,
+             each district with its own weekly LNM PDF. Replaced the stale
+             hardcoded weekly cards with the real, verified-live district map
+             page, which always reflects the current week automatically
+             (USCG's own page, not something we maintain). -->
         <div class="pub-card">
           <div>
-            <h3 class="pub-title">Local Notice to Mariners</h3>
-            <p class="pub-desc">District-specific notices for detailed local changes and hazards.</p>
+            <h3 class="pub-title">Local Notice to Mariners (by District)</h3>
+            <p class="pub-desc">USCG's interactive district map — always shows the current week's notices for your district automatically. Gulf Coast operations: District 8.</p>
           </div>
-          <a href="https://www.navcen.uscg.gov/local-notice-to-mariners" target="_blank" class="pub-btn">Find Your District →</a>
+          <a href="https://www.navcen.uscg.gov/local-notices-to-mariners-by-cg-district" target="_blank" class="pub-btn">Find Your District →</a>
         </div>
       </div>
     </div>
@@ -253,6 +245,7 @@
             <div class="pub-card"><h3 class="pub-title">Navigation Rules (Inland + International)</h3><a href="https://www.navcen.uscg.gov/navigation-rules" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><h3 class="pub-title">33 CFR (eCFR)</h3><a href="https://www.ecfr.gov/current/title-33" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><h3 class="pub-title">46 CFR (eCFR)</h3><a href="https://www.ecfr.gov/current/title-46" target="_blank" class="pub-btn">Open →</a></div>
+            <div class="pub-card"><div><h3 class="pub-title">46 CFR Subchapter L — Offshore Supply Vessels</h3><p class="pub-desc">OSV-specific construction, equipment, and manning requirements (Parts 125–137) — direct rule for OSV-type vessels like the Kirt Chouest.</p></div><a href="https://www.ecfr.gov/current/title-46/chapter-I/subchapter-L" target="_blank" class="pub-btn">Open →</a></div>
             <div class="pub-card"><div><h3 class="pub-title">SOLAS (Consolidated)</h3><p class="pub-desc">International Convention for the Safety of Life at Sea — the primary treaty covering ship construction, equipment, and operation.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=solas+consolidated" target="_blank" class="pub-btn">Buy from IMO →</a></div>
             <div class="pub-card"><div><h3 class="pub-title">MARPOL (Consolidated)</h3><p class="pub-desc">International Convention for the Prevention of Pollution from Ships — Annexes I–VI covering oil, noxious liquids, sewage, air pollution, and more.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=marpol+consolidated" target="_blank" class="pub-btn">Buy from IMO →</a></div>
             <div class="pub-card"><div><h3 class="pub-title">STCW Convention & Code</h3><p class="pub-desc">Standards of Training, Certification and Watchkeeping — the global standard for seafarer competency and certification.</p></div><a href="https://www.imo.org/en/Publications/Pages/SearchByKeyword.aspx?q=stcw+2010+manila" target="_blank" class="pub-btn">Buy from IMO →</a></div>
