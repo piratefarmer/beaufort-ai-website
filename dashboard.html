@@ -1536,6 +1536,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Only fetch the fallback immediately when live feed is off (manual mode).
   if (!(piFeedToggleEl && piFeedToggleEl.checked)) {
     fetchForecast();
+  } else {
+    // BUGFIX (2026-07-08): when live feed is on but the Pi has no GPS fix yet
+    // (indoors, cold start, hardware not wired up), fetchPiFeed()'s
+    // position-change trigger never fires (realLat/realLon stay null), so
+    // fetchForecast() was silently NEVER called and the forecast panel sat
+    // on "Loading..." forever with no fallback. Give the live-GPS path a
+    // fixed grace window, then fall back to the hardcoded position (better
+    // than an indefinitely blank panel) if no real fix has arrived by then.
+    setTimeout(() => {
+      if (lastForecastLat === null) fetchForecast();
+    }, 15000);
   }
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
 
