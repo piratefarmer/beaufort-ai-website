@@ -215,6 +215,12 @@
     .ais-radar-toggle{background:none;border:1px solid var(--border);border-radius:8px;padding:3px 10px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
     .ais-radar-toggle:hover{border-color:var(--blue);color:var(--blue)}
     .ais-radar-toggle.active{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)}
+    /* Radar playback controls (added 2026-07-08) */
+    .ais-radar-controls{display:none;align-items:center;gap:10px;padding:6px 16px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.02)}
+    .ais-radar-play{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;width:26px;height:26px;cursor:pointer;transition:border-color .2s,color .2s}
+    .ais-radar-play:hover{border-color:var(--blue);color:var(--blue)}
+    .ais-radar-scrubber{flex:1;accent-color:var(--blue);cursor:pointer}
+    .ais-radar-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:56px;text-align:right}
     #ais-map{height:420px;width:100%;background:#0a0f14}
     .ais-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;border-top:1px solid var(--border)}
     .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
@@ -422,6 +428,15 @@
         <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
+      </div>
+      <!-- Radar playback bar (added 2026-07-08): shown only while radar overlay
+           is toggled ON. Play/pause loops through RainViewer's past-frame
+           history (~2hrs of 10-min steps) so storm movement is visible, not
+           just a static latest frame. Scrubber lets you step through manually. -->
+      <div class="ais-radar-controls" id="ais-radar-controls">
+        <button class="ais-radar-play" id="ais-radar-play" onclick="aisRadarTogglePlay()" title="Play/pause storm movement loop">&#9654;</button>
+        <input type="range" class="ais-radar-scrubber" id="ais-radar-scrubber" min="0" max="0" value="0" oninput="aisRadarScrub(this.value)">
+        <span class="ais-radar-time" id="ais-radar-time">--:--</span>
       </div>
       <div id="ais-map"></div>
       <div class="ais-footer">
@@ -1962,60 +1977,125 @@ L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
 // Ground-based composite radar (NEXRAD-class). Coverage is land-station
 // based, so it thins out offshore beyond ~100-150nm from the coast — most
 // useful for coastal transit/approach, not mid-Gulf/Campos Basin transit.
+// Confirmed fine for Kirt Chouest ops per Cap (2026-07-08): rarely more than
+// ~150nm offshore, and when they are it's transit between ports — coastal
+// coverage is the real use case here, not a limitation.
 // Docs: https://www.rainviewer.com/api/weather-maps-api.html
-let aisRadarLayer = null;
+//
+// Animated playback (added 2026-07-08): RainViewer returns the last ~2hrs of
+// frames (10-min steps, ~13 frames) -- previously only the single latest
+// frame was ever shown. Now all frames are fetched once, tile layers
+// pre-created (hidden until shown), and a play/pause + scrubber bar lets
+// storm movement actually be seen, not just a static snapshot.
+let aisRadarLayers = [];       // [{layer, time}, ...] chronological order
+let aisRadarFrameIdx = 0;      // currently displayed frame index
 let aisRadarEnabled = false;
+let aisRadarPlaying = false;
+let aisRadarPlayTimer = null;
 let aisRadarRefreshTimer = null;
 
-async function aisLoadRadarLayer() {
+function aisRadarFormatTime(unixSeconds) {
+    const d = new Date(unixSeconds * 1000);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function aisLoadRadarFrames() {
     try {
         const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
         const data = await res.json();
         const frames = (data.radar && data.radar.past) || [];
-        if (!frames.length) return null;
-        const latest = frames[frames.length - 1]; // most recent past frame
+        if (!frames.length) return [];
         const host = data.host;
-        // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
-        const url = `${host}${latest.path}/512/{z}/{x}/{y}/2/1_1.png`;
-        return L.tileLayer(url, {
-            attribution: '&copy; RainViewer',
-            opacity: 0.55,
-            maxZoom: 18,       // let the map itself zoom in freely for AIS work
-            maxNativeZoom: 7,  // RainViewer's tile server tops out at z7; above
-                                // that Leaflet upscales/stretches the z7 tile
-                                // instead of requesting a nonexistent zoom level
-                                // (was capped at 12 with no maxNativeZoom, which
-                                // caused "zoom level not supported" at AIS-useful
-                                // zoom levels like z8-14)
-            zIndex: 5
-        });
+        return frames.map(f => ({
+            time: f.time,
+            // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
+            layer: L.tileLayer(`${host}${f.path}/512/{z}/{x}/{y}/2/1_1.png`, {
+                attribution: '&copy; RainViewer',
+                opacity: 0.55,
+                maxZoom: 18,       // let the map itself zoom in freely for AIS work
+                maxNativeZoom: 7,  // RainViewer's tile server tops out at z7; above
+                                    // that Leaflet upscales/stretches the z7 tile
+                                    // instead of requesting a nonexistent zoom level
+                zIndex: 5
+            })
+        }));
     } catch (e) {
         console.warn('RainViewer radar fetch failed:', e);
-        return null;
+        return [];
     }
+}
+
+function aisRadarShowFrame(idx) {
+    if (!aisRadarLayers.length) return;
+    idx = Math.max(0, Math.min(aisRadarLayers.length - 1, idx));
+    aisRadarLayers.forEach((f, i) => {
+        if (i === idx) { if (!aisMap.hasLayer(f.layer)) f.layer.addTo(aisMap); }
+        else { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); }
+    });
+    aisRadarFrameIdx = idx;
+    document.getElementById('ais-radar-scrubber').value = idx;
+    document.getElementById('ais-radar-time').textContent = aisRadarFormatTime(aisRadarLayers[idx].time);
+}
+
+function aisRadarScrub(val) {
+    aisRadarStopPlay(); // manual scrub interrupts autoplay
+    aisRadarShowFrame(parseInt(val, 10));
+}
+
+function aisRadarStopPlay() {
+    aisRadarPlaying = false;
+    if (aisRadarPlayTimer) { clearInterval(aisRadarPlayTimer); aisRadarPlayTimer = null; }
+    const btn = document.getElementById('ais-radar-play');
+    if (btn) btn.textContent = '\u25B6';
+}
+
+function aisRadarTogglePlay() {
+    if (!aisRadarLayers.length) return;
+    if (aisRadarPlaying) { aisRadarStopPlay(); return; }
+    aisRadarPlaying = true;
+    document.getElementById('ais-radar-play').textContent = '\u23F8';
+    // Restart from the beginning if sitting on the last frame, otherwise
+    // resume from wherever the scrubber currently is.
+    if (aisRadarFrameIdx >= aisRadarLayers.length - 1) aisRadarShowFrame(0);
+    aisRadarPlayTimer = setInterval(() => {
+        const next = aisRadarFrameIdx + 1;
+        if (next >= aisRadarLayers.length) {
+            aisRadarStopPlay();  // stop on latest frame rather than looping
+                                  // silently forever -- less confusing in a demo
+            aisRadarShowFrame(aisRadarLayers.length - 1);
+            return;
+        }
+        aisRadarShowFrame(next);
+    }, 500); // 500ms/frame -- ~13 frames = one full loop in ~6.5s
 }
 
 async function aisToggleRadar() {
     const btn = document.getElementById('ais-radar-toggle');
+    const controls = document.getElementById('ais-radar-controls');
     aisRadarEnabled = !aisRadarEnabled;
 
     if (aisRadarEnabled) {
         btn.textContent = '\u{1F327}\uFE0F Radar: Loading...';
-        const layer = await aisLoadRadarLayer();
-        if (layer) {
-            aisRadarLayer = layer;
-            aisRadarLayer.addTo(aisMap);
+        const frames = await aisLoadRadarFrames();
+        if (frames.length) {
+            aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+            aisRadarLayers = frames;
+            document.getElementById('ais-radar-scrubber').max = frames.length - 1;
+            aisRadarShowFrame(frames.length - 1); // start on latest frame
+            controls.style.display = 'flex';
             btn.textContent = '\u{1F327}\uFE0F Radar: ON';
             btn.classList.add('active');
-            // Refresh the radar frame every 10 minutes (RainViewer's cadence)
+            // Refresh the frame set every 10 minutes (RainViewer's cadence)
             if (aisRadarRefreshTimer) clearInterval(aisRadarRefreshTimer);
             aisRadarRefreshTimer = setInterval(async () => {
                 if (!aisRadarEnabled) return;
-                const fresh = await aisLoadRadarLayer();
-                if (fresh) {
-                    if (aisRadarLayer) aisMap.removeLayer(aisRadarLayer);
-                    aisRadarLayer = fresh;
-                    aisRadarLayer.addTo(aisMap);
+                const fresh = await aisLoadRadarFrames();
+                if (fresh.length) {
+                    aisRadarStopPlay();
+                    aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+                    aisRadarLayers = fresh;
+                    document.getElementById('ais-radar-scrubber').max = fresh.length - 1;
+                    aisRadarShowFrame(fresh.length - 1);
                 }
             }, 10 * 60 * 1000);
         } else {
@@ -2024,8 +2104,11 @@ async function aisToggleRadar() {
             setTimeout(() => { btn.textContent = '\u{1F327}\uFE0F Radar: OFF'; }, 3000);
         }
     } else {
-        if (aisRadarLayer) { aisMap.removeLayer(aisRadarLayer); aisRadarLayer = null; }
+        aisRadarStopPlay();
+        aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+        aisRadarLayers = [];
         if (aisRadarRefreshTimer) { clearInterval(aisRadarRefreshTimer); aisRadarRefreshTimer = null; }
+        controls.style.display = 'none';
         btn.textContent = '\u{1F327}\uFE0F Radar: OFF';
         btn.classList.remove('active');
     }
