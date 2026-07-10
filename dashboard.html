@@ -698,7 +698,7 @@
               <option>Other</option>
             </select>
             <div style="position:relative">
-              <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)" style="padding-right:66px">
+              <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)" style="padding-right:66px" oninput="reportPositionIsAutoSynced=false">
               <button type="button" id="report-position-sync-btn" onclick="syncReportPositionFromGPS(true)" title="Re-sync to current vessel GPS position" style="position:absolute;right:5px;top:5px;bottom:5px;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:0 8px;cursor:pointer">&#128205; SYNC</button>
             </div>
           </div>
@@ -1991,6 +1991,13 @@ function fleetFormatLatLon(lat, lon) {
 // opens and again any time the operator hits the manual SYNC button —
 // never overwrites something the operator already typed by hand unless
 // they explicitly asked for a re-sync (forceOverwrite=true).
+// Tracks whether the CURRENT value in #report-position came from auto-sync
+// (true) vs. the operator manually typing/editing it (false). Lets the
+// background refresh (below) keep the field live-updating over long
+// stretches on the tab without ever clobbering a manual edit — see
+// CHANGE (2026-07-10) note below for why this exists.
+let reportPositionIsAutoSynced = true;
+
 function syncReportPositionFromGPS(forceOverwrite) {
   const posEl = document.getElementById('report-position');
   const hintEl = document.getElementById('report-position-hint');
@@ -2006,10 +2013,15 @@ function syncReportPositionFromGPS(forceOverwrite) {
     return;
   }
 
-  // Only auto-fill if the field is empty or this is an explicit re-sync
-  // (button click) — don't clobber manual edits on every silent refresh.
-  if (forceOverwrite || !posEl.value.trim()) {
+  // Auto-fill if: the field is empty, this is an explicit re-sync (button
+  // click / post-submit), OR the value currently showing is itself just an
+  // old auto-synced reading (not something the operator typed) — that last
+  // case is what makes the field keep tracking a moving vessel across a
+  // long session instead of freezing at whatever position was showing when
+  // the tab was first opened or last submitted.
+  if (forceOverwrite || !posEl.value.trim() || reportPositionIsAutoSynced) {
     posEl.value = formatted;
+    reportPositionIsAutoSynced = true;
   }
   if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \u2014 edit freely, or tap SYNC to refresh.';
 }
@@ -2258,6 +2270,7 @@ async function loadRmcReportsInbox() {
 }
 
 let fleetAdvisoryPollTimer = null;
+let reportPositionRefreshTimer = null;
 
 function initFleetTab() {
   renderFleetGrid();
@@ -2274,6 +2287,16 @@ function initFleetTab() {
   // to the browser itself; RMC email notify is separate, worker-side).
   if (fleetAdvisoryPollTimer) clearInterval(fleetAdvisoryPollTimer);
   fleetAdvisoryPollTimer = setInterval(() => renderFleetAdvisories(true), 30000);
+
+  // Keep the hazard-report position field tracking the vessel's live GPS
+  // continuously while the tab is open (Cap, 2026-07-10: reported
+  // position went stale between two reports submitted an hour apart on
+  // the same open tab — previously it only refreshed on tab-open,
+  // SYNC click, or right after a submit, so a long idle stretch on the
+  // tab left it frozen at whatever it was when last synced). This never
+  // overwrites a manual edit — see reportPositionIsAutoSynced flag.
+  if (reportPositionRefreshTimer) clearInterval(reportPositionRefreshTimer);
+  reportPositionRefreshTimer = setInterval(() => syncReportPositionFromGPS(false), 15000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
