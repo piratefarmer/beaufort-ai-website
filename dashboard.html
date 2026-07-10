@@ -305,6 +305,32 @@
     .leaflet-control-attribution a{color:var(--text-dim) !important}
     .leaflet-control-zoom a{background:var(--surface) !important;color:var(--text) !important;border-color:var(--border) !important}
     .leaflet-control-zoom a:hover{background:var(--border) !important}
+
+    /* ── Fleet Advisory alert toast (added 2026-07-10) ──────────────────
+       Global on-screen alert for a newly-published fleet advisory, so
+       a vessel doesn't have to be sitting on the FLEET tab to notice one.
+       Fixed top-center, stacks are avoided by replacing content in place
+       (one toast at a time) rather than piling up multiple banners. */
+    .fleet-toast{position:fixed;top:110px;left:50%;transform:translateX(-50%) translateY(-12px);z-index:900;
+      width:min(560px,92vw);background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);
+      border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+      opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+    .fleet-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .fleet-toast.info{border-left-color:var(--blue)}
+    .fleet-toast.warning{border-left-color:var(--amber)}
+    .fleet-toast.critical{border-left-color:var(--red);box-shadow:0 12px 32px rgba(239,68,68,.25)}
+    .fleet-toast-icon{font-size:20px;line-height:1;flex-shrink:0;margin-top:1px}
+    .fleet-toast-body{flex:1;min-width:0}
+    .fleet-toast-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:8px;cursor:pointer}
+    .fleet-toast-sev{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:9px}
+    .fleet-toast-sev.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .fleet-toast-sev.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+    .fleet-toast-sev.critical{background:rgba(239,68,68,.15);color:var(--red)}
+    .fleet-toast-text{font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:5px;cursor:pointer}
+    .fleet-toast-dismiss{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0}
+    .fleet-toast-dismiss:hover{color:var(--text)}
+    .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
+    @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
   </style>
 </head>
 <body>
@@ -326,6 +352,25 @@
      message instead. -->
 <div id="maintenance-banner" style="display:none;background:#1a1410;border-bottom:1px solid #d97706;color:#fbbf24;font-family:var(--font-mono,monospace);font-size:12px;text-align:center;padding:9px 16px;">
   &#x1F527; Live systems (sensors, forecast, AIS) are temporarily offline &mdash; we run active R&amp;D and benchmark experiments directly on this platform. Check back shortly, or read more about what we're building below.
+</div>
+
+<!-- Fleet Advisory alert toast (added 2026-07-10): pops up on-screen the
+     moment a new fleet advisory is detected by the FLEET tab's background
+     poll (see renderFleetAdvisories/fleetShowToast in the script below),
+     regardless of which tab the operator currently has open. Click the
+     toast to jump straight to the FLEET tab; dismiss with the X or it
+     auto-hides after a delay (longer for higher severity). -->
+<div class="fleet-toast" id="fleet-toast">
+  <span class="fleet-toast-icon" id="fleet-toast-icon">&#9888;&#65039;</span>
+  <div class="fleet-toast-body">
+    <div class="fleet-toast-title" id="fleet-toast-title-row" onclick="fleetToastGoToTab()">
+      <span class="fleet-toast-sev" id="fleet-toast-sev">INFO</span>
+      <span id="fleet-toast-title">Fleet advisory</span>
+    </div>
+    <div class="fleet-toast-text" id="fleet-toast-text" onclick="fleetToastGoToTab()"></div>
+    <div class="fleet-toast-hint">Click to view in FLEET tab</div>
+  </div>
+  <button class="fleet-toast-dismiss" onclick="fleetDismissToast()" title="Dismiss">&times;</button>
 </div>
 
 <div class="dash-header">
@@ -1759,6 +1804,84 @@ async function renderFleetGrid() {
   grid.innerHTML = cards;
 }
 
+// ── Fleet Advisory alert: on-screen toast + audible beep ────────────
+// Both fire the moment a NEW advisory is detected by the poll below,
+// regardless of which tab is currently open — this is the direct
+// on-dashboard alternative to email, so a vessel doesn't have to be
+// sitting on the FLEET tab (or checking email) to notice a hazard.
+let fleetToastTimer = null;
+
+function fleetShowToast(advisory) {
+  const toast = document.getElementById('fleet-toast');
+  if (!toast) return;
+  const sevEl = document.getElementById('fleet-toast-sev');
+  const titleEl = document.getElementById('fleet-toast-title');
+  const textEl = document.getElementById('fleet-toast-text');
+  const iconEl = document.getElementById('fleet-toast-icon');
+  const sev = advisory.severity || 'info';
+
+  toast.className = 'fleet-toast ' + sev;
+  sevEl.className = 'fleet-toast-sev ' + sev;
+  sevEl.textContent = sev.toUpperCase();
+  titleEl.textContent = advisory.title || 'Fleet advisory';
+  textEl.textContent = advisory.body || '';
+  iconEl.textContent = sev === 'critical' ? '\u{1F6A8}' : sev === 'warning' ? '\u26A0\uFE0F' : '\u2139\uFE0F';
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  // Auto-hide timing scales with severity — critical stays up longer,
+  // since it's the one most likely to need a moment to actually read.
+  if (fleetToastTimer) clearTimeout(fleetToastTimer);
+  const autoHideMs = sev === 'critical' ? 20000 : sev === 'warning' ? 14000 : 9000;
+  fleetToastTimer = setTimeout(fleetDismissToast, autoHideMs);
+}
+
+function fleetDismissToast() {
+  const toast = document.getElementById('fleet-toast');
+  if (toast) toast.classList.remove('show');
+  if (fleetToastTimer) { clearTimeout(fleetToastTimer); fleetToastTimer = null; }
+}
+
+function fleetToastGoToTab() {
+  fleetDismissToast();
+  dashSwitchTab('fleet');
+}
+
+// Synthesized via WebAudio (no external audio file/asset needed, so
+// there's nothing to fail to load). Distinct patterns by severity:
+// critical = 3 sharp beeps, warning = 2, info = 1 soft tone. Browsers
+// block audio before any user interaction on the page (autoplay policy)
+// — this is a real, known limitation, not a bug: if the operator hasn't
+// clicked/tapped anywhere on the dashboard yet this page load, the sound
+// will silently fail to play while the toast still shows visually.
+function fleetPlayAlertSound(severity) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const beepCount = severity === 'critical' ? 3 : severity === 'warning' ? 2 : 1;
+    const freq = severity === 'critical' ? 880 : severity === 'warning' ? 660 : 520;
+    for (let i = 0; i < beepCount; i++) {
+      const startAt = ctx.currentTime + i * 0.32;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startAt);
+      osc.stop(startAt + 0.25);
+    }
+    setTimeout(() => ctx.close(), (beepCount * 320) + 400);
+  } catch (e) {
+    // Non-fatal — audio is a nice-to-have on top of the visual toast,
+    // never let a sound failure break the alert itself.
+  }
+}
+
 // Tracks advisory IDs already seen so we only badge the tab for NEW
 // or newly-reappeared advisories, not every poll refresh. null means
 // "not initialized yet" — the very first load seeds the set silently
@@ -1781,13 +1904,21 @@ async function renderFleetAdvisories(isPoll) {
     return;
   }
 
-  // Badge the FLEET tab if any active advisory is new since last check.
-  // Skipped on the very first render (fleetSeenAdvisoryIds === null) so
-  // pre-existing advisories don't falsely look "new" on page load.
+  // Badge the FLEET tab + pop the on-screen toast + play an audible alert
+  // if any active advisory is new since last check. Skipped on the very
+  // first render (fleetSeenAdvisoryIds === null) so pre-existing advisories
+  // don't falsely look "new" on page load.
   const currentIds = new Set(advisories.map(a => a.id));
   if (fleetSeenAdvisoryIds !== null) {
-    const hasNew = advisories.some(a => !fleetSeenAdvisoryIds.has(a.id));
-    if (hasNew) dashBumpTabBadge('fleet');
+    const newOnes = advisories.filter(a => !fleetSeenAdvisoryIds.has(a.id));
+    if (newOnes.length) {
+      dashBumpTabBadge('fleet');
+      // If several arrived in one poll window, surface the most severe.
+      const sevRank = { critical: 3, warning: 2, info: 1 };
+      const toShow = newOnes.reduce((a, b) => (sevRank[b.severity] || 0) > (sevRank[a.severity] || 0) ? b : a);
+      fleetShowToast(toShow);
+      fleetPlayAlertSound(toShow.severity);
+    }
   }
   fleetSeenAdvisoryIds = currentIds;
 
