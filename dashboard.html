@@ -78,6 +78,32 @@
     .dash-tab-btn .tab-badge.show{display:inline-block}
     .dash-tab-panel{display:none;flex-direction:column;gap:20px}
     .dash-tab-panel.active{display:flex}
+    .fleet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .fleet-card{background:#0d1829;border:1px solid #1e3a5f;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:border-color .15s,transform .15s}
+    .fleet-card:hover{border-color:var(--blue);transform:translateY(-1px)}
+    .fleet-card.is-mock{opacity:.72}
+    .fleet-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+    .fleet-card-name{font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--text)}
+    .fleet-card-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
+    .fleet-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+    .fleet-status-dot.online{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.6)}
+    .fleet-status-dot.stale{background:#f59e0b}
+    .fleet-status-dot.offline{background:#475569}
+    .fleet-card-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-family:var(--font-mono)}
+    .fleet-metric-label{font-size:9px;color:var(--muted);letter-spacing:.05em}
+    .fleet-metric-value{font-size:15px;color:var(--text);font-weight:600}
+    .fleet-card-footer{font-family:var(--font-mono);font-size:9px;color:var(--muted);border-top:1px solid #1e3a5f;padding-top:8px}
+    .fleet-advisory-section{background:#0d1829;border:1px solid #1e3a5f;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+    .fleet-advisory-header{display:flex;justify-content:space-between;align-items:center}
+    .advisory-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #16283f}
+    .advisory-item:last-child{border-bottom:none}
+    .advisory-severity{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:6px;height:fit-content;white-space:nowrap}
+    .advisory-severity.warning{background:rgba(245,158,11,.15);color:#f59e0b}
+    .advisory-severity.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .advisory-body{flex:1;font-size:12px;color:var(--text-dim);line-height:1.5}
+    .advisory-body b{color:var(--text)}
+    .advisory-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px}
+    .advisory-empty{font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:8px 0}
     .sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
@@ -354,6 +380,7 @@
       <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
       <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
       <button class="dash-tab-btn" data-tab="library" onclick="dashSwitchTab('library')">&#9673; SHIP'S LIBRARY</button>
+      <button class="dash-tab-btn" data-tab="fleet" onclick="dashSwitchTab('fleet')">&#9673; FLEET <span class="tab-badge" id="tab-badge-fleet"></span></button>
     </div>
 
     <!-- TAB: CONDITIONS -->
@@ -543,6 +570,24 @@
       </div>
     </div>
     <!-- /TAB: SHIP'S LIBRARY -->
+
+    <!-- TAB: FLEET (dev/pilot build — branch feature/fleet-dashboard, mock data until Pi #2-5 are live) -->
+    <div class="dash-tab-panel" id="tab-fleet">
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f59e0b;font-family:var(--font-mono);letter-spacing:.03em">
+        &#9888; PILOT PREVIEW — 4 of 5 vessels below are simulated placeholder data for concept review. Only KIRT CHOUEST is a live feed.
+      </div>
+
+      <div class="fleet-grid" id="fleet-grid"></div>
+
+      <div class="fleet-advisory-section">
+        <div class="fleet-advisory-header">
+          <span class="forecast-strip-title">&#9673; ACTIVE FLEET ADVISORIES</span>
+          <span class="forecast-strip-meta" id="advisory-meta">Loading...</span>
+        </div>
+        <div id="fleet-advisory-list"></div>
+      </div>
+    </div>
+    <!-- /TAB: FLEET -->
 
   </main>
 </div>
@@ -1484,6 +1529,134 @@ async function fetchPiFeed() {
   }
 }
 
+// ── FLEET TAB (pilot build, branch feature/fleet-dashboard) ──────
+// Phase 0/1 of the fleet roadmap: one real vessel (Kirt Chouest, live
+// PI_FEED_URL) + 4 simulated vessels so the fleet-overview concept is
+// demoable before the other Pis are physically deployed. Advisories
+// are mock data for now (Phase 3 backend doesn't exist yet). Nothing
+// here touches the existing single-vessel tabs/logic above.
+
+const FLEET_VESSELS = [
+  { id: 'kirt_chouest', name: 'KIRT CHOUEST', role: 'AHTS · Subsea Construction', isLive: true },
+  { id: 'vessel_2', name: 'VESSEL 2', role: 'Pilot candidate — TBD', isLive: false },
+  { id: 'vessel_3', name: 'VESSEL 3', role: 'Pilot candidate — TBD', isLive: false },
+  { id: 'vessel_4', name: 'VESSEL 4', role: 'Pilot candidate — TBD', isLive: false },
+  { id: 'vessel_5', name: 'VESSEL 5', role: 'Pilot candidate — TBD', isLive: false },
+];
+
+// Mock telemetry for the 4 non-live vessels, so cards look populated
+// in a demo instead of showing empty dashes everywhere.
+const FLEET_MOCK_DATA = {
+  vessel_2: { status: 'online', pressure: 1014.2, wind: 14, heading: 212, lastSeen: '2 min ago' },
+  vessel_3: { status: 'online', pressure: 1011.8, wind: 22, heading: 88,  lastSeen: '1 min ago' },
+  vessel_4: { status: 'stale',  pressure: 1016.5, wind: 9,  heading: 340, lastSeen: '38 min ago' },
+  vessel_5: { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'No data yet' },
+};
+
+// Mock advisories — Phase 3 (RMC → fleet advisory system) isn't built
+// yet; this shows what the RMC-pushed advisory feed would look like
+// once that backend exists.
+const FLEET_MOCK_ADVISORIES = [
+  {
+    severity: 'warning',
+    title: 'Unlit rig reported',
+    body: 'Vessel report: unlit platform structure, approx. 4nm SE of last reported position. Exercise caution when transiting area at night.',
+    issuedBy: 'RMC',
+    time: '3 hours ago',
+  },
+  {
+    severity: 'info',
+    title: 'Buoy off station',
+    body: 'NOAA buoy 42001 reporting intermittent/no data — treat local readings from that station as unreliable until further notice.',
+    issuedBy: 'RMC',
+    time: '1 day ago',
+  },
+];
+
+function fleetStatusDot(status) {
+  const cls = status === 'online' ? 'online' : status === 'stale' ? 'stale' : 'offline';
+  return `<span class="fleet-status-dot ${cls}"></span>`;
+}
+
+function fleetMetricBlock(label, value, unit) {
+  const v = (value === null || value === undefined) ? '--' : value;
+  return `<div><div class="fleet-metric-label">${label}</div><div class="fleet-metric-value">${v}${v !== '--' ? ' ' + unit : ''}</div></div>`;
+}
+
+async function renderFleetGrid() {
+  const grid = document.getElementById('fleet-grid');
+  if (!grid) return;
+
+  // Try to pull real, current Kirt Chouest data from the same feed
+  // the CONDITIONS tab already uses, so the one live card is never
+  // stale/fake data — falls back gracefully if the feed is down.
+  let kirtData = { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unavailable' };
+  try {
+    const res = await fetch(PI_FEED_URL, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+    if (res.ok) {
+      const d = await res.json();
+      kirtData = {
+        status: 'online',
+        pressure: d.pressure ?? null,
+        wind: d.true_wind_speed ?? d.wind_speed ?? null,
+        heading: d.heading ?? null,
+        lastSeen: 'Live',
+      };
+    }
+  } catch (e) { /* leave kirtData as offline fallback, no crash */ }
+
+  const cards = FLEET_VESSELS.map(v => {
+    const data = v.isLive ? kirtData : FLEET_MOCK_DATA[v.id];
+    return `
+      <div class="fleet-card${v.isLive ? '' : ' is-mock'}" onclick="${v.isLive ? "dashSwitchTab('conditions')" : 'void(0)'}">
+        <div class="fleet-card-top">
+          <div>
+            <div class="fleet-card-name">${v.name}</div>
+            <div class="fleet-card-sub">${v.role}</div>
+          </div>
+          ${fleetStatusDot(data.status)}
+        </div>
+        <div class="fleet-card-metrics">
+          ${fleetMetricBlock('PRESSURE', data.pressure, 'hPa')}
+          ${fleetMetricBlock('WIND', data.wind, 'kt')}
+          ${fleetMetricBlock('HEADING', data.heading, '°')}
+          ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
+        </div>
+        <div class="fleet-card-footer">${v.isLive ? 'LIVE FEED' : 'SIMULATED — PILOT PREVIEW'} · ${data.lastSeen}</div>
+      </div>`;
+  }).join('');
+
+  grid.innerHTML = cards;
+}
+
+function renderFleetAdvisories() {
+  const list = document.getElementById('fleet-advisory-list');
+  const meta = document.getElementById('advisory-meta');
+  if (!list) return;
+
+  if (!FLEET_MOCK_ADVISORIES.length) {
+    list.innerHTML = '<div class="advisory-empty">No active advisories.</div>';
+    if (meta) meta.textContent = 'None active';
+    return;
+  }
+
+  list.innerHTML = FLEET_MOCK_ADVISORIES.map(a => `
+    <div class="advisory-item">
+      <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
+      <div class="advisory-body">
+        <b>${a.title}</b> — ${a.body}
+        <div class="advisory-meta">Issued by ${a.issuedBy} · ${a.time}</div>
+      </div>
+    </div>`).join('');
+
+  if (meta) meta.textContent = `${FLEET_MOCK_ADVISORIES.length} active (mock data — Phase 3 not yet built)`;
+}
+
+function initFleetTab() {
+  renderFleetGrid();
+  renderFleetAdvisories();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Sensor inputs: auto-analysis on change
   document.querySelectorAll('.sensor-field input').forEach(input => {
@@ -1503,6 +1676,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('qa-input').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runQAQuery(); }
   });
+
+  // FLEET tab (pilot build) — render once at load, refresh whenever
+  // the tab is switched to so the live Kirt card doesn't go stale.
+  initFleetTab();
+  const fleetTabBtn = document.querySelector('[data-tab="fleet"]');
+  if (fleetTabBtn) fleetTabBtn.addEventListener('click', renderFleetGrid);
 
   // PI LIVE FEED toggle
   document.getElementById('pi-feed-toggle').addEventListener('change', e => {
