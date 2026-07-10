@@ -2103,7 +2103,14 @@ async function submitHazardReport() {
     meta.style.color = '#22c55e';
     document.getElementById('report-hazard-type').value = '';
     document.getElementById('report-description').value = '';
-    document.getElementById('report-position').value = '';
+    // BUGFIX (2026-07-10, Cap): position used to be blanked out here
+    // along with the other per-report fields, but position is vessel
+    // state, not a one-off report input — clearing it forced re-typing
+    // or re-syncing GPS by hand before every single report. Instead,
+    // re-sync it from live GPS (same non-destructive helper used on tab
+    // open), so it just reflects the vessel's current position again
+    // rather than going blank.
+    syncReportPositionFromGPS(true);
   } catch (e) {
     meta.textContent = 'Error: ' + e.message;
     meta.style.color = '#ef4444';
