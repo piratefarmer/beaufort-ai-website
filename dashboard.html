@@ -78,6 +78,70 @@
     .dash-tab-btn .tab-badge.show{display:inline-block}
     .dash-tab-panel{display:none;flex-direction:column;gap:20px}
     .dash-tab-panel.active{display:flex}
+    /* FLEET tab — uses the same design tokens as the rest of the
+       dashboard (--surface/--border/--blue/etc.), not one-off colors. */
+    .fleet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+    .fleet-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:border-color .2s,transform .15s}
+    .fleet-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--muted);opacity:.5;transition:background .2s,opacity .2s}
+    .fleet-card.status-online::before{background:var(--green);opacity:.7}
+    .fleet-card.status-stale::before{background:var(--amber);opacity:.7}
+    .fleet-card.status-offline::before{background:var(--muted);opacity:.4}
+    .fleet-card:hover{transform:translateY(-1px);border-color:#2a3544}
+    .fleet-card.is-clickable:hover::before{opacity:1}
+    .fleet-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+    .fleet-card-name{font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--text)}
+    .fleet-card-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:3px}
+    .fleet-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+    .fleet-status-dot.online{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.55)}
+    .fleet-status-dot.stale{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.4)}
+    .fleet-status-dot.offline{background:var(--muted)}
+    .fleet-card-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:var(--font-mono);padding-top:2px}
+    .fleet-metric-label{font-size:9px;color:var(--muted);letter-spacing:.1em}
+    .fleet-metric-value{font-size:16px;color:var(--text);font-weight:500;margin-top:2px}
+    .fleet-card-footer{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em;border-top:1px solid var(--border);padding-top:9px;display:flex;justify-content:space-between}
+
+    .fleet-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .fleet-section-title{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.03);display:flex;justify-content:space-between;align-items:center}
+    .fleet-section-title .fleet-section-icon{color:var(--blue);margin-right:6px}
+    .fleet-section-body{padding:14px 16px}
+
+    .advisory-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+    .advisory-item:last-child{border-bottom:none}
+    .advisory-severity{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:10px;height:fit-content;white-space:nowrap;flex-shrink:0}
+    .advisory-severity.critical{background:rgba(239,68,68,.15);color:var(--red)}
+    .advisory-severity.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+    .advisory-severity.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .advisory-body{flex:1;font-size:12px;color:var(--text-dim);line-height:1.55}
+    .advisory-body b{color:var(--text);font-weight:600}
+    .advisory-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:.03em}
+    .advisory-empty{font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:10px 2px;text-align:center}
+
+    .fleet-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+    .fleet-input{background:var(--bg);border:1px solid #55606e;border-radius:6px;padding:9px 11px;color:var(--text);font-family:var(--font-body);font-size:13px;width:100%;box-sizing:border-box;transition:border-color .2s}
+    .fleet-input:focus{outline:none;border-color:var(--blue)}
+    .fleet-input::placeholder{color:var(--text-dim)}
+    .fleet-textarea{min-height:64px;resize:vertical;font-family:var(--font-body);margin-bottom:10px;line-height:1.5}
+    .fleet-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:opacity .15s,transform .1s}
+    .fleet-btn:hover{opacity:.88}
+    .fleet-btn:active{transform:translateY(1px)}
+    .fleet-btn:disabled{opacity:.45;cursor:not-allowed}
+    .fleet-status-msg{font-family:var(--font-mono);font-size:11px;margin-top:9px;min-height:14px;letter-spacing:.02em}
+    .fleet-status-msg.ok{color:var(--green)}
+    .fleet-status-msg.err{color:var(--red)}
+
+    .fleet-rmc-subsection-title{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);text-transform:uppercase}
+    .fleet-rmc-lock-icon{display:inline-block;margin-right:5px;opacity:.7}
+    .fleet-rmc-unlocked-badge{font-family:var(--font-mono);font-size:9px;color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 8px;border-radius:10px;letter-spacing:.06em}
+
+    .report-inbox-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .report-inbox-item:last-child{border-bottom:none}
+    .report-inbox-body{color:var(--text-dim);line-height:1.55}
+    .report-inbox-body b{color:var(--text);font-weight:600}
+    .report-inbox-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
+    .report-status-pill{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.12);color:var(--blue);white-space:nowrap;height:fit-content;text-transform:uppercase}
+
+    .fleet-skeleton{height:14px;border-radius:4px;background:linear-gradient(90deg,var(--border) 0%,var(--border2) 50%,var(--border) 100%);background-size:200% 100%;animation:fleet-shimmer 1.4s ease-in-out infinite}
+    @keyframes fleet-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     .sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
@@ -241,6 +305,32 @@
     .leaflet-control-attribution a{color:var(--text-dim) !important}
     .leaflet-control-zoom a{background:var(--surface) !important;color:var(--text) !important;border-color:var(--border) !important}
     .leaflet-control-zoom a:hover{background:var(--border) !important}
+
+    /* ── Fleet Advisory alert toast (added 2026-07-10) ──────────────────
+       Global on-screen alert for a newly-published fleet advisory, so
+       a vessel doesn't have to be sitting on the FLEET tab to notice one.
+       Fixed top-center, stacks are avoided by replacing content in place
+       (one toast at a time) rather than piling up multiple banners. */
+    .fleet-toast{position:fixed;top:110px;left:50%;transform:translateX(-50%) translateY(-12px);z-index:900;
+      width:min(560px,92vw);background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);
+      border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+      opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+    .fleet-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .fleet-toast.info{border-left-color:var(--blue)}
+    .fleet-toast.warning{border-left-color:var(--amber)}
+    .fleet-toast.critical{border-left-color:var(--red);box-shadow:0 12px 32px rgba(239,68,68,.25)}
+    .fleet-toast-icon{font-size:20px;line-height:1;flex-shrink:0;margin-top:1px}
+    .fleet-toast-body{flex:1;min-width:0}
+    .fleet-toast-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:8px;cursor:pointer}
+    .fleet-toast-sev{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:9px}
+    .fleet-toast-sev.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .fleet-toast-sev.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+    .fleet-toast-sev.critical{background:rgba(239,68,68,.15);color:var(--red)}
+    .fleet-toast-text{font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:5px;cursor:pointer}
+    .fleet-toast-dismiss{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0}
+    .fleet-toast-dismiss:hover{color:var(--text)}
+    .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
+    @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
   </style>
 </head>
 <body>
@@ -262,6 +352,25 @@
      message instead. -->
 <div id="maintenance-banner" style="display:none;background:#1a1410;border-bottom:1px solid #d97706;color:#fbbf24;font-family:var(--font-mono,monospace);font-size:12px;text-align:center;padding:9px 16px;">
   &#x1F527; Live systems (sensors, forecast, AIS) are temporarily offline &mdash; we run active R&amp;D and benchmark experiments directly on this platform. Check back shortly, or read more about what we're building below.
+</div>
+
+<!-- Fleet Advisory alert toast (added 2026-07-10): pops up on-screen the
+     moment a new fleet advisory is detected by the FLEET tab's background
+     poll (see renderFleetAdvisories/fleetShowToast in the script below),
+     regardless of which tab the operator currently has open. Click the
+     toast to jump straight to the FLEET tab; dismiss with the X or it
+     auto-hides after a delay (longer for higher severity). -->
+<div class="fleet-toast" id="fleet-toast">
+  <span class="fleet-toast-icon" id="fleet-toast-icon">&#9888;&#65039;</span>
+  <div class="fleet-toast-body">
+    <div class="fleet-toast-title" id="fleet-toast-title-row" onclick="fleetToastGoToTab()">
+      <span class="fleet-toast-sev" id="fleet-toast-sev">INFO</span>
+      <span id="fleet-toast-title">Fleet advisory</span>
+    </div>
+    <div class="fleet-toast-text" id="fleet-toast-text" onclick="fleetToastGoToTab()"></div>
+    <div class="fleet-toast-hint">Click to view in FLEET tab</div>
+  </div>
+  <button class="fleet-toast-dismiss" onclick="fleetDismissToast()" title="Dismiss">&times;</button>
 </div>
 
 <div class="dash-header">
@@ -354,6 +463,7 @@
       <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
       <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
       <button class="dash-tab-btn" data-tab="library" onclick="dashSwitchTab('library')">&#9673; SHIP'S LIBRARY</button>
+      <button class="dash-tab-btn" data-tab="fleet" onclick="dashSwitchTab('fleet')">&#9673; FLEET <span class="tab-badge" id="tab-badge-fleet"></span></button>
     </div>
 
     <!-- TAB: CONDITIONS -->
@@ -544,6 +654,119 @@
     </div>
     <!-- /TAB: SHIP'S LIBRARY -->
 
+    <!-- TAB: FLEET (pilot build — branch feature/fleet-dashboard) -->
+    <div class="dash-tab-panel" id="tab-fleet">
+      <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:11px;color:var(--amber);font-family:var(--font-mono);letter-spacing:.03em;line-height:1.6">
+        &#9888; PILOT BUILD &mdash; real backend (Cloudflare KV), but only KIRT CHOUEST is registered so far. Vessels 2–5 appear automatically once their Pi hardware is provisioned. RMC tools below use a temporary admin-key gate, not real logins (Phase 2 access control not yet built).
+      </div>
+
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9635;</span>FLEET OVERVIEW</span>
+          <span id="fleet-grid-meta"></span>
+        </div>
+        <div class="fleet-section-body">
+          <div class="fleet-grid" id="fleet-grid"></div>
+        </div>
+      </div>
+
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9673;</span>ACTIVE FLEET ADVISORIES</span>
+          <span id="advisory-meta">Loading&hellip;</span>
+        </div>
+        <div class="fleet-section-body" id="fleet-advisory-list"></div>
+      </div>
+
+      <!-- Vessel → RMC hazard report form. Open to any vessel, no admin
+           key required — by design, matches the roadmap's report-in path. -->
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9670;</span>REPORT A HAZARD TO RMC</span>
+          <span id="report-form-meta"></span>
+        </div>
+        <div class="fleet-section-body">
+          <div class="fleet-form-grid">
+            <select id="report-vessel" class="fleet-input"></select>
+            <select id="report-hazard-type" class="fleet-input">
+              <option value="">Select hazard type…</option>
+              <option>Unlit rig / structure</option>
+              <option>Buoy off station</option>
+              <option>Drifting debris / trash</option>
+              <option>Adrift vessel</option>
+              <option>Weather hazard</option>
+              <option>Other</option>
+            </select>
+            <div style="position:relative">
+              <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)" style="padding-right:66px">
+              <button type="button" id="report-position-sync-btn" onclick="syncReportPositionFromGPS(true)" title="Re-sync to current vessel GPS position" style="position:absolute;right:5px;top:5px;bottom:5px;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:0 8px;cursor:pointer">&#128205; SYNC</button>
+            </div>
+          </div>
+          <div id="report-position-hint" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em"></div>
+          <textarea id="report-description" class="fleet-input fleet-textarea" placeholder="Describe the hazard (required) — e.g. distance/direction from us, drift direction" maxlength="2000"></textarea>
+          <!-- Quick-insert relative-bearing helper (added 2026-07-10): reporting
+               a hazard's position relative to your own vessel ("2nm SE of us")
+               is more useful to another vessel plotting it than raw lat/lon
+               alone. This lets the operator type a distance + pick a
+               direction and insert readable phrasing into the description
+               without doing bearing math by hand. Optional — never required,
+               never overwrites anything already typed. -->
+          <div style="display:flex;gap:8px;align-items:center;margin:-2px 0 10px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em">QUICK INSERT:</span>
+            <input id="report-rel-distance" type="number" min="0" step="0.1" placeholder="nm" style="width:64px;background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+            <select id="report-rel-direction" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE" selected>SE</option>
+              <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW">NW</option>
+            </select>
+            <select id="report-rel-motion" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="stationary">stationary</option>
+              <option value="drifting">drifting toward</option>
+            </select>
+            <button type="button" class="fleet-btn" style="padding:6px 12px;font-size:10px" onclick="insertRelativeBearingPhrase()">Insert</button>
+          </div>
+          <button class="fleet-btn" id="btn-submit-report" onclick="submitHazardReport()">Submit Report to RMC</button>
+        </div>
+      </div>
+
+      <!-- RMC-only tools: advisory composer + report inbox. Gated by a
+           shared admin key entered client-side (stopgap, not real auth
+           — see Phase 2 in the fleet roadmap). Key is cached in
+           sessionStorage only (cleared when the browser tab closes),
+           never written to localStorage or any persistent store. -->
+      <div class="fleet-section" id="rmc-gate-section">
+        <div class="fleet-section-title">
+          <span><span class="fleet-rmc-lock-icon" id="rmc-lock-icon">&#128274;</span>RMC TOOLS</span>
+          <span id="rmc-lock-status">Admin key required</span>
+        </div>
+        <div class="fleet-section-body">
+        <div id="rmc-locked-view" class="fleet-form-grid">
+          <input id="rmc-key-input" class="fleet-input" type="password" placeholder="RMC admin key" onkeydown="if(event.key==='Enter')rmcUnlock()">
+          <button class="fleet-btn" onclick="rmcUnlock()">Unlock</button>
+        </div>
+        <div id="rmc-unlocked-view" style="display:none">
+          <div class="fleet-rmc-subsection-title">Compose Fleet Advisory</div>
+          <div class="fleet-form-grid">
+            <select id="adv-severity" class="fleet-input">
+              <option value="info">Info</option>
+              <option value="warning" selected>Warning</option>
+              <option value="critical">Critical</option>
+            </select>
+            <input id="adv-title" class="fleet-input" type="text" placeholder="Short title (required)">
+            <input id="adv-expires" class="fleet-input" type="number" min="1" max="30" value="7" placeholder="Expires in (days)">
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em">Advisory auto-expires and drops off every vessel's dashboard after this many days (1–30) — doesn't need to be manually cleared unless it's resolved sooner.</div>
+          <textarea id="adv-body" class="fleet-input fleet-textarea" placeholder="Advisory details (required)" maxlength="2000"></textarea>
+          <button class="fleet-btn" id="btn-publish-advisory" onclick="publishAdvisory()">Publish to Fleet</button>
+          <div id="adv-publish-status" class="fleet-status-msg"></div>
+
+          <div class="fleet-rmc-subsection-title" style="margin-top:20px">Incoming Hazard Reports</div>
+          <div id="rmc-reports-list"><div class="advisory-empty">Loading…</div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+    <!-- /TAB: FLEET -->
+
   </main>
 </div>
 
@@ -643,6 +866,7 @@ async function checkLiveSystemsStatus() {
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
 const FEEDBACK_API_URL = 'https://beau-feedback.capt-barrett.workers.dev/';
+const FLEET_API_BASE = 'https://beau-fleet.capt-barrett.workers.dev';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 const AUTO_DEBOUNCE_MS = 1500; // ms after last change before auto-triggering
 
@@ -1122,7 +1346,7 @@ function onSensorFieldChange(inputEl) {
 // background regardless of which tab is visible, so nothing goes
 // stale when switching back.
 let dashActiveTab = 'conditions';
-const dashTabBadgeCounts = { ais: 0, history: 0 };
+const dashTabBadgeCounts = { ais: 0, history: 0, fleet: 0 };
 
 function dashSwitchTab(tabName) {
   dashActiveTab = tabName;
@@ -1484,6 +1708,542 @@ async function fetchPiFeed() {
   }
 }
 
+// ── FLEET TAB (pilot build, branch feature/fleet-dashboard) ──────
+// Real backend as of this pass: vessel registry + advisories are read
+// from the deployed beau-fleet Worker (Cloudflare KV-backed), not
+// hardcoded mock arrays. Only Kirt Chouest exists as a real vessel
+// today (registered in KV) — vessels 2-5 will appear automatically
+// once their Pis are provisioned and registered, no dashboard code
+// changes needed at that point. Advisories are real, persisted, and
+// created via the RMC-side API (not yet a UI — curl/admin-key only
+// until Phase 2 access control exists).
+
+function fleetStatusDot(status) {
+  const cls = status === 'online' ? 'online' : status === 'stale' ? 'stale' : 'offline';
+  return `<span class="fleet-status-dot ${cls}"></span>`;
+}
+
+function fleetMetricBlock(label, value, unit) {
+  const v = (value === null || value === undefined) ? '--' : value;
+  return `<div><div class="fleet-metric-label">${label}</div><div class="fleet-metric-value">${v}${v !== '--' ? ' ' + unit : ''}</div></div>`;
+}
+
+function fleetTimeAgo(iso) {
+  if (!iso) return 'Unknown';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  return `${Math.round(hrs / 24)} day(s) ago`;
+}
+
+async function fetchVesselData(vessel) {
+  // Kirt Chouest's tunnel_url IS the same PI_FEED_URL already polled
+  // by the CONDITIONS tab — fetch independently here so the FLEET tab
+  // doesn't depend on CONDITIONS having been visited first.
+  try {
+    const res = await fetch(vessel.tunnel_url, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+    if (!res.ok) throw new Error('bad status ' + res.status);
+    const d = await res.json();
+    return {
+      status: 'online',
+      pressure: d.pressure ?? null,
+      wind: d.true_wind_speed ?? d.wind_speed ?? null,
+      heading: d.heading ?? null,
+      lastSeen: 'Live',
+    };
+  } catch (e) {
+    return { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unreachable' };
+  }
+}
+
+function fleetSkeletonCards(n) {
+  let out = '';
+  for (let i = 0; i < n; i++) {
+    out += `<div class="fleet-card">
+      <div class="fleet-card-top"><div style="width:100%">
+        <div class="fleet-skeleton" style="width:70%;margin-bottom:6px"></div>
+        <div class="fleet-skeleton" style="width:45%;height:9px"></div>
+      </div></div>
+      <div class="fleet-card-metrics">
+        <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
+        <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
+      </div>
+    </div>`;
+  }
+  return out;
+}
+
+async function renderFleetGrid() {
+  const grid = document.getElementById('fleet-grid');
+  const gridMeta = document.getElementById('fleet-grid-meta');
+  if (!grid) return;
+  grid.innerHTML = fleetSkeletonCards(1);
+
+  let vessels = [];
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    vessels = d.vessels || [];
+  } catch (e) {
+    grid.innerHTML = '<div class="advisory-empty">&#9888; Fleet API unreachable — ' + e.message + '</div>';
+    if (gridMeta) gridMeta.textContent = '';
+    return;
+  }
+
+  if (!vessels.length) {
+    grid.innerHTML = '<div class="advisory-empty">No vessels registered yet.</div>';
+    if (gridMeta) gridMeta.textContent = '';
+    return;
+  }
+
+  // Fetch each vessel's live telemetry in parallel.
+  const results = await Promise.all(vessels.map(v => fetchVesselData(v)));
+  const onlineCount = results.filter(r => r.status === 'online').length;
+  if (gridMeta) gridMeta.textContent = `${onlineCount}/${vessels.length} online`;
+
+  const cards = vessels.map((v, i) => {
+    const data = results[i];
+    const clickable = v.id === 'kirt_chouest';
+    return `
+      <div class="fleet-card status-${data.status}${clickable ? ' is-clickable' : ''}" ${clickable ? "onclick=\"dashSwitchTab('conditions')\"" : ''}>
+        <div class="fleet-card-top">
+          <div>
+            <div class="fleet-card-name">${v.name}</div>
+            <div class="fleet-card-sub">${v.role || ''}</div>
+          </div>
+          ${fleetStatusDot(data.status)}
+        </div>
+        <div class="fleet-card-metrics">
+          ${fleetMetricBlock('PRESSURE', data.pressure, 'hPa')}
+          ${fleetMetricBlock('WIND', data.wind, 'kt')}
+          ${fleetMetricBlock('HEADING', data.heading, '°')}
+          ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
+        </div>
+        <div class="fleet-card-footer"><span>${data.lastSeen}</span>${clickable ? '<span>&rarr; Conditions</span>' : ''}</div>
+      </div>`;
+  }).join('');
+
+  grid.innerHTML = cards;
+}
+
+// ── Fleet Advisory alert: on-screen toast + audible beep ────────────
+// Both fire the moment a NEW advisory is detected by the poll below,
+// regardless of which tab is currently open — this is the direct
+// on-dashboard alternative to email, so a vessel doesn't have to be
+// sitting on the FLEET tab (or checking email) to notice a hazard.
+let fleetToastTimer = null;
+
+function fleetShowToast(advisory) {
+  const toast = document.getElementById('fleet-toast');
+  if (!toast) return;
+  const sevEl = document.getElementById('fleet-toast-sev');
+  const titleEl = document.getElementById('fleet-toast-title');
+  const textEl = document.getElementById('fleet-toast-text');
+  const iconEl = document.getElementById('fleet-toast-icon');
+  const sev = advisory.severity || 'info';
+
+  toast.className = 'fleet-toast ' + sev;
+  sevEl.className = 'fleet-toast-sev ' + sev;
+  sevEl.textContent = sev.toUpperCase();
+  titleEl.textContent = advisory.title || 'Fleet advisory';
+  textEl.textContent = advisory.body || '';
+  iconEl.textContent = sev === 'critical' ? '\u{1F6A8}' : sev === 'warning' ? '\u26A0\uFE0F' : '\u2139\uFE0F';
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  // Auto-hide timing scales with severity — critical stays up longer,
+  // since it's the one most likely to need a moment to actually read.
+  if (fleetToastTimer) clearTimeout(fleetToastTimer);
+  const autoHideMs = sev === 'critical' ? 20000 : sev === 'warning' ? 14000 : 9000;
+  fleetToastTimer = setTimeout(fleetDismissToast, autoHideMs);
+}
+
+function fleetDismissToast() {
+  const toast = document.getElementById('fleet-toast');
+  if (toast) toast.classList.remove('show');
+  if (fleetToastTimer) { clearTimeout(fleetToastTimer); fleetToastTimer = null; }
+}
+
+function fleetToastGoToTab() {
+  fleetDismissToast();
+  dashSwitchTab('fleet');
+}
+
+// Synthesized via WebAudio (no external audio file/asset needed, so
+// there's nothing to fail to load). Distinct patterns by severity:
+// critical = 3 sharp beeps, warning = 2, info = 1 soft tone. Browsers
+// block audio before any user interaction on the page (autoplay policy)
+// — this is a real, known limitation, not a bug: if the operator hasn't
+// clicked/tapped anywhere on the dashboard yet this page load, the sound
+// will silently fail to play while the toast still shows visually.
+function fleetPlayAlertSound(severity) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const beepCount = severity === 'critical' ? 3 : severity === 'warning' ? 2 : 1;
+    const freq = severity === 'critical' ? 880 : severity === 'warning' ? 660 : 520;
+    for (let i = 0; i < beepCount; i++) {
+      const startAt = ctx.currentTime + i * 0.32;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startAt);
+      osc.stop(startAt + 0.25);
+    }
+    setTimeout(() => ctx.close(), (beepCount * 320) + 400);
+  } catch (e) {
+    // Non-fatal — audio is a nice-to-have on top of the visual toast,
+    // never let a sound failure break the alert itself.
+  }
+}
+
+// Tracks advisory IDs already seen so we only badge the tab for NEW
+// or newly-reappeared advisories, not every poll refresh. null means
+// "not initialized yet" — the very first load seeds the set silently
+// (no badge for advisories that already existed before page load).
+let fleetSeenAdvisoryIds = null;
+
+async function renderFleetAdvisories(isPoll) {
+  const list = document.getElementById('fleet-advisory-list');
+  const meta = document.getElementById('advisory-meta');
+  if (!list) return;
+  if (!isPoll) list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+
+  let advisories = [];
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    advisories = d.advisories || [];
+  } catch (e) {
+    if (!isPoll) list.innerHTML = '<div class="advisory-empty">Advisory API unreachable — ' + e.message + '</div>';
+    return;
+  }
+
+  // Badge the FLEET tab + pop the on-screen toast + play an audible alert
+  // if any active advisory is new since last check. Skipped on the very
+  // first render (fleetSeenAdvisoryIds === null) so pre-existing advisories
+  // don't falsely look "new" on page load.
+  const currentIds = new Set(advisories.map(a => a.id));
+  if (fleetSeenAdvisoryIds !== null) {
+    const newOnes = advisories.filter(a => !fleetSeenAdvisoryIds.has(a.id));
+    if (newOnes.length) {
+      dashBumpTabBadge('fleet');
+      // If several arrived in one poll window, surface the most severe.
+      const sevRank = { critical: 3, warning: 2, info: 1 };
+      const toShow = newOnes.reduce((a, b) => (sevRank[b.severity] || 0) > (sevRank[a.severity] || 0) ? b : a);
+      fleetShowToast(toShow);
+      fleetPlayAlertSound(toShow.severity);
+    }
+  }
+  fleetSeenAdvisoryIds = currentIds;
+
+  if (!advisories.length) {
+    list.innerHTML = '<div class="advisory-empty">&#10003; No active advisories — fleet is clear.</div>';
+    if (meta) meta.textContent = 'None active';
+    return;
+  }
+
+  list.innerHTML = advisories.map(a => `
+    <div class="advisory-item">
+      <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
+      <div class="advisory-body">
+        <b>${a.title}</b> — ${a.body}
+        <div class="advisory-meta">Issued by ${a.issued_by} · ${fleetTimeAgo(a.created_at)}</div>
+      </div>
+    </div>`).join('');
+
+  if (meta) meta.textContent = `${advisories.length} active`;
+  if (meta) meta.style.color = advisories.some(a => a.severity === 'critical') ? 'var(--red)' : '';
+}
+
+// ── Vessel hazard report form (vessel → RMC) ─────────────────
+
+// Converts a decimal-degree lat/lon into a compact DD.DDDD N/S DDD.DDDD E/W
+// string — readable at a glance, matches the format already used elsewhere
+// on this dashboard (e.g. the ais vessel list) rather than inventing a new one.
+function fleetFormatLatLon(lat, lon) {
+  if (lat === null || lat === undefined || isNaN(lat) || lon === null || lon === undefined || isNaN(lon)) return null;
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lon >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(4)}${ns} ${Math.abs(lon).toFixed(4)}${ew}`;
+}
+
+// Auto-fills the hazard report's position field from the vessel's own live
+// GPS (already polled into #f-latitude/#f-longitude every 2s by fetchPiFeed,
+// see BEAUFORT AI north-star notes above). Runs once when the FLEET tab
+// opens and again any time the operator hits the manual SYNC button —
+// never overwrites something the operator already typed by hand unless
+// they explicitly asked for a re-sync (forceOverwrite=true).
+function syncReportPositionFromGPS(forceOverwrite) {
+  const posEl = document.getElementById('report-position');
+  const hintEl = document.getElementById('report-position-hint');
+  if (!posEl) return;
+  const latEl = document.getElementById('f-latitude');
+  const lonEl = document.getElementById('f-longitude');
+  const lat = latEl ? parseFloat(latEl.value) : NaN;
+  const lon = lonEl ? parseFloat(lonEl.value) : NaN;
+  const formatted = fleetFormatLatLon(lat, lon);
+
+  if (!formatted) {
+    if (hintEl) hintEl.textContent = 'No live GPS fix yet — enter position manually.';
+    return;
+  }
+
+  // Only auto-fill if the field is empty or this is an explicit re-sync
+  // (button click) — don't clobber manual edits on every silent refresh.
+  if (forceOverwrite || !posEl.value.trim()) {
+    posEl.value = formatted;
+  }
+  if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \u2014 edit freely, or tap SYNC to refresh.';
+}
+
+async function populateReportVesselDropdown() {
+  const sel = document.getElementById('report-vessel');
+  if (!sel) return;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    const vessels = d.vessels || [];
+    sel.innerHTML = vessels.map(v => `<option value="${v.id}">${v.name}</option>`).join('')
+      || '<option value="">No vessels registered</option>';
+  } catch (e) {
+    sel.innerHTML = '<option value="">Unable to load vessels</option>';
+  }
+}
+
+// Inserts readable relative-position phrasing ("2nm SE of us, drifting
+// toward") into the description field — this is what actually helps
+// another vessel plotting the hazard, since raw lat/lon of the hazard
+// itself usually isn't known/measured, but its position/drift relative
+// to one's own vessel usually is. Appends rather than replaces, so it
+// composes with whatever the operator has already typed.
+function insertRelativeBearingPhrase() {
+  const distEl = document.getElementById('report-rel-distance');
+  const dirEl = document.getElementById('report-rel-direction');
+  const motionEl = document.getElementById('report-rel-motion');
+  const descEl = document.getElementById('report-description');
+  const dist = parseFloat(distEl.value);
+  if (!dist || dist <= 0) {
+    distEl.focus();
+    return;
+  }
+  const dir = dirEl.value;
+  const motion = motionEl.value;
+  const phrase = motion === 'drifting'
+    ? `Approx ${dist}nm ${dir} of our position, drifting toward us.`
+    : `Approx ${dist}nm ${dir} of our position.`;
+
+  const existing = descEl.value.trim();
+  descEl.value = existing ? existing + ' ' + phrase : phrase;
+  distEl.value = '';
+  descEl.focus();
+}
+
+async function submitHazardReport() {
+  const btn = document.getElementById('btn-submit-report');
+  const meta = document.getElementById('report-form-meta');
+  const vesselSel = document.getElementById('report-vessel');
+  const vesselId = vesselSel.value;
+  const vesselName = vesselSel.options[vesselSel.selectedIndex]?.text || vesselId;
+  const hazardType = document.getElementById('report-hazard-type').value;
+  const description = document.getElementById('report-description').value.trim();
+  const position = document.getElementById('report-position').value.trim();
+
+  if (!hazardType) { meta.textContent = 'Select a hazard type.'; meta.style.color = '#ef4444'; return; }
+  if (!description) { meta.textContent = 'Description is required.'; meta.style.color = '#ef4444'; return; }
+
+  btn.disabled = true;
+  meta.textContent = 'Submitting…';
+  meta.style.color = '';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vessel_id: vesselId, vessel_name: vesselName, hazard_type: hazardType, description, position }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'Submission failed');
+    meta.textContent = 'Report submitted — RMC notified.';
+    meta.style.color = '#22c55e';
+    document.getElementById('report-hazard-type').value = '';
+    document.getElementById('report-description').value = '';
+    document.getElementById('report-position').value = '';
+  } catch (e) {
+    meta.textContent = 'Error: ' + e.message;
+    meta.style.color = '#ef4444';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── RMC tools: admin-key gate (interim — Phase 2 replaces this) ───
+// Key lives only in sessionStorage (cleared on tab close), never sent
+// anywhere except as the X-Fleet-Admin-Key header to our own Worker
+// over HTTPS. This is explicitly NOT real access control — anyone
+// who has the key can use it, same as the curl-based workflow used
+// during backend testing. Replace with Cloudflare Access (Phase 2)
+// before handing this URL to RMC/ECO for real use.
+function rmcGetKey() {
+  return sessionStorage.getItem('fleet_admin_key') || '';
+}
+
+async function rmcUnlock() {
+  const input = document.getElementById('rmc-key-input');
+  const key = input.value.trim();
+  if (!key) return;
+
+  const lockStatus = document.getElementById('rmc-lock-status');
+  if (lockStatus) lockStatus.textContent = 'Checking key\u2026';
+
+  // Verify the key against the real Worker BEFORE showing "UNLOCKED" —
+  // previously this flipped to unlocked unconditionally on any non-empty
+  // input, then silently found out later (in a separate, easy-to-miss
+  // "Admin key rejected" message buried in the reports list) that the
+  // key was actually wrong. That let the UI show a confident green
+  // "UNLOCKED" badge while every real action behind it was still
+  // failing — confusing and wrong. Now it verifies first.
+  let valid = false;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': key },
+      signal: AbortSignal.timeout(6000),
+    });
+    valid = res.status !== 401;
+  } catch (e) {
+    if (lockStatus) lockStatus.textContent = 'Could not reach fleet server \u2014 try again.';
+    return;
+  }
+
+  if (!valid) {
+    if (lockStatus) lockStatus.textContent = 'Admin key rejected.';
+    input.value = '';
+    input.focus();
+    return;
+  }
+
+  sessionStorage.setItem('fleet_admin_key', key);
+  await rmcShowUnlocked();
+}
+
+async function rmcShowUnlocked() {
+  document.getElementById('rmc-locked-view').style.display = 'none';
+  document.getElementById('rmc-unlocked-view').style.display = 'block';
+  const lockIcon = document.getElementById('rmc-lock-icon');
+  const lockStatus = document.getElementById('rmc-lock-status');
+  if (lockIcon) lockIcon.textContent = '\u{1F513}';
+  if (lockStatus) lockStatus.innerHTML = '<span class="fleet-rmc-unlocked-badge">UNLOCKED</span>';
+  await loadRmcReportsInbox();
+}
+
+async function publishAdvisory() {
+  const btn = document.getElementById('btn-publish-advisory');
+  const statusEl = document.getElementById('adv-publish-status');
+  const severity = document.getElementById('adv-severity').value;
+  const title = document.getElementById('adv-title').value.trim();
+  const body = document.getElementById('adv-body').value.trim();
+  const expiresDays = Number(document.getElementById('adv-expires').value) || 7;
+
+  if (!title || !body) {
+    statusEl.textContent = 'Title and details are both required.';
+    statusEl.className = 'fleet-status-msg err';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Publishing…';
+  statusEl.className = 'fleet-status-msg';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Fleet-Admin-Key': rmcGetKey() },
+      body: JSON.stringify({ severity, title, body, issued_by: 'RMC', expires_days: expiresDays }),
+    });
+    const d = await res.json();
+    if (res.status === 401) {
+      statusEl.textContent = 'Admin key rejected — unlock again with the correct key.';
+      statusEl.className = 'fleet-status-msg err';
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) throw new Error(d.error || 'Publish failed');
+    statusEl.textContent = 'Advisory published to fleet.';
+    statusEl.className = 'fleet-status-msg ok';
+    document.getElementById('adv-title').value = '';
+    document.getElementById('adv-body').value = '';
+    renderFleetAdvisories();
+  } catch (e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.className = 'fleet-status-msg err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadRmcReportsInbox() {
+  const list = document.getElementById('rmc-reports-list');
+  list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.status === 401) {
+      list.innerHTML = '<div class="advisory-empty">Admin key rejected.</div>';
+      return;
+    }
+    const d = await res.json();
+    const reports = d.reports || [];
+    if (!reports.length) {
+      list.innerHTML = '<div class="advisory-empty">No hazard reports yet.</div>';
+      return;
+    }
+    list.innerHTML = reports.map(r => `
+      <div class="report-inbox-item">
+        <div class="report-inbox-body">
+          <b>${r.hazard_type}</b> — ${r.vessel_name}${r.position ? ' · ' + r.position : ''}
+          <div>${r.description}</div>
+          <div class="report-inbox-meta">${fleetTimeAgo(r.reported_at)}</div>
+        </div>
+        <span class="report-status-pill">${r.status}</span>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="advisory-empty">Unable to load reports — ' + e.message + '</div>';
+  }
+}
+
+let fleetAdvisoryPollTimer = null;
+
+function initFleetTab() {
+  renderFleetGrid();
+  renderFleetAdvisories();
+  populateReportVesselDropdown();
+  syncReportPositionFromGPS(false); // fill only if empty, never clobber a manual edit
+  // If a key is already cached in this tab's session, skip straight to
+  // the unlocked RMC view instead of making them re-type it.
+  if (rmcGetKey()) rmcShowUnlocked();
+
+  // Poll for new advisories even while the operator is on another tab,
+  // so the FLEET tab badge can light up without requiring a manual
+  // visit — advisories are otherwise dashboard-pull only (no push/email
+  // to the browser itself; RMC email notify is separate, worker-side).
+  if (fleetAdvisoryPollTimer) clearInterval(fleetAdvisoryPollTimer);
+  fleetAdvisoryPollTimer = setInterval(() => renderFleetAdvisories(true), 30000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Sensor inputs: auto-analysis on change
   document.querySelectorAll('.sensor-field input').forEach(input => {
@@ -1502,6 +2262,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-qa-submit').addEventListener('click', runQAQuery);
   document.getElementById('qa-input').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runQAQuery(); }
+  });
+
+  // FLEET tab (pilot build) — render once at load, refresh whenever
+  // the tab is switched to so the live Kirt card doesn't go stale.
+  initFleetTab();
+  const fleetTabBtn = document.querySelector('[data-tab="fleet"]');
+  if (fleetTabBtn) fleetTabBtn.addEventListener('click', () => {
+    renderFleetGrid();
+    // Re-sync position on every tab visit, not just page load — if GPS
+    // didn't have a fix yet when the page first loaded, this is the
+    // retry path. Still non-destructive: only fills if the field is
+    // currently empty (forceOverwrite=false).
+    syncReportPositionFromGPS(false);
   });
 
   // PI LIVE FEED toggle

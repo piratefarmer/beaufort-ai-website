@@ -1,0 +1,11 @@
+name = "beau-fleet"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+kv_namespaces = [
+  { binding = "BEAU_FLEET", id = "19051fb7e33446598fc564cb0c96d8d1" }
+]
+
+[[send_email]]
+name = "SEB"
+destination_address = "piratefarmer2@gmail.com"
