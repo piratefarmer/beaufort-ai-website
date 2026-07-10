@@ -697,9 +697,33 @@
               <option>Weather hazard</option>
               <option>Other</option>
             </select>
-            <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)">
+            <div style="position:relative">
+              <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)" style="padding-right:66px">
+              <button type="button" id="report-position-sync-btn" onclick="syncReportPositionFromGPS(true)" title="Re-sync to current vessel GPS position" style="position:absolute;right:5px;top:5px;bottom:5px;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:0 8px;cursor:pointer">&#128205; SYNC</button>
+            </div>
           </div>
-          <textarea id="report-description" class="fleet-input fleet-textarea" placeholder="Describe the hazard (required)" maxlength="2000"></textarea>
+          <div id="report-position-hint" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em"></div>
+          <textarea id="report-description" class="fleet-input fleet-textarea" placeholder="Describe the hazard (required) — e.g. distance/direction from us, drift direction" maxlength="2000"></textarea>
+          <!-- Quick-insert relative-bearing helper (added 2026-07-10): reporting
+               a hazard's position relative to your own vessel ("2nm SE of us")
+               is more useful to another vessel plotting it than raw lat/lon
+               alone. This lets the operator type a distance + pick a
+               direction and insert readable phrasing into the description
+               without doing bearing math by hand. Optional — never required,
+               never overwrites anything already typed. -->
+          <div style="display:flex;gap:8px;align-items:center;margin:-2px 0 10px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em">QUICK INSERT:</span>
+            <input id="report-rel-distance" type="number" min="0" step="0.1" placeholder="nm" style="width:64px;background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+            <select id="report-rel-direction" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE" selected>SE</option>
+              <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW">NW</option>
+            </select>
+            <select id="report-rel-motion" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="stationary">stationary</option>
+              <option value="drifting">drifting toward</option>
+            </select>
+            <button type="button" class="fleet-btn" style="padding:6px 12px;font-size:10px" onclick="insertRelativeBearingPhrase()">Insert</button>
+          </div>
           <button class="fleet-btn" id="btn-submit-report" onclick="submitHazardReport()">Submit Report to RMC</button>
         </div>
       </div>
@@ -1942,6 +1966,46 @@ async function renderFleetAdvisories(isPoll) {
 }
 
 // ── Vessel hazard report form (vessel → RMC) ─────────────────
+
+// Converts a decimal-degree lat/lon into a compact DD.DDDD N/S DDD.DDDD E/W
+// string — readable at a glance, matches the format already used elsewhere
+// on this dashboard (e.g. the ais vessel list) rather than inventing a new one.
+function fleetFormatLatLon(lat, lon) {
+  if (lat === null || lat === undefined || isNaN(lat) || lon === null || lon === undefined || isNaN(lon)) return null;
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lon >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(4)}${ns} ${Math.abs(lon).toFixed(4)}${ew}`;
+}
+
+// Auto-fills the hazard report's position field from the vessel's own live
+// GPS (already polled into #f-latitude/#f-longitude every 2s by fetchPiFeed,
+// see BEAUFORT AI north-star notes above). Runs once when the FLEET tab
+// opens and again any time the operator hits the manual SYNC button —
+// never overwrites something the operator already typed by hand unless
+// they explicitly asked for a re-sync (forceOverwrite=true).
+function syncReportPositionFromGPS(forceOverwrite) {
+  const posEl = document.getElementById('report-position');
+  const hintEl = document.getElementById('report-position-hint');
+  if (!posEl) return;
+  const latEl = document.getElementById('f-latitude');
+  const lonEl = document.getElementById('f-longitude');
+  const lat = latEl ? parseFloat(latEl.value) : NaN;
+  const lon = lonEl ? parseFloat(lonEl.value) : NaN;
+  const formatted = fleetFormatLatLon(lat, lon);
+
+  if (!formatted) {
+    if (hintEl) hintEl.textContent = 'No live GPS fix yet — enter position manually.';
+    return;
+  }
+
+  // Only auto-fill if the field is empty or this is an explicit re-sync
+  // (button click) — don't clobber manual edits on every silent refresh.
+  if (forceOverwrite || !posEl.value.trim()) {
+    posEl.value = formatted;
+  }
+  if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \u2014 edit freely, or tap SYNC to refresh.';
+}
+
 async function populateReportVesselDropdown() {
   const sel = document.getElementById('report-vessel');
   if (!sel) return;
@@ -1954,6 +2018,34 @@ async function populateReportVesselDropdown() {
   } catch (e) {
     sel.innerHTML = '<option value="">Unable to load vessels</option>';
   }
+}
+
+// Inserts readable relative-position phrasing ("2nm SE of us, drifting
+// toward") into the description field — this is what actually helps
+// another vessel plotting the hazard, since raw lat/lon of the hazard
+// itself usually isn't known/measured, but its position/drift relative
+// to one's own vessel usually is. Appends rather than replaces, so it
+// composes with whatever the operator has already typed.
+function insertRelativeBearingPhrase() {
+  const distEl = document.getElementById('report-rel-distance');
+  const dirEl = document.getElementById('report-rel-direction');
+  const motionEl = document.getElementById('report-rel-motion');
+  const descEl = document.getElementById('report-description');
+  const dist = parseFloat(distEl.value);
+  if (!dist || dist <= 0) {
+    distEl.focus();
+    return;
+  }
+  const dir = dirEl.value;
+  const motion = motionEl.value;
+  const phrase = motion === 'drifting'
+    ? `Approx ${dist}nm ${dir} of our position, drifting toward us.`
+    : `Approx ${dist}nm ${dir} of our position.`;
+
+  const existing = descEl.value.trim();
+  descEl.value = existing ? existing + ' ' + phrase : phrase;
+  distEl.value = '';
+  descEl.focus();
 }
 
 async function submitHazardReport() {
@@ -2138,6 +2230,7 @@ function initFleetTab() {
   renderFleetGrid();
   renderFleetAdvisories();
   populateReportVesselDropdown();
+  syncReportPositionFromGPS(false); // fill only if empty, never clobber a manual edit
   // If a key is already cached in this tab's session, skip straight to
   // the unlocked RMC view instead of making them re-type it.
   if (rmcGetKey()) rmcShowUnlocked();
@@ -2174,7 +2267,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // the tab is switched to so the live Kirt card doesn't go stale.
   initFleetTab();
   const fleetTabBtn = document.querySelector('[data-tab="fleet"]');
-  if (fleetTabBtn) fleetTabBtn.addEventListener('click', renderFleetGrid);
+  if (fleetTabBtn) fleetTabBtn.addEventListener('click', () => {
+    renderFleetGrid();
+    // Re-sync position on every tab visit, not just page load — if GPS
+    // didn't have a fix yet when the page first loaded, this is the
+    // retry path. Still non-destructive: only fills if the field is
+    // currently empty (forceOverwrite=false).
+    syncReportPositionFromGPS(false);
+  });
 
   // PI LIVE FEED toggle
   document.getElementById('pi-feed-toggle').addEventListener('change', e => {
