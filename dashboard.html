@@ -718,10 +718,17 @@
               <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE" selected>SE</option>
               <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW">NW</option>
             </select>
-            <select id="report-rel-motion" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+            <select id="report-rel-motion" onchange="onRelMotionChange()" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
               <option value="stationary">stationary</option>
-              <option value="drifting">drifting toward</option>
+              <option value="drifting">drifting</option>
             </select>
+            <span id="report-rel-drift-wrap" style="display:none;align-items:center;gap:8px">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">to the</span>
+              <select id="report-rel-drift-direction" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+                <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE">SE</option>
+                <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW" selected>NW</option>
+              </select>
+            </span>
             <button type="button" class="fleet-btn" style="padding:6px 12px;font-size:10px" onclick="insertRelativeBearingPhrase()">Insert</button>
           </div>
           <button class="fleet-btn" id="btn-submit-report" onclick="submitHazardReport()">Submit Report to RMC</button>
@@ -2021,16 +2028,33 @@ async function populateReportVesselDropdown() {
   }
 }
 
-// Inserts readable relative-position phrasing ("2nm SE of us, drifting
-// toward") into the description field — this is what actually helps
-// another vessel plotting the hazard, since raw lat/lon of the hazard
-// itself usually isn't known/measured, but its position/drift relative
-// to one's own vessel usually is. Appends rather than replaces, so it
-// composes with whatever the operator has already typed.
+// Shows/hides the drift-direction picker depending on stationary vs
+// drifting — no point asking which way something is drifting if it
+// isn't moving.
+function onRelMotionChange() {
+  const motionEl = document.getElementById('report-rel-motion');
+  const wrap = document.getElementById('report-rel-drift-wrap');
+  wrap.style.display = motionEl.value === 'drifting' ? 'inline-flex' : 'none';
+}
+
+// Inserts readable relative-position phrasing ("3nm S of our position,
+// drifting to the north") into the description field — this is what
+// actually helps another vessel plotting the hazard, since raw lat/lon
+// of the hazard itself usually isn't known/measured, but its position
+// and drift direction relative to one's own vessel usually is. Appends
+// rather than replaces, so it composes with whatever's already typed.
+//
+// CHANGED (2026-07-10, Cap's request): previously drifting always said
+// "drifting toward us" — assumed the hazard was closing on the
+// reporting vessel, which isn't always true and gave no actual
+// direction of travel. Now takes an explicit drift-direction cardinal
+// (independent of the hazard's bearing FROM the vessel) so it reads
+// like "Approx 3nm S of our position, drifting to the north."
 function insertRelativeBearingPhrase() {
   const distEl = document.getElementById('report-rel-distance');
   const dirEl = document.getElementById('report-rel-direction');
   const motionEl = document.getElementById('report-rel-motion');
+  const driftDirEl = document.getElementById('report-rel-drift-direction');
   const descEl = document.getElementById('report-description');
   const dist = parseFloat(distEl.value);
   if (!dist || dist <= 0) {
@@ -2039,8 +2063,9 @@ function insertRelativeBearingPhrase() {
   }
   const dir = dirEl.value;
   const motion = motionEl.value;
+  const driftDirNames = { N: 'north', NE: 'northeast', E: 'east', SE: 'southeast', S: 'south', SW: 'southwest', W: 'west', NW: 'northwest' };
   const phrase = motion === 'drifting'
-    ? `Approx ${dist}nm ${dir} of our position, drifting toward us.`
+    ? `Approx ${dist}nm ${dir} of our position, drifting to the ${driftDirNames[driftDirEl.value] || driftDirEl.value}.`
     : `Approx ${dist}nm ${dir} of our position.`;
 
   const existing = descEl.value.trim();
