@@ -754,6 +754,7 @@
             <input id="adv-title" class="fleet-input" type="text" placeholder="Short title (required)">
             <input id="adv-expires" class="fleet-input" type="number" min="1" max="30" value="7" placeholder="Expires in (days)">
           </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em">Advisory auto-expires and drops off every vessel's dashboard after this many days (1–30) — doesn't need to be manually cleared unless it's resolved sooner.</div>
           <textarea id="adv-body" class="fleet-input fleet-textarea" placeholder="Advisory details (required)" maxlength="2000"></textarea>
           <button class="fleet-btn" id="btn-publish-advisory" onclick="publishAdvisory()">Publish to Fleet</button>
           <div id="adv-publish-status" class="fleet-status-msg"></div>
