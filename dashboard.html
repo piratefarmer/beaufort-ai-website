@@ -104,6 +104,24 @@
     .advisory-body b{color:var(--text)}
     .advisory-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px}
     .advisory-empty{font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:8px 0}
+    .fleet-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+    .fleet-input{background:#0a1420;border:1px solid #1e3a5f;border-radius:8px;padding:9px 11px;color:var(--text);font-family:var(--font-sans, inherit);font-size:13px;width:100%;box-sizing:border-box}
+    .fleet-input:focus{outline:none;border-color:var(--blue)}
+    .fleet-textarea{min-height:70px;resize:vertical;font-family:var(--font-sans, inherit);margin-bottom:10px}
+    .fleet-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+    .fleet-btn:hover{opacity:.88}
+    .fleet-btn:disabled{opacity:.5;cursor:not-allowed}
+    .fleet-btn-sm{background:transparent;border:1px solid #1e3a5f;color:var(--text-dim);border-radius:6px;padding:4px 10px;font-size:10px;font-family:var(--font-mono);cursor:pointer;white-space:nowrap}
+    .fleet-btn-sm:hover{border-color:var(--blue);color:var(--text)}
+    .fleet-status-msg{font-family:var(--font-mono);font-size:11px;margin-top:8px;min-height:14px}
+    .fleet-status-msg.ok{color:#22c55e}
+    .fleet-status-msg.err{color:#ef4444}
+    .fleet-rmc-subsection-title{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;border-bottom:1px solid #16283f;padding-bottom:6px}
+    .report-inbox-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #16283f;font-size:12px}
+    .report-inbox-item:last-child{border-bottom:none}
+    .report-inbox-body{color:var(--text-dim);line-height:1.5}
+    .report-inbox-body b{color:var(--text)}
+    .report-inbox-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:2px}
     .sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
@@ -574,7 +592,7 @@
     <!-- TAB: FLEET (dev/pilot build — branch feature/fleet-dashboard, mock data until Pi #2-5 are live) -->
     <div class="dash-tab-panel" id="tab-fleet">
       <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f59e0b;font-family:var(--font-mono);letter-spacing:.03em">
-        &#9888; PILOT BUILD — real backend (vessel registry + advisories persisted via Cloudflare KV), but only KIRT CHOUEST is registered so far. Vessels 2-5 appear automatically once their Pi hardware is provisioned. Advisory report-in/compose UI not yet built — API-only for now.
+        &#9888; PILOT BUILD — real backend (Cloudflare KV), but only KIRT CHOUEST is registered so far. Vessels 2-5 appear automatically once their Pi hardware is provisioned. RMC tools below use a temporary admin-key gate, not real logins (Phase 2 access control not yet built).
       </div>
 
       <div class="fleet-grid" id="fleet-grid"></div>
@@ -585,6 +603,64 @@
           <span class="forecast-strip-meta" id="advisory-meta">Loading...</span>
         </div>
         <div id="fleet-advisory-list"></div>
+      </div>
+
+      <!-- Vessel → RMC hazard report form. Open to any vessel, no admin
+           key required — by design, matches the roadmap's report-in path. -->
+      <div class="fleet-advisory-section">
+        <div class="fleet-advisory-header">
+          <span class="forecast-strip-title">&#9673; REPORT A HAZARD TO RMC</span>
+          <span class="forecast-strip-meta" id="report-form-meta"></span>
+        </div>
+        <div class="fleet-form-grid">
+          <select id="report-vessel" class="fleet-input"></select>
+          <select id="report-hazard-type" class="fleet-input">
+            <option value="">Select hazard type…</option>
+            <option>Unlit rig / structure</option>
+            <option>Buoy off station</option>
+            <option>Drifting debris / trash</option>
+            <option>Adrift vessel</option>
+            <option>Weather hazard</option>
+            <option>Other</option>
+          </select>
+          <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)">
+        </div>
+        <textarea id="report-description" class="fleet-input fleet-textarea" placeholder="Describe the hazard (required)" maxlength="2000"></textarea>
+        <button class="fleet-btn" id="btn-submit-report" onclick="submitHazardReport()">Submit Report to RMC</button>
+      </div>
+
+      <!-- RMC-only tools: advisory composer + report inbox. Gated by a
+           shared admin key entered client-side (stopgap, not real auth
+           — see Phase 2 in the fleet roadmap). Key is cached in
+           sessionStorage only (cleared when the browser tab closes),
+           never written to localStorage or any persistent store. -->
+      <div class="fleet-advisory-section" id="rmc-gate-section">
+        <div class="fleet-advisory-header">
+          <span class="forecast-strip-title">&#9673; RMC TOOLS</span>
+          <span class="forecast-strip-meta">Admin key required</span>
+        </div>
+        <div id="rmc-locked-view" class="fleet-form-grid">
+          <input id="rmc-key-input" class="fleet-input" type="password" placeholder="RMC admin key">
+          <button class="fleet-btn" onclick="rmcUnlock()">Unlock</button>
+        </div>
+        <div id="rmc-unlocked-view" style="display:none">
+          <div class="fleet-rmc-subsection-title">Compose Fleet Advisory</div>
+          <div class="fleet-form-grid">
+            <select id="adv-severity" class="fleet-input">
+              <option value="info">Info</option>
+              <option value="warning" selected>Warning</option>
+              <option value="critical">Critical</option>
+            </select>
+            <input id="adv-title" class="fleet-input" type="text" placeholder="Short title (required)">
+            <input id="adv-expires" class="fleet-input" type="number" min="1" max="30" value="7" placeholder="Expires in (days)">
+          </div>
+          <textarea id="adv-body" class="fleet-input fleet-textarea" placeholder="Advisory details (required)" maxlength="2000"></textarea>
+          <button class="fleet-btn" id="btn-publish-advisory" onclick="publishAdvisory()">Publish to Fleet</button>
+          <div id="adv-publish-status" class="fleet-status-msg"></div>
+
+          <div class="fleet-rmc-subsection-title" style="margin-top:20px">Incoming Hazard Reports</div>
+          <div id="rmc-reports-list"><div class="advisory-empty">Loading…</div></div>
+        </div>
       </div>
     </div>
     <!-- /TAB: FLEET -->
@@ -1662,9 +1738,169 @@ async function renderFleetAdvisories() {
   if (meta) meta.textContent = `${advisories.length} active`;
 }
 
+// ── Vessel hazard report form (vessel → RMC) ─────────────────
+async function populateReportVesselDropdown() {
+  const sel = document.getElementById('report-vessel');
+  if (!sel) return;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    const vessels = d.vessels || [];
+    sel.innerHTML = vessels.map(v => `<option value="${v.id}">${v.name}</option>`).join('')
+      || '<option value="">No vessels registered</option>';
+  } catch (e) {
+    sel.innerHTML = '<option value="">Unable to load vessels</option>';
+  }
+}
+
+async function submitHazardReport() {
+  const btn = document.getElementById('btn-submit-report');
+  const meta = document.getElementById('report-form-meta');
+  const vesselSel = document.getElementById('report-vessel');
+  const vesselId = vesselSel.value;
+  const vesselName = vesselSel.options[vesselSel.selectedIndex]?.text || vesselId;
+  const hazardType = document.getElementById('report-hazard-type').value;
+  const description = document.getElementById('report-description').value.trim();
+  const position = document.getElementById('report-position').value.trim();
+
+  if (!hazardType) { meta.textContent = 'Select a hazard type.'; meta.style.color = '#ef4444'; return; }
+  if (!description) { meta.textContent = 'Description is required.'; meta.style.color = '#ef4444'; return; }
+
+  btn.disabled = true;
+  meta.textContent = 'Submitting…';
+  meta.style.color = '';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vessel_id: vesselId, vessel_name: vesselName, hazard_type: hazardType, description, position }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'Submission failed');
+    meta.textContent = 'Report submitted — RMC notified.';
+    meta.style.color = '#22c55e';
+    document.getElementById('report-hazard-type').value = '';
+    document.getElementById('report-description').value = '';
+    document.getElementById('report-position').value = '';
+  } catch (e) {
+    meta.textContent = 'Error: ' + e.message;
+    meta.style.color = '#ef4444';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── RMC tools: admin-key gate (interim — Phase 2 replaces this) ───
+// Key lives only in sessionStorage (cleared on tab close), never sent
+// anywhere except as the X-Fleet-Admin-Key header to our own Worker
+// over HTTPS. This is explicitly NOT real access control — anyone
+// who has the key can use it, same as the curl-based workflow used
+// during backend testing. Replace with Cloudflare Access (Phase 2)
+// before handing this URL to RMC/ECO for real use.
+function rmcGetKey() {
+  return sessionStorage.getItem('fleet_admin_key') || '';
+}
+
+function rmcUnlock() {
+  const input = document.getElementById('rmc-key-input');
+  const key = input.value.trim();
+  if (!key) return;
+  sessionStorage.setItem('fleet_admin_key', key);
+  rmcShowUnlocked();
+}
+
+async function rmcShowUnlocked() {
+  document.getElementById('rmc-locked-view').style.display = 'none';
+  document.getElementById('rmc-unlocked-view').style.display = 'block';
+  await loadRmcReportsInbox();
+}
+
+async function publishAdvisory() {
+  const btn = document.getElementById('btn-publish-advisory');
+  const statusEl = document.getElementById('adv-publish-status');
+  const severity = document.getElementById('adv-severity').value;
+  const title = document.getElementById('adv-title').value.trim();
+  const body = document.getElementById('adv-body').value.trim();
+  const expiresDays = Number(document.getElementById('adv-expires').value) || 7;
+
+  if (!title || !body) {
+    statusEl.textContent = 'Title and details are both required.';
+    statusEl.className = 'fleet-status-msg err';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Publishing…';
+  statusEl.className = 'fleet-status-msg';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Fleet-Admin-Key': rmcGetKey() },
+      body: JSON.stringify({ severity, title, body, issued_by: 'RMC', expires_days: expiresDays }),
+    });
+    const d = await res.json();
+    if (res.status === 401) {
+      statusEl.textContent = 'Admin key rejected — unlock again with the correct key.';
+      statusEl.className = 'fleet-status-msg err';
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) throw new Error(d.error || 'Publish failed');
+    statusEl.textContent = 'Advisory published to fleet.';
+    statusEl.className = 'fleet-status-msg ok';
+    document.getElementById('adv-title').value = '';
+    document.getElementById('adv-body').value = '';
+    renderFleetAdvisories();
+  } catch (e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.className = 'fleet-status-msg err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadRmcReportsInbox() {
+  const list = document.getElementById('rmc-reports-list');
+  list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.status === 401) {
+      list.innerHTML = '<div class="advisory-empty">Admin key rejected.</div>';
+      return;
+    }
+    const d = await res.json();
+    const reports = d.reports || [];
+    if (!reports.length) {
+      list.innerHTML = '<div class="advisory-empty">No hazard reports yet.</div>';
+      return;
+    }
+    list.innerHTML = reports.map(r => `
+      <div class="report-inbox-item">
+        <div class="report-inbox-body">
+          <b>${r.hazard_type}</b> — ${r.vessel_name}${r.position ? ' · ' + r.position : ''}
+          <div>${r.description}</div>
+          <div class="report-inbox-meta">${fleetTimeAgo(r.reported_at)} · status: ${r.status}</div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="advisory-empty">Unable to load reports — ' + e.message + '</div>';
+  }
+}
+
 function initFleetTab() {
   renderFleetGrid();
   renderFleetAdvisories();
+  populateReportVesselDropdown();
+  // If a key is already cached in this tab's session, skip straight to
+  // the unlocked RMC view instead of making them re-type it.
+  if (rmcGetKey()) rmcShowUnlocked();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
