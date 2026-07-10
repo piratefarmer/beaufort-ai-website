@@ -1276,7 +1276,7 @@ function onSensorFieldChange(inputEl) {
 // background regardless of which tab is visible, so nothing goes
 // stale when switching back.
 let dashActiveTab = 'conditions';
-const dashTabBadgeCounts = { ais: 0, history: 0 };
+const dashTabBadgeCounts = { ais: 0, history: 0, fleet: 0 };
 
 function dashSwitchTab(tabName) {
   dashActiveTab = tabName;
@@ -1759,11 +1759,17 @@ async function renderFleetGrid() {
   grid.innerHTML = cards;
 }
 
-async function renderFleetAdvisories() {
+// Tracks advisory IDs already seen so we only badge the tab for NEW
+// or newly-reappeared advisories, not every poll refresh. null means
+// "not initialized yet" — the very first load seeds the set silently
+// (no badge for advisories that already existed before page load).
+let fleetSeenAdvisoryIds = null;
+
+async function renderFleetAdvisories(isPoll) {
   const list = document.getElementById('fleet-advisory-list');
   const meta = document.getElementById('advisory-meta');
   if (!list) return;
-  list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+  if (!isPoll) list.innerHTML = '<div class="advisory-empty">Loading…</div>';
 
   let advisories = [];
   try {
@@ -1771,9 +1777,19 @@ async function renderFleetAdvisories() {
     const d = await res.json();
     advisories = d.advisories || [];
   } catch (e) {
-    list.innerHTML = '<div class="advisory-empty">Advisory API unreachable — ' + e.message + '</div>';
+    if (!isPoll) list.innerHTML = '<div class="advisory-empty">Advisory API unreachable — ' + e.message + '</div>';
     return;
   }
+
+  // Badge the FLEET tab if any active advisory is new since last check.
+  // Skipped on the very first render (fleetSeenAdvisoryIds === null) so
+  // pre-existing advisories don't falsely look "new" on page load.
+  const currentIds = new Set(advisories.map(a => a.id));
+  if (fleetSeenAdvisoryIds !== null) {
+    const hasNew = advisories.some(a => !fleetSeenAdvisoryIds.has(a.id));
+    if (hasNew) dashBumpTabBadge('fleet');
+  }
+  fleetSeenAdvisoryIds = currentIds;
 
   if (!advisories.length) {
     list.innerHTML = '<div class="advisory-empty">&#10003; No active advisories — fleet is clear.</div>';
@@ -1955,6 +1971,8 @@ async function loadRmcReportsInbox() {
   }
 }
 
+let fleetAdvisoryPollTimer = null;
+
 function initFleetTab() {
   renderFleetGrid();
   renderFleetAdvisories();
@@ -1962,6 +1980,13 @@ function initFleetTab() {
   // If a key is already cached in this tab's session, skip straight to
   // the unlocked RMC view instead of making them re-type it.
   if (rmcGetKey()) rmcShowUnlocked();
+
+  // Poll for new advisories even while the operator is on another tab,
+  // so the FLEET tab badge can light up without requiring a manual
+  // visit — advisories are otherwise dashboard-pull only (no push/email
+  // to the browser itself; RMC email notify is separate, worker-side).
+  if (fleetAdvisoryPollTimer) clearInterval(fleetAdvisoryPollTimer);
+  fleetAdvisoryPollTimer = setInterval(() => renderFleetAdvisories(true), 30000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

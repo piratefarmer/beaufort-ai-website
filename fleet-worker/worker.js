@@ -169,7 +169,36 @@ export default {
         };
         advisories.unshift(advisory);
         await putJSON(env, "advisories", advisories);
-        return json({ status: "ok", advisory }, 200, origin);
+
+        // Notify the fleet inbox so a published advisory doesn't sit
+        // silently in KV waiting for someone to open the dashboard tab.
+        // Same send_email binding/pattern as hazard reports, mirrored
+        // direction (RMC -> fleet instead of vessel -> RMC). Best-effort:
+        // the advisory is already saved even if email delivery fails.
+        let emailWarning;
+        try {
+          const msg = createMimeMessage();
+          msg.setSender({ addr: "fleet@beaufortai.ai", name: "Beau Fleet Advisories" });
+          msg.setRecipient("piratefarmer2@gmail.com");
+          msg.setSubject(`[Fleet Advisory] ${severity.toUpperCase()} \u2014 ${title}`);
+          const lines = [
+            `Severity: ${severity.toUpperCase()}`,
+            `Issued by: ${issuedBy}`,
+            `Issued at: ${advisory.created_at}`,
+            `Expires: ${advisory.expires_at}`,
+            "",
+            title,
+            "",
+            advBody,
+          ];
+          msg.addMessage({ contentType: "text/plain", data: lines.join("\n") });
+          const email = new EmailMessage("fleet@beaufortai.ai", "piratefarmer2@gmail.com", msg.asRaw());
+          await env.SEB.send(email);
+        } catch (e) {
+          emailWarning = e.message;
+        }
+
+        return json(emailWarning ? { status: "ok", advisory, email_warning: emailWarning } : { status: "ok", advisory }, 200, origin);
       }
 
       // ── POST /api/fleet/advisories/:id/clear (RMC retires) ──
