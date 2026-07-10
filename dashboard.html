@@ -574,7 +574,7 @@
     <!-- TAB: FLEET (dev/pilot build — branch feature/fleet-dashboard, mock data until Pi #2-5 are live) -->
     <div class="dash-tab-panel" id="tab-fleet">
       <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#f59e0b;font-family:var(--font-mono);letter-spacing:.03em">
-        &#9888; PILOT PREVIEW — 4 of 5 vessels below are simulated placeholder data for concept review. Only KIRT CHOUEST is a live feed.
+        &#9888; PILOT BUILD — real backend (vessel registry + advisories persisted via Cloudflare KV), but only KIRT CHOUEST is registered so far. Vessels 2-5 appear automatically once their Pi hardware is provisioned. Advisory report-in/compose UI not yet built — API-only for now.
       </div>
 
       <div class="fleet-grid" id="fleet-grid"></div>
@@ -688,6 +688,7 @@ async function checkLiveSystemsStatus() {
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
 const FEEDBACK_API_URL = 'https://beau-feedback.capt-barrett.workers.dev/';
+const FLEET_API_BASE = 'https://beau-fleet.capt-barrett.workers.dev';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 const AUTO_DEBOUNCE_MS = 1500; // ms after last change before auto-triggering
 
@@ -1530,48 +1531,14 @@ async function fetchPiFeed() {
 }
 
 // ── FLEET TAB (pilot build, branch feature/fleet-dashboard) ──────
-// Phase 0/1 of the fleet roadmap: one real vessel (Kirt Chouest, live
-// PI_FEED_URL) + 4 simulated vessels so the fleet-overview concept is
-// demoable before the other Pis are physically deployed. Advisories
-// are mock data for now (Phase 3 backend doesn't exist yet). Nothing
-// here touches the existing single-vessel tabs/logic above.
-
-const FLEET_VESSELS = [
-  { id: 'kirt_chouest', name: 'KIRT CHOUEST', role: 'AHTS · Subsea Construction', isLive: true },
-  { id: 'vessel_2', name: 'VESSEL 2', role: 'Pilot candidate — TBD', isLive: false },
-  { id: 'vessel_3', name: 'VESSEL 3', role: 'Pilot candidate — TBD', isLive: false },
-  { id: 'vessel_4', name: 'VESSEL 4', role: 'Pilot candidate — TBD', isLive: false },
-  { id: 'vessel_5', name: 'VESSEL 5', role: 'Pilot candidate — TBD', isLive: false },
-];
-
-// Mock telemetry for the 4 non-live vessels, so cards look populated
-// in a demo instead of showing empty dashes everywhere.
-const FLEET_MOCK_DATA = {
-  vessel_2: { status: 'online', pressure: 1014.2, wind: 14, heading: 212, lastSeen: '2 min ago' },
-  vessel_3: { status: 'online', pressure: 1011.8, wind: 22, heading: 88,  lastSeen: '1 min ago' },
-  vessel_4: { status: 'stale',  pressure: 1016.5, wind: 9,  heading: 340, lastSeen: '38 min ago' },
-  vessel_5: { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'No data yet' },
-};
-
-// Mock advisories — Phase 3 (RMC → fleet advisory system) isn't built
-// yet; this shows what the RMC-pushed advisory feed would look like
-// once that backend exists.
-const FLEET_MOCK_ADVISORIES = [
-  {
-    severity: 'warning',
-    title: 'Unlit rig reported',
-    body: 'Vessel report: unlit platform structure, approx. 4nm SE of last reported position. Exercise caution when transiting area at night.',
-    issuedBy: 'RMC',
-    time: '3 hours ago',
-  },
-  {
-    severity: 'info',
-    title: 'Buoy off station',
-    body: 'NOAA buoy 42001 reporting intermittent/no data — treat local readings from that station as unreliable until further notice.',
-    issuedBy: 'RMC',
-    time: '1 day ago',
-  },
-];
+// Real backend as of this pass: vessel registry + advisories are read
+// from the deployed beau-fleet Worker (Cloudflare KV-backed), not
+// hardcoded mock arrays. Only Kirt Chouest exists as a real vessel
+// today (registered in KV) — vessels 2-5 will appear automatically
+// once their Pis are provisioned and registered, no dashboard code
+// changes needed at that point. Advisories are real, persisted, and
+// created via the RMC-side API (not yet a UI — curl/admin-key only
+// until Phase 2 access control exists).
 
 function fleetStatusDot(status) {
   const cls = status === 'online' ? 'online' : status === 'stale' ? 'stale' : 'offline';
@@ -1583,36 +1550,68 @@ function fleetMetricBlock(label, value, unit) {
   return `<div><div class="fleet-metric-label">${label}</div><div class="fleet-metric-value">${v}${v !== '--' ? ' ' + unit : ''}</div></div>`;
 }
 
+function fleetTimeAgo(iso) {
+  if (!iso) return 'Unknown';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  return `${Math.round(hrs / 24)} day(s) ago`;
+}
+
+async function fetchVesselData(vessel) {
+  // Kirt Chouest's tunnel_url IS the same PI_FEED_URL already polled
+  // by the CONDITIONS tab — fetch independently here so the FLEET tab
+  // doesn't depend on CONDITIONS having been visited first.
+  try {
+    const res = await fetch(vessel.tunnel_url, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+    if (!res.ok) throw new Error('bad status ' + res.status);
+    const d = await res.json();
+    return {
+      status: 'online',
+      pressure: d.pressure ?? null,
+      wind: d.true_wind_speed ?? d.wind_speed ?? null,
+      heading: d.heading ?? null,
+      lastSeen: 'Live',
+    };
+  } catch (e) {
+    return { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unreachable' };
+  }
+}
+
 async function renderFleetGrid() {
   const grid = document.getElementById('fleet-grid');
   if (!grid) return;
+  grid.innerHTML = '<div class="advisory-empty">Loading fleet…</div>';
 
-  // Try to pull real, current Kirt Chouest data from the same feed
-  // the CONDITIONS tab already uses, so the one live card is never
-  // stale/fake data — falls back gracefully if the feed is down.
-  let kirtData = { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unavailable' };
+  let vessels = [];
   try {
-    const res = await fetch(PI_FEED_URL, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
-    if (res.ok) {
-      const d = await res.json();
-      kirtData = {
-        status: 'online',
-        pressure: d.pressure ?? null,
-        wind: d.true_wind_speed ?? d.wind_speed ?? null,
-        heading: d.heading ?? null,
-        lastSeen: 'Live',
-      };
-    }
-  } catch (e) { /* leave kirtData as offline fallback, no crash */ }
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    vessels = d.vessels || [];
+  } catch (e) {
+    grid.innerHTML = '<div class="advisory-empty">Fleet API unreachable — ' + e.message + '</div>';
+    return;
+  }
 
-  const cards = FLEET_VESSELS.map(v => {
-    const data = v.isLive ? kirtData : FLEET_MOCK_DATA[v.id];
+  if (!vessels.length) {
+    grid.innerHTML = '<div class="advisory-empty">No vessels registered yet.</div>';
+    return;
+  }
+
+  // Fetch each vessel's live telemetry in parallel.
+  const results = await Promise.all(vessels.map(v => fetchVesselData(v)));
+
+  const cards = vessels.map((v, i) => {
+    const data = results[i];
     return `
-      <div class="fleet-card${v.isLive ? '' : ' is-mock'}" onclick="${v.isLive ? "dashSwitchTab('conditions')" : 'void(0)'}">
+      <div class="fleet-card" onclick="${v.id === 'kirt_chouest' ? "dashSwitchTab('conditions')" : 'void(0)'}">
         <div class="fleet-card-top">
           <div>
             <div class="fleet-card-name">${v.name}</div>
-            <div class="fleet-card-sub">${v.role}</div>
+            <div class="fleet-card-sub">${v.role || ''}</div>
           </div>
           ${fleetStatusDot(data.status)}
         </div>
@@ -1622,34 +1621,45 @@ async function renderFleetGrid() {
           ${fleetMetricBlock('HEADING', data.heading, '°')}
           ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
         </div>
-        <div class="fleet-card-footer">${v.isLive ? 'LIVE FEED' : 'SIMULATED — PILOT PREVIEW'} · ${data.lastSeen}</div>
+        <div class="fleet-card-footer">${data.lastSeen}</div>
       </div>`;
   }).join('');
 
   grid.innerHTML = cards;
 }
 
-function renderFleetAdvisories() {
+async function renderFleetAdvisories() {
   const list = document.getElementById('fleet-advisory-list');
   const meta = document.getElementById('advisory-meta');
   if (!list) return;
+  list.innerHTML = '<div class="advisory-empty">Loading…</div>';
 
-  if (!FLEET_MOCK_ADVISORIES.length) {
+  let advisories = [];
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    advisories = d.advisories || [];
+  } catch (e) {
+    list.innerHTML = '<div class="advisory-empty">Advisory API unreachable — ' + e.message + '</div>';
+    return;
+  }
+
+  if (!advisories.length) {
     list.innerHTML = '<div class="advisory-empty">No active advisories.</div>';
     if (meta) meta.textContent = 'None active';
     return;
   }
 
-  list.innerHTML = FLEET_MOCK_ADVISORIES.map(a => `
+  list.innerHTML = advisories.map(a => `
     <div class="advisory-item">
       <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
       <div class="advisory-body">
         <b>${a.title}</b> — ${a.body}
-        <div class="advisory-meta">Issued by ${a.issuedBy} · ${a.time}</div>
+        <div class="advisory-meta">Issued by ${a.issued_by} · ${fleetTimeAgo(a.created_at)}</div>
       </div>
     </div>`).join('');
 
-  if (meta) meta.textContent = `${FLEET_MOCK_ADVISORIES.length} active (mock data — Phase 3 not yet built)`;
+  if (meta) meta.textContent = `${advisories.length} active`;
 }
 
 function initFleetTab() {
