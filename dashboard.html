@@ -117,7 +117,7 @@
     .advisory-empty{font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:10px 2px;text-align:center}
 
     .fleet-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
-    .fleet-input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-family:var(--font-body);font-size:13px;width:100%;box-sizing:border-box;transition:border-color .2s}
+    .fleet-input{background:var(--bg);border:1px solid #55606e;border-radius:6px;padding:9px 11px;color:var(--text);font-family:var(--font-body);font-size:13px;width:100%;box-sizing:border-box;transition:border-color .2s}
     .fleet-input:focus{outline:none;border-color:var(--blue)}
     .fleet-input::placeholder{color:var(--text-dim)}
     .fleet-textarea{min-height:64px;resize:vertical;font-family:var(--font-body);margin-bottom:10px;line-height:1.5}
@@ -2005,12 +2005,42 @@ function rmcGetKey() {
   return sessionStorage.getItem('fleet_admin_key') || '';
 }
 
-function rmcUnlock() {
+async function rmcUnlock() {
   const input = document.getElementById('rmc-key-input');
   const key = input.value.trim();
   if (!key) return;
+
+  const lockStatus = document.getElementById('rmc-lock-status');
+  if (lockStatus) lockStatus.textContent = 'Checking key\u2026';
+
+  // Verify the key against the real Worker BEFORE showing "UNLOCKED" —
+  // previously this flipped to unlocked unconditionally on any non-empty
+  // input, then silently found out later (in a separate, easy-to-miss
+  // "Admin key rejected" message buried in the reports list) that the
+  // key was actually wrong. That let the UI show a confident green
+  // "UNLOCKED" badge while every real action behind it was still
+  // failing — confusing and wrong. Now it verifies first.
+  let valid = false;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': key },
+      signal: AbortSignal.timeout(6000),
+    });
+    valid = res.status !== 401;
+  } catch (e) {
+    if (lockStatus) lockStatus.textContent = 'Could not reach fleet server \u2014 try again.';
+    return;
+  }
+
+  if (!valid) {
+    if (lockStatus) lockStatus.textContent = 'Admin key rejected.';
+    input.value = '';
+    input.focus();
+    return;
+  }
+
   sessionStorage.setItem('fleet_admin_key', key);
-  rmcShowUnlocked();
+  await rmcShowUnlocked();
 }
 
 async function rmcShowUnlocked() {
