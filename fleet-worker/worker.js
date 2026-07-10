@@ -28,6 +28,7 @@
  *   POST /api/fleet/advisories             [admin key required]
  *   POST /api/fleet/advisories/:id/clear   [admin key required]
  *   GET  /api/fleet/reports                [admin key required]
+ *   POST /api/fleet/reports/:id/status     [admin key required]
  *   POST /api/fleet/reports                (vessel submits, no auth —
  *                                            open by design, any vessel
  *                                            can report; emails RMC)
@@ -52,6 +53,8 @@ const HAZARD_TYPES = new Set([
   "Weather hazard",
   "Other",
 ]);
+
+const REPORT_STATUSES = new Set(["new", "acknowledged", "resolved"]);
 
 function corsHeaders(origin) {
   // Allow any *.beaufortai.pages.dev preview deployment (branch previews
@@ -290,6 +293,31 @@ export default {
         }
 
         return json({ status: "ok", report }, 200, origin);
+      }
+
+      // ── POST /api/fleet/reports/:id/status (RMC updates triage status) ──
+      // Added 2026-07-10: reports previously had a status field ('new')
+      // but nothing ever changed it — they'd sit in the inbox forever with
+      // no way to tell what RMC had already looked at/handled. Lets the
+      // RMC dashboard mark a report acknowledged (seen, being worked) or
+      // resolved (handled, done) without deleting the record.
+      const statusMatch = path.match(/^\/api\/fleet\/reports\/([a-f0-9-]+)\/status$/);
+      if (statusMatch && request.method === "POST") {
+        if (!(await requireAdmin(request, env))) {
+          return json({ error: "Unauthorized \u2014 admin key required" }, 401, origin);
+        }
+        const body = await request.json().catch(() => ({}));
+        const newStatus = esc(body.status);
+        if (!REPORT_STATUSES.has(newStatus)) {
+          return json({ error: `status must be one of: ${[...REPORT_STATUSES].join(", ")}` }, 400, origin);
+        }
+        const reports = await getJSON(env, "reports", []);
+        const idx = reports.findIndex(r => r.id === statusMatch[1]);
+        if (idx === -1) return json({ error: "Report not found" }, 404, origin);
+        reports[idx].status = newStatus;
+        reports[idx].status_updated_at = new Date().toISOString();
+        await putJSON(env, "reports", reports);
+        return json({ status: "ok", report: reports[idx] }, 200, origin);
       }
 
       return json({ error: "Not found" }, 404, origin);

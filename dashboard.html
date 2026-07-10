@@ -106,6 +106,8 @@
     .fleet-section-body{padding:14px 16px}
 
     .advisory-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+    .advisory-clear-btn{background:none;border:1px solid #55606e;border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:4px 9px;cursor:pointer;white-space:nowrap;height:fit-content;align-self:center;transition:border-color .15s,color .15s}
+    .advisory-clear-btn:hover{border-color:var(--red);color:var(--red)}
     .advisory-item:last-child{border-bottom:none}
     .advisory-severity{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:10px;height:fit-content;white-space:nowrap;flex-shrink:0}
     .advisory-severity.critical{background:rgba(239,68,68,.15);color:var(--red)}
@@ -139,6 +141,10 @@
     .report-inbox-body b{color:var(--text);font-weight:600}
     .report-inbox-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
     .report-status-pill{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.12);color:var(--blue);white-space:nowrap;height:fit-content;text-transform:uppercase}
+    .report-status-pill.acknowledged{background:rgba(245,158,11,.12);color:#f59e0b}
+    .report-status-pill.resolved{background:rgba(34,197,94,.12);color:#22c55e}
+    .report-status-btn{background:none;border:1px solid #55606e;border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:8px;letter-spacing:.03em;padding:3px 8px;cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s}
+    .report-status-btn:hover{border-color:var(--blue);color:var(--blue)}
 
     .fleet-skeleton{height:14px;border-radius:4px;background:linear-gradient(90deg,var(--border) 0%,var(--border2) 50%,var(--border) 100%);background-size:200% 100%;animation:fleet-shimmer 1.4s ease-in-out infinite}
     @keyframes fleet-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -1960,6 +1966,13 @@ async function renderFleetAdvisories(isPoll) {
     return;
   }
 
+  // Clear button only renders for whoever's unlocked as RMC (has a
+  // cached admin key this tab) — this advisory list is shown fleet-wide
+  // to every vessel, and a random vessel operator shouldn't be able to
+  // retire RMC's advisories. Added 2026-07-10 alongside the matching
+  // worker endpoint (already existed, just had no UI hooked to it before
+  // — the only way to retire early was a manual curl call).
+  const isRmcUnlocked = !!rmcGetKey();
   list.innerHTML = advisories.map(a => `
     <div class="advisory-item">
       <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
@@ -1967,6 +1980,7 @@ async function renderFleetAdvisories(isPoll) {
         <b>${a.title}</b> — ${a.body}
         <div class="advisory-meta">Issued by ${a.issued_by} · ${fleetTimeAgo(a.created_at)}</div>
       </div>
+      ${isRmcUnlocked ? `<button type="button" class="advisory-clear-btn" onclick="clearAdvisory('${a.id}')">Clear</button>` : ''}
     </div>`).join('');
 
   if (meta) meta.textContent = `${advisories.length} active`;
@@ -2190,6 +2204,33 @@ async function rmcShowUnlocked() {
   await loadRmcReportsInbox();
 }
 
+// Retires an advisory early via the worker's existing /clear endpoint
+// (was already built, just had no dashboard UI wired to it — curl-only
+// until now). Confirms first since this can't be undone from the UI.
+async function clearAdvisory(id) {
+  if (!confirm('Clear this advisory now? It will immediately disappear from every vessel\'s dashboard.')) return;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories/' + id + '/clear', {
+      method: 'POST',
+      headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
+    });
+    if (res.status === 401) {
+      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Clear failed');
+    }
+    renderFleetAdvisories();
+  } catch (e) {
+    alert('Error clearing advisory: ' + e.message);
+  }
+}
+
 async function publishAdvisory() {
   const btn = document.getElementById('btn-publish-advisory');
   const statusEl = document.getElementById('adv-publish-status');
@@ -2255,6 +2296,12 @@ async function loadRmcReportsInbox() {
       list.innerHTML = '<div class="advisory-empty">No hazard reports yet.</div>';
       return;
     }
+    // Added 2026-07-10: reports previously had a status pill that never
+    // changed — no way to tell what RMC had actually looked at vs. what
+    // was still sitting new. Buttons call the new /status endpoint;
+    // 'new' reports offer Acknowledge, 'acknowledged' offer Resolve,
+    // 'resolved' is terminal (no further action needed) — not a strict
+    // state machine, just the natural next step from wherever it's at.
     list.innerHTML = reports.map(r => `
       <div class="report-inbox-item">
         <div class="report-inbox-body">
@@ -2262,10 +2309,38 @@ async function loadRmcReportsInbox() {
           <div>${r.description}</div>
           <div class="report-inbox-meta">${fleetTimeAgo(r.reported_at)}</div>
         </div>
-        <span class="report-status-pill">${r.status}</span>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <span class="report-status-pill ${r.status}">${r.status}</span>
+          ${r.status === 'new' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','acknowledged')">Acknowledge</button>` : ''}
+          ${r.status === 'acknowledged' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','resolved')">Resolve</button>` : ''}
+        </div>
       </div>`).join('');
   } catch (e) {
     list.innerHTML = '<div class="advisory-empty">Unable to load reports — ' + e.message + '</div>';
+  }
+}
+
+async function updateReportStatus(id, newStatus) {
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports/' + id + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Fleet-Admin-Key': rmcGetKey() },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (res.status === 401) {
+      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Status update failed');
+    }
+    loadRmcReportsInbox();
+  } catch (e) {
+    alert('Error updating report status: ' + e.message);
   }
 }
 
