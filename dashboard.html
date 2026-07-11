@@ -287,6 +287,10 @@
     .ais-radar-toggle.active{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)}
     /* Radar playback controls (added 2026-07-08) */
     .ais-radar-controls{display:none;align-items:center;gap:10px;padding:6px 16px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.02)}
+    .ais-lightning-legend{display:none;align-items:center;gap:12px;padding:5px 16px;border-bottom:1px solid var(--border);background:rgba(239,68,68,.03);font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    .ais-lightning-legend .legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:middle}
+    .ais-lightning-legend .legend-dot.dim{opacity:.35}
+    .ais-lightning-legend .legend-dot.mid{opacity:.65}
     .ais-radar-play{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;width:26px;height:26px;cursor:pointer;transition:border-color .2s,color .2s}
     .ais-radar-play:hover{border-color:var(--blue);color:var(--blue)}
     .ais-radar-scrubber{flex:1;accent-color:var(--blue);cursor:pointer}
@@ -554,6 +558,22 @@
         <button class="ais-radar-play" id="ais-radar-play" onclick="aisRadarTogglePlay()" title="Play/pause storm movement loop">&#9654;</button>
         <input type="range" class="ais-radar-scrubber" id="ais-radar-scrubber" min="0" max="0" value="0" oninput="aisRadarScrub(this.value)">
         <span class="ais-radar-time" id="ais-radar-time">--:--</span>
+      </div>
+      <!-- Lightning legend (added 2026-07-11): shown only while the ⚡ toggle
+           is ON. Strikes are recolored server-side to a single consistent
+           red (Xweather's raw default gray-by-age gradient direction isn't
+           documented and couldn't be confirmed empirically) -- opacity
+           still fades with age per Xweather's own "shaded by age" docs and
+           standard lightning-map convention, but we deliberately do NOT
+           claim an exact age/color mapping here since that wasn't
+           independently verifiable. For an exact strike age/distance in
+           seconds/miles, ask Beau directly or see /api/lightning. -->
+      <div class="ais-lightning-legend" id="ais-lightning-legend">
+        <span>&#9679; Lightning strikes (Xweather/GLD360, last 5 min):</span>
+        <span><span class="legend-dot"></span>Most recent</span>
+        <span><span class="legend-dot mid"></span>Recent</span>
+        <span><span class="legend-dot dim"></span>Older (fading out)</span>
+        <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
       </div>
       <div id="ais-map"></div>
       <div class="ais-footer">
@@ -3007,6 +3027,7 @@ function aisLightningMakeLayer() {
 
 function aisToggleLightning() {
     const btn = document.getElementById('ais-lightning-toggle');
+    const legend = document.getElementById('ais-lightning-legend');
     lightningEnabled = !lightningEnabled;
 
     if (lightningEnabled) {
@@ -3014,6 +3035,11 @@ function aisToggleLightning() {
         lightningLayer.addTo(aisMap);
         btn.textContent = '\u26A1 Lightning: ON';
         btn.classList.add('active');
+        legend.style.display = 'flex';
+        // Same invalidateSize pattern used elsewhere: showing this legend row
+        // changes the map container's effective height, so Leaflet needs to
+        // re-measure or the map view can end up subtly misaligned/cropped.
+        setTimeout(() => aisMap.invalidateSize(), 0);
         // Xweather's lightning-strikes layer updates every 5 minutes — refresh
         // the tile layer on that cadence so strikes actually age off the map.
         if (lightningRefreshTimer) clearInterval(lightningRefreshTimer);
@@ -3031,6 +3057,8 @@ function aisToggleLightning() {
         lightningLayer = null;
         btn.textContent = '\u26A1 Lightning: OFF';
         btn.classList.remove('active');
+        legend.style.display = 'none';
+        setTimeout(() => aisMap.invalidateSize(), 0);
     }
 }
 
