@@ -481,6 +481,35 @@
 
     <div class="sensor-grid" id="sensor-grid"></div>
 
+    <!-- MODE 1: SENSOR ANALYSIS (blue) -- moved here from Beau Analysis tab
+         2026-07-11 (Cap's request, prompted by the same-day pressure-
+         mismatch bug): sits right next to the raw sensor grid it
+         interprets so a Beau-vs-raw-reading discrepancy is visible at a
+         glance instead of needing to flip tabs to compare. Q&A (Mode 2)
+         stays on the Beau Analysis tab -- it's on-demand knowledge lookup,
+         not tied to watching a specific live number. -->
+    <div class="analysis-box" id="analysis-box">
+      <div class="analysis-header">
+        <span class="analysis-label">
+          &#x2B21; BEAU SENSOR ANALYSIS
+          <span class="auto-badge on" id="auto-badge">AUTO</span>
+        </span>
+        <div class="analysis-meta">
+          <span class="analysis-alert-badge" id="alert-badge"></span>
+          <span class="analysis-time" id="analysis-time">&mdash;</span>
+        </div>
+      </div>
+      <div class="analysis-body" id="analysis-body">
+        <span style="color:var(--muted);font-style:italic">Auto-analysis active. Modify any sensor value to trigger Beau analysis.</span>
+      </div>
+      <div class="analysis-confidence" id="analysis-confidence"></div>
+      <div class="payload-preview" id="payload-section">
+        <button class="payload-toggle" id="payload-toggle" onclick="togglePayload()">&#9658; SHOW LAST PAYLOAD</button>
+        <pre class="payload-json" id="payload-json" style="display:none"></pre>
+      </div>
+      <div class="flag-issue-footer"><button class="flag-issue-btn" onclick="openFlagModal('sensor')">&#x1F6A9; FLAG ISSUE</button></div>
+    </div>
+
     <!-- WIND COMPASS ROSE -->
     <div class="wind-rose-wrap" style="flex-direction:column">
       <div class="wr-box" id="heading-box" style="min-width:180px;position:relative">
@@ -596,29 +625,6 @@
 
     <!-- TAB: BEAU ANALYSIS -->
     <div class="dash-tab-panel" id="tab-beau">
-
-    <!-- MODE 1: SENSOR ANALYSIS (blue) -->
-    <div class="analysis-box" id="analysis-box">
-      <div class="analysis-header">
-        <span class="analysis-label">
-          &#x2B21; BEAU SENSOR ANALYSIS
-          <span class="auto-badge on" id="auto-badge">AUTO</span>
-        </span>
-        <div class="analysis-meta">
-          <span class="analysis-alert-badge" id="alert-badge"></span>
-          <span class="analysis-time" id="analysis-time">&mdash;</span>
-        </div>
-      </div>
-      <div class="analysis-body" id="analysis-body">
-        <span style="color:var(--muted);font-style:italic">Auto-analysis active. Modify any sensor value to trigger Beau analysis.</span>
-      </div>
-      <div class="analysis-confidence" id="analysis-confidence"></div>
-      <div class="payload-preview" id="payload-section">
-        <button class="payload-toggle" id="payload-toggle" onclick="togglePayload()">&#9658; SHOW LAST PAYLOAD</button>
-        <pre class="payload-json" id="payload-json" style="display:none"></pre>
-      </div>
-      <div class="flag-issue-footer"><button class="flag-issue-btn" onclick="openFlagModal('sensor')">&#x1F6A9; FLAG ISSUE</button></div>
-    </div>
 
     <!-- Q&A INPUT (moved 2026-07-04 per Cap: input card sits above its response card) -->
     <div class="qa-panel standalone">
