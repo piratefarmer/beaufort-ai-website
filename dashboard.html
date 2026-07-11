@@ -516,10 +516,10 @@
     <!-- GRAPHCAST 48H FORECAST STRIP -->
     <div class="forecast-strip" id="forecast-strip">
       <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; GRAPHCAST 48-HOUR FORECAST</span>
+        <span class="forecast-strip-title" id="forecast-strip-title">&#x2B21; 48-HOUR FORECAST</span>
         <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
       </div>
-      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from GraphCast...</div></div>
+      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast...</div></div>
       <div class="forecast-sparkline" style="flex-direction:column;align-items:stretch;gap:4px;padding:8px 16px 12px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
           <span class="sparkline-label" style="color:#3b82f6">&#9646; PRESSURE</span>
@@ -2551,7 +2551,7 @@ async function fetchForecast() {
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
-    document.getElementById('forecast-meta').textContent = 'GraphCast offline';
+    document.getElementById('forecast-meta').textContent = 'Forecast offline';
   }
 }
 
@@ -2560,6 +2560,15 @@ function renderForecast(data) {
   const s    = data.summary;
   const meta = document.getElementById('forecast-meta');
   const now  = new Date();
+
+  // Forecast source label (2026-07-11 fix): backend now reports which
+  // model actually produced this forecast (GraphCast vs FourCastNet) so
+  // the strip title stays accurate across future backend switches instead
+  // of being a hardcoded name that silently goes stale.
+  const titleEl = document.getElementById('forecast-strip-title');
+  if (titleEl && data.forecast_source) {
+    titleEl.textContent = '\u2B21 ' + data.forecast_source.toUpperCase() + ' 48-HOUR FORECAST';
+  }
 
   // Header meta
   const trend = s.press_trend_mb;
