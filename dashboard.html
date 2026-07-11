@@ -543,6 +543,7 @@
       <div class="ais-header">
         <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
+        <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
       </div>
       <!-- Radar playback bar (added 2026-07-08): shown only while radar overlay
@@ -2979,6 +2980,58 @@ function aisRadarTogglePlay() {
         }
         aisRadarShowFrame(next);
     }, 500); // 500ms/frame -- ~13 frames = one full loop in ~6.5s
+}
+
+// ── Lightning strikes overlay (Xweather/GLD360, added 2026-07-11) ──────────
+// Same tile-overlay pattern as the RainViewer radar above, but tiles are
+// proxied through beau_server.py (/api/lightning-tile/{z}/{x}/{y}) instead
+// of hit directly — Xweather's raw tile URL embeds the API client_secret
+// in the path, which must never reach client-side JS/devtools. Server-side
+// proxy keeps the real credentials out of the browser entirely.
+const LIGHTNING_TILE_URL = 'https://beau.beaufort-ai.com/api/lightning-tile/{z}/{x}/{y}';
+let lightningLayer = null;
+let lightningEnabled = false;
+let lightningRefreshTimer = null;
+
+function aisLightningMakeLayer() {
+    // cache-bust query param forces Leaflet to re-fetch tiles on refresh
+    // instead of serving its own in-memory tile cache for a stale strike set
+    return L.tileLayer(LIGHTNING_TILE_URL + '?_=' + Date.now(), {
+        attribution: '&copy; Xweather (GLD360)',
+        opacity: 0.9,
+        maxZoom: 18,
+        maxNativeZoom: 10,
+        zIndex: 6   // above radar (zIndex 5) so strikes are never hidden under it
+    });
+}
+
+function aisToggleLightning() {
+    const btn = document.getElementById('ais-lightning-toggle');
+    lightningEnabled = !lightningEnabled;
+
+    if (lightningEnabled) {
+        lightningLayer = aisLightningMakeLayer();
+        lightningLayer.addTo(aisMap);
+        btn.textContent = '\u26A1 Lightning: ON';
+        btn.classList.add('active');
+        // Xweather's lightning-strikes layer updates every 5 minutes — refresh
+        // the tile layer on that cadence so strikes actually age off the map.
+        if (lightningRefreshTimer) clearInterval(lightningRefreshTimer);
+        lightningRefreshTimer = setInterval(() => {
+            if (!lightningEnabled) return;
+            const fresh = aisLightningMakeLayer();
+            fresh.addTo(aisMap);
+            const old = lightningLayer;
+            lightningLayer = fresh;
+            if (old && aisMap.hasLayer(old)) aisMap.removeLayer(old);
+        }, 5 * 60 * 1000);
+    } else {
+        if (lightningRefreshTimer) { clearInterval(lightningRefreshTimer); lightningRefreshTimer = null; }
+        if (lightningLayer && aisMap.hasLayer(lightningLayer)) aisMap.removeLayer(lightningLayer);
+        lightningLayer = null;
+        btn.textContent = '\u26A1 Lightning: OFF';
+        btn.classList.remove('active');
+    }
 }
 
 async function aisToggleRadar() {
