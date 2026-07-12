@@ -2874,7 +2874,7 @@ function updateHeadingBox() {
   badgeEl.style.background = bg;
   badgeEl.style.color = color;
   badgeEl.style.borderColor = border;
-  valEl.style.color = 'var(--green)';
+  valEl.style.color = _wrHeadingCal >= 2 ? '#fff' : 'var(--amber)';
 }
 
 // Initial draw
