@@ -3118,22 +3118,64 @@ const aisMap = L.map('ais-map', {
 // retired/broken above z7 -- this dynamic export-based service is the
 // current live replacement, confirmed with a real rendered tile over
 // Barataria Bay/Port Fourchon showing depth soundings, buoys, and platform
-// notations). L.esri.dynamicMapLayer requests fresh exports per pan/zoom
-// (not a pre-cached tile pyramid), which is the correct pattern for this
-// specific ArcGIS Server capability.
-const noaaChartLayer = L.esri.dynamicMapLayer({
-    url: 'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/MapServer',
-    opacity: 0.95,
-    attribution: '&copy; NOAA Office of Coast Survey',
-    transparent: false  // BUGFIX (2026-07-12): this specific NOAA service
-        // returns a fully zero-alpha (invisible) image whenever
-        // transparent=true is requested, even though the underlying chart
-        // content is real -- confirmed by direct fetch comparison (same
-        // bbox with transparent=true came back 100% alpha=0, without it
-        // came back with real varying alpha/opaque pixels). Non-transparent
-        // export covers the OSM base tile underneath, acceptable here since
-        // the chart itself is the primary reference layer on this map.
-}).addTo(aisMap);
+// notations).
+//
+// BUGFIX (2026-07-12): L.esri.dynamicMapLayer (the standard esri-leaflet
+// plugin layer) does NOT work with this specific NOAA service. Root cause,
+// confirmed by direct byte-level inspection: esri-leaflet requests
+// f=json (expecting a JSON wrapper containing an image href), but this
+// service ignores that parameter entirely and always returns raw PNG bytes
+// regardless of f=json/f=image -- esri-leaflet then fails to JSON-parse the
+// PNG data and silently never displays an image (no console error, no
+// failed network request -- it just never creates the overlay element).
+// transparent=true was also independently confirmed broken (returns an
+// all-zero-alpha/invisible image even with real chart content underneath).
+// Fix: hand-rolled minimal ImageOverlay-based layer that requests f=image
+// directly (confirmed working, real pixel content) and redraws on
+// pan/zoom/tab-visibility, instead of relying on esri-leaflet's abstraction.
+function noaaChartExportUrl(bounds, sizePx) {
+    const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    const params = new URLSearchParams({
+        bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`,
+        bboxSR: '4326',
+        size: `${sizePx.x},${sizePx.y}`,
+        dpi: '96',
+        format: 'png32',
+        f: 'image'
+    });
+    return 'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/MapServer/export?' + params.toString();
+}
+
+let noaaChartOverlay = null;
+let noaaChartRedrawTimer = null;
+
+function noaaChartRedraw() {
+    if (!aisMap.getContainer() || aisMap.getContainer().offsetWidth === 0) return; // hidden tab, skip
+    const bounds = aisMap.getBounds();
+    const size = aisMap.getSize();
+    if (size.x === 0 || size.y === 0) return;
+    const url = noaaChartExportUrl(bounds, size);
+    if (noaaChartOverlay) {
+        aisMap.removeLayer(noaaChartOverlay);
+    }
+    noaaChartOverlay = L.imageOverlay(url, bounds, {
+        opacity: 0.95,
+        attribution: '&copy; NOAA Office of Coast Survey',
+        zIndex: 1  // below vessel markers/zone circle, above the OSM/seamark base tiles
+    }).addTo(aisMap);
+}
+
+// Debounced redraw on map move/zoom -- avoid hammering NOAA's export
+// endpoint on every intermediate pan/zoom frame.
+aisMap.on('moveend zoomend', () => {
+    clearTimeout(noaaChartRedrawTimer);
+    noaaChartRedrawTimer = setTimeout(noaaChartRedraw, 300);
+});
+
+// Backward-compat alias so the existing invalidateSize()/redraw() call
+// sites (tab-switch handler, zone-load handler) keep working unchanged.
+const noaaChartLayer = { redraw: noaaChartRedraw };
+noaaChartRedraw();
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenSeaMap',
