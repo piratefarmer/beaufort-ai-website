@@ -594,7 +594,27 @@
     <div class="ais-box" id="weather-box">
       <div class="ais-header">
         <span class="ais-title">&#9925; WEATHER MAP</span>
+        <!-- Radar/Lightning toggles moved here from the AIS tab (2026-07-12,
+             Cap caught they'd been left on the wrong map after the tab
+             split) -- these are weather layers, they belong on the weather
+             map, not the vessel/chart map. -->
+        <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
+        <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
         <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
+      </div>
+      <!-- Radar playback bar -- shown only while radar overlay is toggled ON. -->
+      <div class="ais-radar-controls" id="ais-radar-controls">
+        <button class="ais-radar-play" id="ais-radar-play" onclick="aisRadarTogglePlay()" title="Play/pause storm movement loop">&#9654;</button>
+        <input type="range" class="ais-radar-scrubber" id="ais-radar-scrubber" min="0" max="0" value="0" oninput="aisRadarScrub(this.value)">
+        <span class="ais-radar-time" id="ais-radar-time">--:--</span>
+      </div>
+      <!-- Lightning legend -- shown only while the ⚡ toggle is ON. -->
+      <div class="ais-lightning-legend" id="ais-lightning-legend">
+        <span>&#9679; Lightning strikes (Xweather/GLD360, last 5 min):</span>
+        <span><span class="legend-dot"></span>Most recent</span>
+        <span><span class="legend-dot mid"></span>Recent</span>
+        <span><span class="legend-dot dim"></span>Older (fading out)</span>
+        <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
       </div>
       <div id="weather-map"></div>
       <div class="weather-map-legend" id="weather-map-legend">
@@ -616,35 +636,8 @@
     <div class="ais-box" id="ais-box">
       <div class="ais-header">
         <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
-        <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
-        <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
         <button class="ais-radar-toggle active" id="ais-follow-toggle" onclick="aisToggleFollow()" title="Auto-recenter map on vessel position while underway. Pauses automatically if you pan/zoom manually -- click to resume.">&#x1F4CD; Follow: ON</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
-      </div>
-      <!-- Radar playback bar (added 2026-07-08): shown only while radar overlay
-           is toggled ON. Play/pause loops through RainViewer's past-frame
-           history (~2hrs of 10-min steps) so storm movement is visible, not
-           just a static latest frame. Scrubber lets you step through manually. -->
-      <div class="ais-radar-controls" id="ais-radar-controls">
-        <button class="ais-radar-play" id="ais-radar-play" onclick="aisRadarTogglePlay()" title="Play/pause storm movement loop">&#9654;</button>
-        <input type="range" class="ais-radar-scrubber" id="ais-radar-scrubber" min="0" max="0" value="0" oninput="aisRadarScrub(this.value)">
-        <span class="ais-radar-time" id="ais-radar-time">--:--</span>
-      </div>
-      <!-- Lightning legend (added 2026-07-11): shown only while the ⚡ toggle
-           is ON. Strikes are recolored server-side to a single consistent
-           red (Xweather's raw default gray-by-age gradient direction isn't
-           documented and couldn't be confirmed empirically) -- opacity
-           still fades with age per Xweather's own "shaded by age" docs and
-           standard lightning-map convention, but we deliberately do NOT
-           claim an exact age/color mapping here since that wasn't
-           independently verifiable. For an exact strike age/distance in
-           seconds/miles, ask Beau directly or see /api/lightning. -->
-      <div class="ais-lightning-legend" id="ais-lightning-legend">
-        <span>&#9679; Lightning strikes (Xweather/GLD360, last 5 min):</span>
-        <span><span class="legend-dot"></span>Most recent</span>
-        <span><span class="legend-dot mid"></span>Recent</span>
-        <span><span class="legend-dot dim"></span>Older (fading out)</span>
-        <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
       </div>
       <div id="ais-map"></div>
       <div class="ais-footer">
@@ -3213,34 +3206,15 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     opacity: 0.55
 }).addTo(weatherMap);
 
-// Live radar (RainViewer, same source/pattern as the AIS map's toggleable
-// radar below, but always-on here since this map's whole purpose is
-// weather) -- latest frame only, no playback controls on this map.
-async function weatherMapLoadRadar() {
-    try {
-        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-        const data = await res.json();
-        const frames = (data.radar && data.radar.past) || [];
-        if (!frames.length) return;
-        const latest = frames[frames.length - 1];
-        const host = data.host;
-        if (weatherMapRadarLayer && weatherMap.hasLayer(weatherMapRadarLayer)) {
-            weatherMap.removeLayer(weatherMapRadarLayer);
-        }
-        weatherMapRadarLayer = L.tileLayer(`${host}${latest.path}/512/{z}/{x}/{y}/2/1_1.png`, {
-            attribution: '&copy; RainViewer',
-            opacity: 0.55,
-            maxZoom: 12,
-            maxNativeZoom: 7,
-            zIndex: 5
-        }).addTo(weatherMap);
-    } catch (e) {
-        console.warn('weatherMap radar fetch failed:', e);
-    }
-}
-let weatherMapRadarLayer = null;
-weatherMapLoadRadar();
-setInterval(weatherMapLoadRadar, 10 * 60 * 1000); // RainViewer's own cadence
+// NOTE (2026-07-12): the radar toggle/playback + lightning toggle used to
+// live on this map as a simple always-on layer, but Cap pointed out those
+// controls were still physically sitting on the AIS/chart tab (leftover
+// from before the tab split). Moved to the richer existing radar-playback +
+// lightning system further down this file (aisToggleRadar/aisToggleLightning
+// and friends), now retargeted at weatherMap instead of aisMap -- see those
+// functions for the real radar/lightning logic. Removed the simpler
+// always-on version that was here to avoid running two separate radar
+// systems on the same map.
 
 // NWS fronts (cold/warm/stationary/occluded), live GeoJSON, verified
 // 2026-07-12 -- CORS-open directly from the browser, no proxy needed.
@@ -3335,8 +3309,8 @@ function aisRadarShowFrame(idx) {
     if (!aisRadarLayers.length) return;
     idx = Math.max(0, Math.min(aisRadarLayers.length - 1, idx));
     aisRadarLayers.forEach((f, i) => {
-        if (i === idx) { if (!aisMap.hasLayer(f.layer)) f.layer.addTo(aisMap); }
-        else { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); }
+        if (i === idx) { if (!weatherMap.hasLayer(f.layer)) f.layer.addTo(weatherMap); }
+        else { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); }
     });
     aisRadarFrameIdx = idx;
     document.getElementById('ais-radar-scrubber').value = idx;
@@ -3405,33 +3379,33 @@ function aisToggleLightning() {
 
     if (lightningEnabled) {
         lightningLayer = aisLightningMakeLayer();
-        lightningLayer.addTo(aisMap);
+        lightningLayer.addTo(weatherMap);
         btn.textContent = '\u26A1 Lightning: ON';
         btn.classList.add('active');
         legend.style.display = 'flex';
         // Same invalidateSize pattern used elsewhere: showing this legend row
         // changes the map container's effective height, so Leaflet needs to
         // re-measure or the map view can end up subtly misaligned/cropped.
-        setTimeout(() => aisMap.invalidateSize(), 0);
+        setTimeout(() => weatherMap.invalidateSize(), 0);
         // Xweather's lightning-strikes layer updates every 5 minutes — refresh
         // the tile layer on that cadence so strikes actually age off the map.
         if (lightningRefreshTimer) clearInterval(lightningRefreshTimer);
         lightningRefreshTimer = setInterval(() => {
             if (!lightningEnabled) return;
             const fresh = aisLightningMakeLayer();
-            fresh.addTo(aisMap);
+            fresh.addTo(weatherMap);
             const old = lightningLayer;
             lightningLayer = fresh;
-            if (old && aisMap.hasLayer(old)) aisMap.removeLayer(old);
+            if (old && weatherMap.hasLayer(old)) weatherMap.removeLayer(old);
         }, 5 * 60 * 1000);
     } else {
         if (lightningRefreshTimer) { clearInterval(lightningRefreshTimer); lightningRefreshTimer = null; }
-        if (lightningLayer && aisMap.hasLayer(lightningLayer)) aisMap.removeLayer(lightningLayer);
+        if (lightningLayer && weatherMap.hasLayer(lightningLayer)) weatherMap.removeLayer(lightningLayer);
         lightningLayer = null;
         btn.textContent = '\u26A1 Lightning: OFF';
         btn.classList.remove('active');
         legend.style.display = 'none';
-        setTimeout(() => aisMap.invalidateSize(), 0);
+        setTimeout(() => weatherMap.invalidateSize(), 0);
     }
 }
 
@@ -3444,7 +3418,7 @@ async function aisToggleRadar() {
         btn.textContent = '\u{1F327}\uFE0F Radar: Loading...';
         const frames = await aisLoadRadarFrames();
         if (frames.length) {
-            aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+            aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
             aisRadarLayers = frames;
             document.getElementById('ais-radar-scrubber').max = frames.length - 1;
             aisRadarShowFrame(frames.length - 1); // start on latest frame
@@ -3458,7 +3432,7 @@ async function aisToggleRadar() {
                 const fresh = await aisLoadRadarFrames();
                 if (fresh.length) {
                     aisRadarStopPlay();
-                    aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+                    aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
                     aisRadarLayers = fresh;
                     document.getElementById('ais-radar-scrubber').max = fresh.length - 1;
                     aisRadarShowFrame(fresh.length - 1);
@@ -3471,7 +3445,7 @@ async function aisToggleRadar() {
         }
     } else {
         aisRadarStopPlay();
-        aisRadarLayers.forEach(f => { if (aisMap.hasLayer(f.layer)) aisMap.removeLayer(f.layer); });
+        aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
         aisRadarLayers = [];
         if (aisRadarRefreshTimer) { clearInterval(aisRadarRefreshTimer); aisRadarRefreshTimer = null; }
         controls.style.display = 'none';
