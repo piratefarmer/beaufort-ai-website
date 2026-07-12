@@ -295,7 +295,13 @@
     .ais-radar-play:hover{border-color:var(--blue);color:var(--blue)}
     .ais-radar-scrubber{flex:1;accent-color:var(--blue);cursor:pointer}
     .ais-radar-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:56px;text-align:right}
-    #ais-map{height:420px;width:100%;background:#0a0f14}
+    /* BUMPED (2026-07-12, Cap's request "make both maps bigger, taller if
+       not wider"): scales with viewport height so it's genuinely bigger on
+       a real bridge monitor, capped so it doesn't run off-screen on a
+       normal laptop, floored so small/mobile screens still get something
+       usable. Was a flat 420px before. */
+    #ais-map{height:min(72vh,820px);min-height:460px;width:100%;background:#0a0f14}
+    @media(max-width:600px){#ais-map{height:min(60vh,520px);min-height:340px}}
     .ais-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;border-top:1px solid var(--border)}
     .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
     .ais-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s}
@@ -305,7 +311,9 @@
        Own dedicated tab, separate from the AIS/chart map tab -- radar+fronts
        wants a synoptic/regional zoom, AIS/chart wants tactical vessel-scale
        zoom, so Cap opted for fully separate tabs rather than a shared view. */
-    #weather-map{height:420px;width:100%;background:#0a0f14}
+    /* Same height bump as #ais-map above, same reasoning. */
+    #weather-map{height:min(72vh,820px);min-height:460px;width:100%;background:#0a0f14}
+    @media(max-width:600px){#weather-map{height:min(60vh,520px);min-height:340px}}
     .weather-map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:6px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--muted)}
     .weather-map-legend .front-swatch{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle}
     .ais-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
