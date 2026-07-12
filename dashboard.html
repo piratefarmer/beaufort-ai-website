@@ -3324,9 +3324,40 @@ function aisRadarScrub(val) {
 
 function aisRadarStopPlay() {
     aisRadarPlaying = false;
-    if (aisRadarPlayTimer) { clearInterval(aisRadarPlayTimer); aisRadarPlayTimer = null; }
+    // BUGFIX-turned-timer-swap (2026-07-12, auto-replay feature): this used
+    // to be a single setInterval, but continuous looping (below) needs a
+    // variable-length pause on the hold-at-latest-frame beat, which
+    // setInterval can't do cleanly -- switched to chained setTimeout, so
+    // clear with clearTimeout here too (clearing a setTimeout id is what
+    // aisRadarPlayTimer now always holds).
+    if (aisRadarPlayTimer) { clearTimeout(aisRadarPlayTimer); aisRadarPlayTimer = null; }
     const btn = document.getElementById('ais-radar-play');
     if (btn) btn.textContent = '\u25B6';
+}
+
+// Advances one frame per call, chained via setTimeout rather than a fixed
+// setInterval so the "hold on latest frame" pause (added 2026-07-12, Cap's
+// request for auto-replay) can be a different, longer duration than the
+// normal frame-to-frame step -- makes it clear which frame is "now" before
+// the loop rewinds, instead of instantly snapping back to the oldest frame.
+function aisRadarPlayStep() {
+    if (!aisRadarPlaying) return;
+    const next = aisRadarFrameIdx + 1;
+    if (next >= aisRadarLayers.length) {
+        // Reached the most recent frame -- hold here a beat longer so it's
+        // clear that's "now", then loop back to the oldest frame and keep
+        // going. Runs indefinitely while radar is ON, no manual re-trigger
+        // needed (auto-replay, not a single one-shot animation).
+        aisRadarShowFrame(aisRadarLayers.length - 1);
+        aisRadarPlayTimer = setTimeout(() => {
+            if (!aisRadarPlaying) return;
+            aisRadarShowFrame(0);
+            aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500);
+        }, 1800); // hold on "now" frame ~1.8s before looping
+    } else {
+        aisRadarShowFrame(next);
+        aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500); // ~13 frames/loop = ~6.5s/pass
+    }
 }
 
 function aisRadarTogglePlay() {
@@ -3337,16 +3368,7 @@ function aisRadarTogglePlay() {
     // Restart from the beginning if sitting on the last frame, otherwise
     // resume from wherever the scrubber currently is.
     if (aisRadarFrameIdx >= aisRadarLayers.length - 1) aisRadarShowFrame(0);
-    aisRadarPlayTimer = setInterval(() => {
-        const next = aisRadarFrameIdx + 1;
-        if (next >= aisRadarLayers.length) {
-            aisRadarStopPlay();  // stop on latest frame rather than looping
-                                  // silently forever -- less confusing in a demo
-            aisRadarShowFrame(aisRadarLayers.length - 1);
-            return;
-        }
-        aisRadarShowFrame(next);
-    }, 500); // 500ms/frame -- ~13 frames = one full loop in ~6.5s
+    aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500);
 }
 
 // ── Lightning strikes overlay (Xweather/GLD360, added 2026-07-11) ──────────
@@ -3425,17 +3447,25 @@ async function aisToggleRadar() {
             controls.style.display = 'flex';
             btn.textContent = '\u{1F327}\uFE0F Radar: ON';
             btn.classList.add('active');
+            // Auto-replay (added 2026-07-12, Cap's request): start the loop
+            // automatically as soon as radar is turned on, instead of making
+            // someone manually hit play every time.
+            aisRadarTogglePlay();
             // Refresh the frame set every 10 minutes (RainViewer's cadence)
             if (aisRadarRefreshTimer) clearInterval(aisRadarRefreshTimer);
             aisRadarRefreshTimer = setInterval(async () => {
                 if (!aisRadarEnabled) return;
                 const fresh = await aisLoadRadarFrames();
                 if (fresh.length) {
+                    const wasPlaying = aisRadarPlaying;
                     aisRadarStopPlay();
                     aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
                     aisRadarLayers = fresh;
                     document.getElementById('ais-radar-scrubber').max = fresh.length - 1;
                     aisRadarShowFrame(fresh.length - 1);
+                    // Auto-replay: keep looping with the new frame set rather than
+                    // freezing on a static latest frame after every 10-min refresh.
+                    if (wasPlaying) aisRadarTogglePlay();
                 }
             }, 10 * 60 * 1000);
         } else {
