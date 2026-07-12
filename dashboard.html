@@ -618,6 +618,7 @@
         <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
+        <button class="ais-radar-toggle active" id="ais-follow-toggle" onclick="aisToggleFollow()" title="Auto-recenter map on vessel position while underway. Pauses automatically if you pan/zoom manually -- click to resume.">&#x1F4CD; Follow: ON</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
       </div>
       <!-- Radar playback bar (added 2026-07-08): shown only while radar overlay
@@ -3695,6 +3696,48 @@ function aisUpdateOwnVessel(zone) {
     }
 }
 
+// ── Follow-vessel auto-recenter (added 2026-07-12, Cap's request: "will the
+// map follow the vessel to the next tile when we're underway?") ───────────
+// Re-centers the map on the vessel's live position every zone poll while
+// ON. Auto-pauses the instant a user manually drags/zooms the map (so it
+// doesn't yank the view back mid-look at something else), surfaced via the
+// header toggle button turning OFF. Programmatic recenters/pans set
+// aisProgrammaticMove first so the dragstart/zoomstart listeners below can
+// tell the difference between "we moved it" and "a person moved it."
+let aisFollowVessel = true;
+let aisProgrammaticMove = false;
+
+function aisSetFollowButtonUI() {
+    const btn = document.getElementById('ais-follow-toggle');
+    if (!btn) return;
+    if (aisFollowVessel) {
+        btn.textContent = '\u{1F4CD} Follow: ON';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '\u{1F4CD} Follow: OFF (tap to resume)';
+        btn.classList.remove('active');
+    }
+}
+
+function aisToggleFollow() {
+    aisFollowVessel = !aisFollowVessel;
+    aisSetFollowButtonUI();
+    if (aisFollowVessel && aisCurrentZone.vessel_lat && aisCurrentZone.vessel_lon) {
+        aisProgrammaticMove = true;
+        aisMap.setView([aisCurrentZone.vessel_lat, aisCurrentZone.vessel_lon], aisMap.getZoom(), { animate: true });
+        aisProgrammaticMove = false;
+    }
+}
+
+aisMap.on('dragstart', () => {
+    if (aisProgrammaticMove) return;  // our own panTo/setView, not a real user drag
+    if (aisFollowVessel) { aisFollowVessel = false; aisSetFollowButtonUI(); }
+});
+aisMap.on('zoomstart', () => {
+    if (aisProgrammaticMove) return;
+    if (aisFollowVessel) { aisFollowVessel = false; aisSetFollowButtonUI(); }
+});
+
 function aisUpdateZone(zone) {
     if (!zone || zone.center_lat === undefined || zone.center_lat === null) return;
     if (aisZoneUserAdjusted) return;  // don't override a manual adjustment mid-poll
@@ -3705,7 +3748,9 @@ function aisUpdateZone(zone) {
 
     if (!aisMapCenteredOnce) {
         aisMapCenteredOnce = true;
+        aisProgrammaticMove = true;
         aisMap.setView([zone.center_lat, zone.center_lon], 8, { animate: false });
+        aisProgrammaticMove = false;
         // BUGFIX (2026-07-12): this often fires before the AIS tab has ever
         // been opened (container still display:none / 0x0), which can leave
         // the NOAA chart esri layer stuck on a zero-size export from its
@@ -3714,6 +3759,13 @@ function aisUpdateZone(zone) {
         if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
             setTimeout(() => noaaChartLayer.redraw(), 100);
         }
+    } else if (aisFollowVessel && zone.vessel_lat && zone.vessel_lon) {
+        // Underway auto-follow: keep the current zoom level, just pan to the
+        // vessel's new position each poll. panTo (not setView) so this never
+        // fires the dragstart/zoomstart pause-follow listeners above.
+        aisProgrammaticMove = true;
+        aisMap.panTo([zone.vessel_lat, zone.vessel_lon], { animate: true, duration: 1.2 });
+        aisProgrammaticMove = false;
     }
 }
 
