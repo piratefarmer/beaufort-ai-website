@@ -525,21 +525,21 @@
           <div class="wr-unit">KT</div>
         </div>
         <div class="wr-box">
-          <div class="wr-label">AWS</div>
-          <div class="wr-value" id="wr-aws" style="color:#f59e0b">--</div>
-          <div class="wr-unit">KT</div>
+          <div class="wr-label">TWD</div>
+          <div class="wr-value" id="wr-twd" style="color:#38bdf8">--</div>
+          <div class="wr-unit">DEG</div>
         </div>
       </div>
       <canvas id="wind-rose" width="280" height="280"></canvas>
       <div class="wind-rose-readouts">
         <div class="wr-box">
-          <div class="wr-label">AWA</div>
-          <div class="wr-value" id="wr-awa" style="color:#f59e0b">--</div>
-          <div class="wr-unit">DEG</div>
+          <div class="wr-label">AWS</div>
+          <div class="wr-value" id="wr-aws" style="color:#f59e0b">--</div>
+          <div class="wr-unit">KT</div>
         </div>
         <div class="wr-box">
-          <div class="wr-label">TWD</div>
-          <div class="wr-value" id="wr-twd" style="color:#38bdf8">--</div>
+          <div class="wr-label">AWA</div>
+          <div class="wr-value" id="wr-awa" style="color:#f59e0b">--</div>
           <div class="wr-unit">DEG</div>
         </div>
       </div>
@@ -2874,7 +2874,7 @@ function updateHeadingBox() {
   badgeEl.style.background = bg;
   badgeEl.style.color = color;
   badgeEl.style.borderColor = border;
-  valEl.style.color = _wrHeadingCal >= 2 ? '#fff' : 'var(--amber)';
+  valEl.style.color = 'var(--green)';
 }
 
 // Initial draw
