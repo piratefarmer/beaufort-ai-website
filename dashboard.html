@@ -1030,9 +1030,9 @@ function renderSensorGrid(p) {
     <div class="sc-unit">${(p.latitude && p.longitude) ? '' : 'no GPS fix'}</div>
   </div>`;
 
-  // VESSEL MOTION card
+  // SOG card (renamed from VESSEL MOTION 2026-07-11, Cap's request)
   const motionCard = `<div class="sensor-card position">
-    <div class="sc-label">VESSEL MOTION</div>
+    <div class="sc-label">SOG</div>
     <div class="sc-value">${p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--'}</div>
     <div class="sc-unit">${p.speed_over_ground > 0 ? 'kt SOG &middot; COG ' + p.course_over_ground + '&deg;' : 'at rest'}</div>
   </div>`;
