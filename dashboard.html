@@ -301,14 +301,10 @@
     .ais-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s}
     .ais-reset-btn:hover{border-color:var(--blue);color:var(--blue)}
 
-    /* ── Two-map side-by-side layout (added 2026-07-12, Cap's request) ──
-       Weather map (radar+fronts, synoptic zoom) alongside AIS/chart map
-       (vessel-scale tactical zoom) -- each keeps independent pan/zoom.
-       Bridge display is the primary target (wide monitor), so side-by-side
-       is the default; stacks to single column below 900px for phone/tablet
-       use elsewhere. */
-    .dual-map-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    @media(max-width:900px){.dual-map-row{grid-template-columns:1fr}}
+    /* ── Weather map (added 2026-07-12, Cap's request) ──
+       Own dedicated tab, separate from the AIS/chart map tab -- radar+fronts
+       wants a synoptic/regional zoom, AIS/chart wants tactical vessel-scale
+       zoom, so Cap opted for fully separate tabs rather than a shared view. */
     #weather-map{height:420px;width:100%;background:#0a0f14}
     .weather-map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:6px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--muted)}
     .weather-map-legend .front-swatch{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle}
@@ -481,6 +477,7 @@
 
     <div class="dash-tabs">
       <button class="dash-tab-btn active" data-tab="conditions" onclick="dashSwitchTab('conditions')">&#9673; CONDITIONS</button>
+      <button class="dash-tab-btn" data-tab="weather-map" onclick="dashSwitchTab('weather-map')">&#9673; WEATHER MAP</button>
       <button class="dash-tab-btn" data-tab="ais" onclick="dashSwitchTab('ais')">&#9673; AIS <span class="tab-badge" id="tab-badge-ais"></span></button>
       <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
       <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
@@ -581,14 +578,11 @@
     <!-- /TAB: CONDITIONS -->
 
     <!-- TAB: AIS -->
-    <div class="dash-tab-panel" id="tab-ais">
+    <!-- TAB: WEATHER MAP (split into its own dedicated tab 2026-07-12 per
+         Cap's clarification -- he meant separate tabs, not a side-by-side
+         row within the same AIS tab. Radar+fronts, synoptic/regional zoom. -->
+    <div class="dash-tab-panel" id="tab-weather-map">
 
-    <!-- Two maps side-by-side (added 2026-07-12, Cap's request): weather map
-         (radar+fronts, synoptic zoom) alongside the nautical chart/AIS map
-         (vessel-scale tactical zoom). Bridge monitor is the primary target. -->
-    <div class="dual-map-row">
-
-    <!-- WEATHER MAP: radar + NWS fronts, synoptic/regional zoom -->
     <div class="ais-box" id="weather-box">
       <div class="ais-header">
         <span class="ais-title">&#9925; WEATHER MAP</span>
@@ -603,6 +597,12 @@
         <span style="color:var(--text-dim)">&bull; NWS WPC, updated per forecast cycle</span>
       </div>
     </div>
+
+    </div>
+    <!-- /TAB: WEATHER MAP -->
+
+    <!-- TAB: AIS -->
+    <div class="dash-tab-panel" id="tab-ais">
 
     <!-- AIS FLEET MAP -->
     <div class="ais-box" id="ais-box">
@@ -652,9 +652,6 @@
         <div class="ais-empty">Awaiting AIS traffic in zone...</div>
       </div>
     </div>
-
-    </div>
-    <!-- /dual-map-row -->
 
     </div>
     <!-- /TAB: AIS -->
@@ -1448,19 +1445,20 @@ function dashSwitchTab(tabName) {
   // further down the script and may not exist yet on the very first call.
   if (tabName === 'ais' && typeof aisMap !== 'undefined' && aisMap) {
     setTimeout(() => aisMap.invalidateSize(), 0);
-    // BUGFIX (2026-07-12): the NOAA chart esri.dynamicMapLayer can end up
-    // requesting a zero-size export image if it was added/re-centered while
-    // the map container was still display:none (0x0) -- e.g. the AIS zone
-    // poll calling aisMap.setView() before this tab was ever opened.
-    // invalidateSize() alone does not make esri-leaflet re-issue its export
+    // BUGFIX (2026-07-12): the NOAA chart overlay can end up requesting a
+    // zero-size export image if it was added/re-centered while the map
+    // container was still display:none (0x0) -- e.g. the AIS zone poll
+    // calling aisMap.setView() before this tab was ever opened.
+    // invalidateSize() alone does not make the overlay re-issue its export
     // request, so force an explicit redraw here too.
     if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
       setTimeout(() => noaaChartLayer.redraw(), 50);
     }
   }
-  // Same fix applies to the new weather-map (added 2026-07-12, side-by-side
-  // with aisMap in the same tab).
-  if (tabName === 'ais' && typeof weatherMap !== 'undefined' && weatherMap) {
+  // Weather map now lives in its own dedicated tab (split from the AIS tab
+  // 2026-07-12 per Cap's clarification), same display:none sizing issue
+  // applies -- Leaflet needs a re-measure once the tab is actually visible.
+  if (tabName === 'weather-map' && typeof weatherMap !== 'undefined' && weatherMap) {
     setTimeout(() => weatherMap.invalidateSize(), 0);
   }
 }
