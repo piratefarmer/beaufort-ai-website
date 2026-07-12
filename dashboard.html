@@ -300,6 +300,18 @@
     .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
     .ais-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s}
     .ais-reset-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+    /* ── Two-map side-by-side layout (added 2026-07-12, Cap's request) ──
+       Weather map (radar+fronts, synoptic zoom) alongside AIS/chart map
+       (vessel-scale tactical zoom) -- each keeps independent pan/zoom.
+       Bridge display is the primary target (wide monitor), so side-by-side
+       is the default; stacks to single column below 900px for phone/tablet
+       use elsewhere. */
+    .dual-map-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    @media(max-width:900px){.dual-map-row{grid-template-columns:1fr}}
+    #weather-map{height:420px;width:100%;background:#0a0f14}
+    .weather-map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:6px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+    .weather-map-legend .front-swatch{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle}
     .ais-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
     .ais-vessel-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) var(--border);border-top:1px solid var(--border)}
     .ais-vessel-list::-webkit-scrollbar{width:4px}.ais-vessel-list::-webkit-scrollbar-track{background:var(--border)}.ais-vessel-list::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
@@ -571,6 +583,27 @@
     <!-- TAB: AIS -->
     <div class="dash-tab-panel" id="tab-ais">
 
+    <!-- Two maps side-by-side (added 2026-07-12, Cap's request): weather map
+         (radar+fronts, synoptic zoom) alongside the nautical chart/AIS map
+         (vessel-scale tactical zoom). Bridge monitor is the primary target. -->
+    <div class="dual-map-row">
+
+    <!-- WEATHER MAP: radar + NWS fronts, synoptic/regional zoom -->
+    <div class="ais-box" id="weather-box">
+      <div class="ais-header">
+        <span class="ais-title">&#9925; WEATHER MAP</span>
+        <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
+      </div>
+      <div id="weather-map"></div>
+      <div class="weather-map-legend" id="weather-map-legend">
+        <span><span class="front-swatch" style="background:#2563eb"></span>Cold Front</span>
+        <span><span class="front-swatch" style="background:#dc2626"></span>Warm Front</span>
+        <span><span class="front-swatch" style="background:#7c3aed"></span>Occluded Front</span>
+        <span><span class="front-swatch" style="background:repeating-linear-gradient(90deg,#dc2626 0 4px,#2563eb 4px 8px)"></span>Stationary Front</span>
+        <span style="color:var(--text-dim)">&bull; NWS WPC, updated per forecast cycle</span>
+      </div>
+    </div>
+
     <!-- AIS FLEET MAP -->
     <div class="ais-box" id="ais-box">
       <div class="ais-header">
@@ -619,6 +652,9 @@
         <div class="ais-empty">Awaiting AIS traffic in zone...</div>
       </div>
     </div>
+
+    </div>
+    <!-- /dual-map-row -->
 
     </div>
     <!-- /TAB: AIS -->
@@ -862,6 +898,7 @@
 </div>
 
 <script src="/leaflet/leaflet.js"></script>
+<script src="/leaflet/esri-leaflet.js"></script>
 <script>
 // ============================================================
 // BEAU DASHBOARD v2.0 — Dual Mode Engine
@@ -1411,6 +1448,11 @@ function dashSwitchTab(tabName) {
   // further down the script and may not exist yet on the very first call.
   if (tabName === 'ais' && typeof aisMap !== 'undefined' && aisMap) {
     setTimeout(() => aisMap.invalidateSize(), 0);
+  }
+  // Same fix applies to the new weather-map (added 2026-07-12, side-by-side
+  // with aisMap in the same tab).
+  if (tabName === 'ais' && typeof weatherMap !== 'undefined' && weatherMap) {
+    setTimeout(() => weatherMap.invalidateSize(), 0);
   }
 }
 
@@ -3059,10 +3101,21 @@ const aisMap = L.map('ais-map', {
     markerZoomAnimation: false
 });
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 14,
-    opacity: 0.7
+// ── Base chart layer: true NOAA nautical chart (added 2026-07-12, Cap's
+// request for a dedicated chart map vs. plain OSM streets) ──────────────
+// Live source verified 2026-07-12: NOAA's ArcGIS for Maritime "Maritime
+// Chart Service" extension, served off gis.charttools.noaa.gov (the older
+// tileservice.charts.noaa.gov / plain NOAAChartDisplay WMTS cache is
+// retired/broken above z7 -- this dynamic export-based service is the
+// current live replacement, confirmed with a real rendered tile over
+// Barataria Bay/Port Fourchon showing depth soundings, buoys, and platform
+// notations). L.esri.dynamicMapLayer requests fresh exports per pan/zoom
+// (not a pre-cached tile pyramid), which is the correct pattern for this
+// specific ArcGIS Server capability.
+L.esri.dynamicMapLayer({
+    url: 'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/MapServer',
+    opacity: 0.95,
+    attribution: '&copy; NOAA Office of Coast Survey'
 }).addTo(aisMap);
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
@@ -3070,6 +3123,95 @@ L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 14,
     opacity: 0.9
 }).addTo(aisMap);
+
+// ============================================================
+// WEATHER MAP (added 2026-07-12, Cap's request): separate Leaflet instance
+// for synoptic-scale radar + NWS fronts, independent pan/zoom from the
+// tactical-scale AIS/chart map above -- avoids the single-map clutter
+// problem where radar/fronts and vessel-scale AIS/chart both wanted
+// different default zoom levels on one shared view.
+// ============================================================
+const weatherMap = L.map('weather-map', {
+    center: [27.5, -88.5],   // wider Gulf view -- synoptic scale, not dockside
+    zoom: 5,
+    zoomControl: true,
+    attributionControl: true,
+    zoomAnimation: false,
+    fadeAnimation: false,
+    markerZoomAnimation: false
+});
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 12,
+    opacity: 0.55
+}).addTo(weatherMap);
+
+// Live radar (RainViewer, same source/pattern as the AIS map's toggleable
+// radar below, but always-on here since this map's whole purpose is
+// weather) -- latest frame only, no playback controls on this map.
+async function weatherMapLoadRadar() {
+    try {
+        const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+        const data = await res.json();
+        const frames = (data.radar && data.radar.past) || [];
+        if (!frames.length) return;
+        const latest = frames[frames.length - 1];
+        const host = data.host;
+        if (weatherMapRadarLayer && weatherMap.hasLayer(weatherMapRadarLayer)) {
+            weatherMap.removeLayer(weatherMapRadarLayer);
+        }
+        weatherMapRadarLayer = L.tileLayer(`${host}${latest.path}/512/{z}/{x}/{y}/2/1_1.png`, {
+            attribution: '&copy; RainViewer',
+            opacity: 0.55,
+            maxZoom: 12,
+            maxNativeZoom: 7,
+            zIndex: 5
+        }).addTo(weatherMap);
+    } catch (e) {
+        console.warn('weatherMap radar fetch failed:', e);
+    }
+}
+let weatherMapRadarLayer = null;
+weatherMapLoadRadar();
+setInterval(weatherMapLoadRadar, 10 * 60 * 1000); // RainViewer's own cadence
+
+// NWS fronts (cold/warm/stationary/occluded), live GeoJSON, verified
+// 2026-07-12 -- CORS-open directly from the browser, no proxy needed.
+const FRONTS_API_URL = 'https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/natl_fcst_wx_chart/MapServer/2/query?where=1%3D1&outFields=*&f=geojson';
+let frontsLayer = null;
+
+function frontStyle(feature) {
+    const feat = (feature.properties && feature.properties.feat) || '';
+    if (feat.includes('Cold'))       return { color: '#2563eb', weight: 2.5 };
+    if (feat.includes('Warm'))       return { color: '#dc2626', weight: 2.5 };
+    if (feat.includes('Occluded'))   return { color: '#7c3aed', weight: 2.5 };
+    if (feat.includes('Stationary')) return { color: '#dc2626', weight: 2.5, dashArray: '8,6' };
+    return { color: '#94a3b8', weight: 1.5, dashArray: '4,4' }; // trough/other
+}
+
+async function weatherMapLoadFronts() {
+    const statusEl = document.getElementById('weather-map-status');
+    try {
+        const res = await fetch(FRONTS_API_URL);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const geojson = await res.json();
+        if (frontsLayer && weatherMap.hasLayer(frontsLayer)) weatherMap.removeLayer(frontsLayer);
+        frontsLayer = L.geoJSON(geojson, {
+            style: frontStyle,
+            onEachFeature: (feature, layer) => {
+                const p = feature.properties || {};
+                if (p.popupconte) layer.bindPopup(p.popupconte);
+            }
+        }).addTo(weatherMap);
+        if (statusEl) statusEl.textContent = `${(geojson.features || []).length} front features — updated ${new Date().toLocaleTimeString()}`;
+    } catch (e) {
+        if (statusEl) statusEl.textContent = 'Fronts unavailable';
+        console.warn('weatherMap fronts fetch failed:', e);
+    }
+}
+weatherMapLoadFronts();
+setInterval(weatherMapLoadFronts, 30 * 60 * 1000); // fronts update per forecast cycle, not real-time
 
 // ── Weather Radar Overlay (RainViewer, free public API) ─────────────────
 // Ground-based composite radar (NEXRAD-class). Coverage is land-station
