@@ -2655,9 +2655,16 @@ async function fetchSensorHistoryGraph() {
     const readings = data.readings || [];
     if (readings.length < 2) return; // not enough real data yet, leave graph as-is
 
-    const pressValues = readings.map(r => r.pressure).filter(v => v != null);
-    const windValues  = readings.map(r => r.wind_speed).filter(v => v != null);
-    const timestamps  = readings.map(r => r.timestamp);
+    // NOTE: pressure/wind/timestamp arrays MUST stay index-aligned for the
+    // time-proportional x-axis to work correctly. Previously each value
+    // array was filtered for nulls independently, which could desync a
+    // value's index from its real timestamp if only one field was ever
+    // null on a given reading. Filter once, on the full reading object, so
+    // all three derived arrays share exactly the same indices.
+    const validReadings = readings.filter(r => r.pressure != null && r.wind_speed != null && r.timestamp != null);
+    const pressValues = validReadings.map(r => r.pressure);
+    const windValues  = validReadings.map(r => r.wind_speed);
+    const timestamps  = validReadings.map(r => r.timestamp);
 
     drawSparkline(pressValues, windValues, timestamps);
 
@@ -2708,8 +2715,26 @@ function drawSparkline(pressValues, windValues, timestamps) {
   const pScale = scaleFor(pressValues);
   const wScale = scaleFor(windValues);
 
+  // x-position is proportional to ACTUAL ELAPSED TIME, not array index.
+  // Bug found 2026-07-12: index-based spacing made a real ~16h sensor-outage
+  // data gap look like a normal continuous stretch (all points evenly spaced
+  // regardless of the time between them), which is just as misleading as the
+  // original frozen-flatline bug it replaced — just subtler. Time-proportional
+  // spacing makes real gaps actually render as visual gaps.
+  const tMs = (timestamps && timestamps.length >= 2)
+    ? timestamps.map(t => new Date(t).getTime())
+    : null;
+  const tMin = tMs ? tMs[0] : null;
+  const tMax = tMs ? tMs[tMs.length - 1] : null;
+  const tRange = (tMin != null && tMax != null && tMax > tMin) ? (tMax - tMin) : null;
+
   function xFor(i, n) {
-    return plotX + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
+    if (tMs && tRange) return plotX + ((tMs[i] - tMin) / tRange) * plotW;
+    return plotX + (n <= 1 ? 0 : (i / (n - 1)) * plotW); // fallback: no/bad timestamps
+  }
+  function xForTime(ms) {
+    if (!tRange) return plotX;
+    return plotX + ((ms - tMin) / tRange) * plotW;
   }
   function yForPress(v) {
     return plotY + plotH - ((v - pScale.min) / pScale.range) * plotH;
@@ -2781,16 +2806,16 @@ function drawSparkline(pressValues, windValues, timestamps) {
     ctx.fillText(val.toFixed(0), plotX + plotW + 4, y);
   }
 
-  // ── Bottom axis: time-of-day scale ──
-  if (timestamps && timestamps.length >= 2) {
+  // ── Bottom axis: time-of-day scale (evenly spaced by actual TIME, not index) ──
+  if (tMs && tRange) {
     ctx.fillStyle = 'var(--muted, #888)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    const n = timestamps.length;
     for (let g = 0; g <= GRID_COLS; g++) {
-      const idx = Math.round((g / GRID_COLS) * (n - 1));
-      const x = xFor(idx, n);
-      const d = new Date(timestamps[idx]);
+      const frac = g / GRID_COLS;
+      const ms = tMin + frac * tRange;
+      const x = plotX + frac * plotW;
+      const d = new Date(ms);
       const label = isNaN(d.getTime()) ? '' :
         d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
       ctx.fillText(label, x, plotY + plotH + 3);
