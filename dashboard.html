@@ -266,7 +266,7 @@
     .fc-green{color:var(--green)}.fc-amber{color:var(--amber)}.fc-red{color:var(--red)}
     .forecast-sparkline{padding:6px 16px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
     .sparkline-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap}
-    .sparkline-canvas{flex:1;height:56px}
+    .sparkline-canvas{flex:1;height:110px}
     /* Wind Rose */
     .wind-rose-wrap{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px;flex-wrap:wrap}
     .wind-rose-readouts{display:flex;flex-direction:column;gap:10px}
@@ -2657,8 +2657,9 @@ async function fetchSensorHistoryGraph() {
 
     const pressValues = readings.map(r => r.pressure).filter(v => v != null);
     const windValues  = readings.map(r => r.wind_speed).filter(v => v != null);
+    const timestamps  = readings.map(r => r.timestamp);
 
-    drawSparkline(pressValues, windValues);
+    drawSparkline(pressValues, windValues, timestamps);
 
     // Real trend labels computed directly from sensor history, not forecast
     const pressTrendEl = document.getElementById('press-trend-label');
@@ -2679,46 +2680,122 @@ async function fetchSensorHistoryGraph() {
   }
 }
 
-function drawSparkline(pressValues, windValues) {
+function drawSparkline(pressValues, windValues, timestamps) {
   const canvas = document.getElementById('pressure-sparkline');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   canvas.width  = canvas.offsetWidth  || 400;
-  canvas.height = canvas.offsetHeight || 56;
+  canvas.height = canvas.offsetHeight || 110; // bumped from 56 to fit axis labels
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height, pad = 6;
+  const W = canvas.width, H = canvas.height;
 
-  function drawLine(values, color, fillColor) {
-    if (!values || values.length < 2) return;
+  // Margins: left for pressure (mb) scale, right for wind (kt) scale,
+  // bottom for time-of-day scale, small top pad.
+  const marginLeft = 38, marginRight = 34, marginTop = 6, marginBottom = 16;
+  const plotW = W - marginLeft - marginRight;
+  const plotH = H - marginTop - marginBottom;
+  const plotX = marginLeft, plotY = marginTop;
+
+  function scaleFor(values) {
+    if (!values || values.length < 2) return { min: 0, max: 1, range: 1 };
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const range = max - min || 1;
+    // Pad range slightly so lines don't touch top/bottom edge exactly.
+    const pad = (max - min) * 0.08 || 1;
+    return { min: min - pad, max: max + pad, range: (max - min) + pad * 2 || 1 };
+  }
+
+  const pScale = scaleFor(pressValues);
+  const wScale = scaleFor(windValues);
+
+  function xFor(i, n) {
+    return plotX + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
+  }
+  function yForPress(v) {
+    return plotY + plotH - ((v - pScale.min) / pScale.range) * plotH;
+  }
+  function yForWind(v) {
+    return plotY + plotH - ((v - wScale.min) / wScale.range) * plotH;
+  }
+
+  function drawLine(values, yFn, color, fillColor) {
+    if (!values || values.length < 2) return;
+    const n = values.length;
     ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.lineWidth = 1.5;
     values.forEach((v, i) => {
-      const x = pad + (i / (values.length - 1)) * (W - pad * 2);
-      const y = H - pad - ((v - min) / range) * (H - pad * 2);
+      const x = xFor(i, n);
+      const y = yFn(v);
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.stroke();
-    ctx.lineTo(W - pad, H - pad);
-    ctx.lineTo(pad, H - pad);
+    ctx.lineTo(xFor(n - 1, n), plotY + plotH);
+    ctx.lineTo(xFor(0, n), plotY + plotH);
     ctx.closePath();
     ctx.fillStyle = fillColor;
     ctx.fill();
   }
 
-  // Horizontal midline guide
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  // Faint horizontal grid (4 evenly-spaced lines across the plot area)
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.lineWidth = 1;
-  ctx.moveTo(pad, H / 2);
-  ctx.lineTo(W - pad, H / 2);
-  ctx.stroke();
+  const GRID_ROWS = 4;
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    ctx.beginPath();
+    ctx.moveTo(plotX, y);
+    ctx.lineTo(plotX + plotW, y);
+    ctx.stroke();
+  }
+  // Faint vertical grid (time gridlines, 6 columns)
+  const GRID_COLS = 6;
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const x = plotX + (g / GRID_COLS) * plotW;
+    ctx.beginPath();
+    ctx.moveTo(x, plotY);
+    ctx.lineTo(x, plotY + plotH);
+    ctx.stroke();
+  }
 
-  drawLine(pressValues, '#3b82f6', 'rgba(59,130,246,0.08)');
-  drawLine(windValues,  '#f59e0b', 'rgba(245,158,11,0.08)');
+  drawLine(pressValues, yForPress, '#3b82f6', 'rgba(59,130,246,0.08)');
+  drawLine(windValues,  yForWind,  '#f59e0b', 'rgba(245,158,11,0.08)');
+
+  // ── Left axis: pressure scale (mb) ──
+  ctx.font = '9px var(--font-mono, monospace)';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = pScale.max - (g / GRID_ROWS) * pScale.range;
+    ctx.fillText(val.toFixed(0), plotX - 4, y);
+  }
+
+  // ── Right axis: wind speed scale (kt) ──
+  ctx.fillStyle = '#f59e0b';
+  ctx.textAlign = 'left';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = wScale.max - (g / GRID_ROWS) * wScale.range;
+    ctx.fillText(val.toFixed(0), plotX + plotW + 4, y);
+  }
+
+  // ── Bottom axis: time-of-day scale ──
+  if (timestamps && timestamps.length >= 2) {
+    ctx.fillStyle = 'var(--muted, #888)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const n = timestamps.length;
+    for (let g = 0; g <= GRID_COLS; g++) {
+      const idx = Math.round((g / GRID_COLS) * (n - 1));
+      const x = xFor(idx, n);
+      const d = new Date(timestamps[idx]);
+      const label = isNaN(d.getTime()) ? '' :
+        d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+      ctx.fillText(label, x, plotY + plotH + 3);
+    }
+  }
 }
 
 // ── Wind Compass Rose ──
