@@ -2743,23 +2743,56 @@ function drawSparkline(pressValues, windValues, timestamps) {
     return plotY + plotH - ((v - wScale.min) / wScale.range) * plotH;
   }
 
+  // Any gap between consecutive real readings bigger than this is treated as
+  // a genuine data outage and drawn as a visible break in the line, not a
+  // straight connecting segment — added 2026-07-12 alongside the time-
+  // proportional x-axis fix, since a straight line across a real ~16h sensor
+  // outage gap looked like normal continuous data (just a steep segment)
+  // instead of the actual missing-data hole it represents. Sample interval
+  // is ~5min when healthy, so 20min is a generous multiple of that before
+  // calling it an outage rather than a slightly-delayed sample.
+  const GAP_BREAK_MS = 20 * 60 * 1000;
+
+  function segmentsFor(values, n) {
+    // Split into contiguous runs, breaking wherever the time gap between
+    // consecutive points exceeds GAP_BREAK_MS.
+    const segments = [];
+    let current = [0];
+    for (let i = 1; i < n; i++) {
+      const gapMs = tMs ? (tMs[i] - tMs[i - 1]) : 0;
+      if (tMs && gapMs > GAP_BREAK_MS) {
+        segments.push(current);
+        current = [i];
+      } else {
+        current.push(i);
+      }
+    }
+    segments.push(current);
+    return segments;
+  }
+
   function drawLine(values, yFn, color, fillColor) {
     if (!values || values.length < 2) return;
     const n = values.length;
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    values.forEach((v, i) => {
-      const x = xFor(i, n);
-      const y = yFn(v);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    const segments = segmentsFor(values, n);
+    segments.forEach(seg => {
+      if (seg.length < 2) return; // isolated single point after a break — nothing to connect
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      seg.forEach((i, k) => {
+        const x = xFor(i, n);
+        const y = yFn(values[i]);
+        k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      const firstX = xFor(seg[0], n), lastX = xFor(seg[seg.length - 1], n);
+      ctx.lineTo(lastX, plotY + plotH);
+      ctx.lineTo(firstX, plotY + plotH);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
     });
-    ctx.stroke();
-    ctx.lineTo(xFor(n - 1, n), plotY + plotH);
-    ctx.lineTo(xFor(0, n), plotY + plotH);
-    ctx.closePath();
-    ctx.fillStyle = fillColor;
-    ctx.fill();
   }
 
   // Faint horizontal grid (4 evenly-spaced lines across the plot area)
