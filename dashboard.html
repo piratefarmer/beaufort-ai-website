@@ -1448,6 +1448,15 @@ function dashSwitchTab(tabName) {
   // further down the script and may not exist yet on the very first call.
   if (tabName === 'ais' && typeof aisMap !== 'undefined' && aisMap) {
     setTimeout(() => aisMap.invalidateSize(), 0);
+    // BUGFIX (2026-07-12): the NOAA chart esri.dynamicMapLayer can end up
+    // requesting a zero-size export image if it was added/re-centered while
+    // the map container was still display:none (0x0) -- e.g. the AIS zone
+    // poll calling aisMap.setView() before this tab was ever opened.
+    // invalidateSize() alone does not make esri-leaflet re-issue its export
+    // request, so force an explicit redraw here too.
+    if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
+      setTimeout(() => noaaChartLayer.redraw(), 50);
+    }
   }
   // Same fix applies to the new weather-map (added 2026-07-12, side-by-side
   // with aisMap in the same tab).
@@ -3112,10 +3121,18 @@ const aisMap = L.map('ais-map', {
 // notations). L.esri.dynamicMapLayer requests fresh exports per pan/zoom
 // (not a pre-cached tile pyramid), which is the correct pattern for this
 // specific ArcGIS Server capability.
-L.esri.dynamicMapLayer({
+const noaaChartLayer = L.esri.dynamicMapLayer({
     url: 'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/MapServer',
     opacity: 0.95,
-    attribution: '&copy; NOAA Office of Coast Survey'
+    attribution: '&copy; NOAA Office of Coast Survey',
+    transparent: false  // BUGFIX (2026-07-12): this specific NOAA service
+        // returns a fully zero-alpha (invisible) image whenever
+        // transparent=true is requested, even though the underlying chart
+        // content is real -- confirmed by direct fetch comparison (same
+        // bbox with transparent=true came back 100% alpha=0, without it
+        // came back with real varying alpha/opaque pixels). Non-transparent
+        // export covers the OSM base tile underneath, acceptable here since
+        // the chart itself is the primary reference layer on this map.
 }).addTo(aisMap);
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
@@ -3641,6 +3658,14 @@ function aisUpdateZone(zone) {
     if (!aisMapCenteredOnce) {
         aisMapCenteredOnce = true;
         aisMap.setView([zone.center_lat, zone.center_lon], 8, { animate: false });
+        // BUGFIX (2026-07-12): this often fires before the AIS tab has ever
+        // been opened (container still display:none / 0x0), which can leave
+        // the NOAA chart esri layer stuck on a zero-size export from its
+        // very first request. Force a redraw once the tab actually becomes
+        // visible and has a real size, in addition to the dashSwitchTab fix.
+        if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
+            setTimeout(() => noaaChartLayer.redraw(), 100);
+        }
     }
 }
 
