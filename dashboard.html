@@ -2507,6 +2507,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (lastForecastLat === null) fetchForecast();
     }, 15000);
   }
+
+  // Real sensor-history sparkline (pressure/wind from vessel sensors, not
+  // forecast) — independent of GPS/forecast timing, poll on its own cadence.
+  fetchSensorHistoryGraph();
+  setInterval(fetchSensorHistoryGraph, 5 * 60 * 1000); // every 5 min (matches Pi sample rate)
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
 
   // Maintenance banner: check immediately on load, then every 30s so it
@@ -2631,23 +2636,50 @@ function renderForecast(data) {
   html += '</div>';
   document.getElementById('forecast-cards-container').innerHTML = html;
 
-  // Feed wind speeds into history for sparkline
-  windSpeedHistory.length = 0;
-  fc.forEach(f => { if (f.wind_kts != null) windSpeedHistory.push(f.wind_kts); });
-
-  // Draw dual sparkline (pressure + wind)
-  drawSparkline(fc.map(f => f.pressure_mb));
-
-  // Pressure trend label
-  const trendEl = document.getElementById('press-trend-label');
-  trendEl.textContent = (trend >= 0 ? '+' : '') + trend.toFixed(1) + ' mb/48h';
-  trendEl.style.color = trend < -3 ? 'var(--red)' : trend > 3 ? 'var(--amber)' : 'var(--green)';
+  // NOTE (2026-07-12): sparkline below is now driven by REAL sensor history
+  // (see fetchSensorHistoryGraph/drawSparkline), not forecast data. The
+  // press_trend_mb summary from the forecast payload is still used for the
+  // amber/green Max/min meta line above the cards, but the graph itself and
+  // its trend labels come from the vessel's own onboard sensor log.
 }
 
-// Wind speed history for sparkline
-const windSpeedHistory = [];
+// ── Real sensor-history sparkline (pressure + wind from vessel sensors) ──
+const SENSOR_HISTORY_URL = 'https://beau.beaufort-ai.com/api/sensor-history/window';
+const SPARKLINE_WINDOW_HOURS = 24;
 
-function drawSparkline(pressValues) {
+async function fetchSensorHistoryGraph() {
+  try {
+    const res = await fetch(`${SENSOR_HISTORY_URL}?hours=${SPARKLINE_WINDOW_HOURS}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const readings = data.readings || [];
+    if (readings.length < 2) return; // not enough real data yet, leave graph as-is
+
+    const pressValues = readings.map(r => r.pressure).filter(v => v != null);
+    const windValues  = readings.map(r => r.wind_speed).filter(v => v != null);
+
+    drawSparkline(pressValues, windValues);
+
+    // Real trend labels computed directly from sensor history, not forecast
+    const pressTrendEl = document.getElementById('press-trend-label');
+    if (pressTrendEl && pressValues.length >= 2) {
+      const pDelta = pressValues[pressValues.length - 1] - pressValues[0];
+      pressTrendEl.textContent = (pDelta >= 0 ? '+' : '') + pDelta.toFixed(1) + ` mb/${SPARKLINE_WINDOW_HOURS}h`;
+      pressTrendEl.style.color = pDelta < -3 ? 'var(--red)' : pDelta > 3 ? 'var(--amber)' : 'var(--green)';
+    }
+    const windTrendEl = document.getElementById('wind-trend-label');
+    if (windTrendEl && windValues.length >= 2) {
+      const wDelta = windValues[windValues.length - 1] - windValues[0];
+      windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + ` kt/${SPARKLINE_WINDOW_HOURS}h`;
+      windTrendEl.style.color = wDelta > 5 ? 'var(--red)' : wDelta < -5 ? 'var(--green)' : 'var(--muted)';
+    }
+  } catch (e) {
+    // Real sensor history unavailable — leave sparkline in its last known
+    // state rather than clearing it or silently substituting forecast data.
+  }
+}
+
+function drawSparkline(pressValues, windValues) {
   const canvas = document.getElementById('pressure-sparkline');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -2685,16 +2717,8 @@ function drawSparkline(pressValues) {
   ctx.lineTo(W - pad, H / 2);
   ctx.stroke();
 
-  drawLine(pressValues,     '#3b82f6', 'rgba(59,130,246,0.08)');
-  drawLine(windSpeedHistory, '#f59e0b', 'rgba(245,158,11,0.08)');
-
-  // Wind trend label
-  const windTrendEl = document.getElementById('wind-trend-label');
-  if (windTrendEl && windSpeedHistory.length >= 2) {
-    const wDelta = windSpeedHistory[windSpeedHistory.length-1] - windSpeedHistory[0];
-    windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + ' kt/72h';
-    windTrendEl.style.color = wDelta > 5 ? 'var(--red)' : wDelta < -5 ? 'var(--green)' : 'var(--muted)';
-  }
+  drawLine(pressValues, '#3b82f6', 'rgba(59,130,246,0.08)');
+  drawLine(windValues,  '#f59e0b', 'rgba(245,158,11,0.08)');
 }
 
 // ── Wind Compass Rose ──
