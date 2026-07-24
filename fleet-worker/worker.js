@@ -25,6 +25,7 @@
  * Endpoints:
  *   GET  /api/fleet/vessels
  *   POST /api/fleet/vessels                [admin key required]
+ *   PATCH /api/fleet/vessels/:id            [admin key required]
  *   GET  /api/fleet/advisories            (only active=true unless ?all=1)
  *   POST /api/fleet/advisories             [admin key required]
  *   POST /api/fleet/advisories/:id/clear   [admin key required]
@@ -165,6 +166,40 @@ export default {
         await putJSON(env, "vessels", vessels);
 
         return json({ status: "ok", vessel }, 200, origin);
+      }
+
+      // ── PATCH /api/fleet/vessels/:id (RMC/admin edits name/role/tunnel_url) ──
+      // Added 2026-07-24: needed to rename KIRT CHOUEST's display name to
+      // clarify it's the demo/pilot sensor rig, not implying it's a second
+      // real vessel alongside the others coming online. Only name/role/
+      // tunnel_url are editable -- id and added_at are immutable identity
+      // fields (renaming the id would break the relay's registry lookup
+      // and any dashboard/relay code keyed on it).
+      const vesselPatchMatch = path.match(/^\/api\/fleet\/vessels\/([a-z0-9_-]+)$/i);
+      if (vesselPatchMatch && request.method === "PATCH") {
+        if (!(await requireAdmin(request, env))) {
+          return json({ error: "Unauthorized — admin key required" }, 401, origin);
+        }
+        const id = vesselPatchMatch[1];
+        const body = await request.json().catch(() => ({}));
+
+        let vessels = await getJSON(env, "vessels", null);
+        if (vessels == null) vessels = DEFAULT_VESSELS;
+
+        const idx = vessels.findIndex(v => v.id === id);
+        if (idx === -1) return json({ error: `Vessel id "${id}" not found` }, 404, origin);
+
+        if (body.name !== undefined) {
+          const name = esc(body.name);
+          if (!name) return json({ error: "name cannot be empty" }, 400, origin);
+          vessels[idx].name = name;
+        }
+        if (body.role !== undefined) vessels[idx].role = esc(body.role) || vessels[idx].role;
+        if (body.tunnel_url !== undefined) vessels[idx].tunnel_url = esc(body.tunnel_url) || null;
+        vessels[idx].updated_at = new Date().toISOString();
+
+        await putJSON(env, "vessels", vessels);
+        return json({ status: "ok", vessel: vessels[idx] }, 200, origin);
       }
 
       // ── GET /api/fleet/advisories ───────────────────────────
