@@ -99,6 +99,15 @@
     .fleet-metric-label{font-size:9px;color:var(--muted);letter-spacing:.1em}
     .fleet-metric-value{font-size:16px;color:var(--text);font-weight:500;margin-top:2px}
     .fleet-card-footer{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em;border-top:1px solid var(--border);padding-top:9px;display:flex;justify-content:space-between}
+    .fleet-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .fleet-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px}
+    .fleet-modal-header{display:flex;justify-content:space-between;align-items:flex-start}
+    .fleet-modal-close{background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
+    .fleet-modal-close:hover{color:var(--text)}
+    .fleet-modal-body{display:flex;flex-direction:column;gap:8px;font-family:var(--font-mono);font-size:12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 0}
+    .fleet-detail-row{display:flex;justify-content:space-between}
+    .fleet-detail-label{color:var(--muted);letter-spacing:.04em}
+    .fleet-detail-value{color:var(--text);font-weight:700}
 
     .fleet-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
     .fleet-section-title{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.03);display:flex;justify-content:space-between;align-items:center}
@@ -1860,9 +1869,10 @@ async function fetchVesselData(vessel) {
       wind,
       heading,
       lastSeen: 'Live',
+      raw: d, // full relay payload, used by the per-vessel detail modal
     };
   } catch (e) {
-    return { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unreachable' };
+    return { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unreachable', raw: null };
   }
 }
 
@@ -1911,11 +1921,21 @@ async function renderFleetGrid() {
   const onlineCount = results.filter(r => r.status === 'online').length;
   if (gridMeta) gridMeta.textContent = `${onlineCount}/${vessels.length} online`;
 
+  // Cache each vessel's raw relay data (not just the trimmed 4-metric
+  // summary) so the detail modal (below) can show a fuller readout
+  // per-vessel without a second fetch round-trip.
+  window._fleetVesselCache = vessels.map((v, i) => ({ vessel: v, data: results[i] }));
+
   const cards = vessels.map((v, i) => {
     const data = results[i];
-    const clickable = v.id === 'kirt_chouest';
+    // 2026-07-24: every ONLINE vessel is now clickable (not just Kirt
+    // Chouest). Tapping used to hardcode dashSwitchTab('conditions'),
+    // which only ever shows Chouest's own feed -- so tapping Kirt-239's
+    // card wrongly showed Chouest's data. Now opens an inline per-vessel
+    // detail modal fed by that vessel's own relay data instead.
+    const clickable = data.status === 'online';
     return `
-      <div class="fleet-card status-${data.status}${clickable ? ' is-clickable' : ''}" ${clickable ? "onclick=\"dashSwitchTab('conditions')\"" : ''}>
+      <div class="fleet-card status-${data.status}${clickable ? ' is-clickable' : ''}" ${clickable ? `onclick="openFleetVesselDetail('${v.id}')"` : ''}>
         <div class="fleet-card-top">
           <div>
             <div class="fleet-card-name">${v.name}</div>
@@ -1929,11 +1949,78 @@ async function renderFleetGrid() {
           ${fleetMetricBlock('HEADING', data.heading, '°')}
           ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
         </div>
-        <div class="fleet-card-footer"><span>${data.lastSeen}</span>${clickable ? '<span>&rarr; Conditions</span>' : ''}</div>
+        <div class="fleet-card-footer"><span>${data.lastSeen}</span>${clickable ? '<span>&rarr; Details</span>' : ''}</div>
       </div>`;
   }).join('');
 
   grid.innerHTML = cards;
+}
+
+// ── Per-vessel detail modal (added 2026-07-24) ──────────────────────
+// Fixes: tapping any fleet card used to jump to the CONDITIONS tab,
+// which is hardwired to Kirt Chouest's own live feed -- so every vessel's
+// card showed the same (Chouest) data. This renders the TAPPED vessel's
+// own sensor readout inline on the FLEET tab instead, using the cached
+// relay response already fetched for the grid (no extra round-trip).
+function closeFleetVesselDetail() {
+  const el = document.getElementById('fleet-vessel-modal');
+  if (el) el.remove();
+}
+
+function fleetDetailRow(label, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `<div class="fleet-detail-row"><span class="fleet-detail-label">${label}</span><span class="fleet-detail-value">${value}</span></div>`;
+}
+
+function openFleetVesselDetail(vesselId) {
+  const entry = (window._fleetVesselCache || []).find(e => e.vessel.id === vesselId);
+  if (!entry) return;
+  const { vessel, data } = entry;
+  const raw = data.raw || {};
+
+  let rows = '';
+  if (raw.barometer) {
+    rows += fleetDetailRow('Pressure', raw.barometer.pressure_mb != null ? raw.barometer.pressure_mb + ' hPa' : null);
+    rows += fleetDetailRow('Humidity', raw.barometer.humidity_pct != null ? raw.barometer.humidity_pct + ' %RH' : null);
+    rows += fleetDetailRow('Air Temp', raw.barometer.temp_f != null ? raw.barometer.temp_f + ' \u00b0F' : null);
+  }
+  if (raw.bme680) {
+    rows += fleetDetailRow('Pressure', raw.bme680.pressure_mb != null ? raw.bme680.pressure_mb + ' hPa' : null);
+    rows += fleetDetailRow('Humidity', raw.bme680.humidity_pct != null ? raw.bme680.humidity_pct + ' %RH' : null);
+    rows += fleetDetailRow('Temp', raw.bme680.temperature_f != null ? raw.bme680.temperature_f + ' \u00b0F' : null);
+  }
+  if (raw.wind) {
+    rows += fleetDetailRow('Wind Speed', raw.wind.speed_kts != null ? raw.wind.speed_kts + ' kt' : null);
+    rows += fleetDetailRow('Wind Direction', raw.wind.direction_deg != null ? raw.wind.direction_deg + '\u00b0' : null);
+  }
+  if (raw.accel) {
+    rows += fleetDetailRow('Heading', raw.accel.heading_deg != null ? raw.accel.heading_deg + '\u00b0' : null);
+    rows += fleetDetailRow('Roll', raw.accel.roll != null ? raw.accel.roll + '\u00b0' : null);
+    rows += fleetDetailRow('Pitch', raw.accel.pitch != null ? raw.accel.pitch + '\u00b0' : null);
+  }
+  if (raw.gps) {
+    rows += fleetDetailRow('Position', (raw.gps.lat != null && raw.gps.lon != null) ? raw.gps.lat.toFixed(4) + ', ' + raw.gps.lon.toFixed(4) : null);
+    rows += fleetDetailRow('Speed', raw.gps.speed_kts != null ? raw.gps.speed_kts + ' kt' : null);
+  }
+  if (!rows) rows = '<div class="advisory-empty">No detailed sensor fields available for this vessel yet.</div>';
+
+  const modal = document.createElement('div');
+  modal.id = 'fleet-vessel-modal';
+  modal.className = 'fleet-modal-overlay';
+  modal.onclick = (e) => { if (e.target === modal) closeFleetVesselDetail(); };
+  modal.innerHTML = `
+    <div class="fleet-modal">
+      <div class="fleet-modal-header">
+        <div>
+          <div class="fleet-card-name">${vessel.name}</div>
+          <div class="fleet-card-sub">${vessel.role || ''}</div>
+        </div>
+        <button class="fleet-modal-close" onclick="closeFleetVesselDetail()">&times;</button>
+      </div>
+      <div class="fleet-modal-body">${rows}</div>
+      <div class="fleet-card-footer"><span>${data.lastSeen}</span><span>${data.status.toUpperCase()}</span></div>
+    </div>`;
+  document.body.appendChild(modal);
 }
 
 // ── Fleet Advisory alert: on-screen toast + audible beep ────────────
