@@ -1845,11 +1845,20 @@ async function fetchVesselData(vessel) {
     const res = await fetch(`${FLEET_RELAY_URL}/${encodeURIComponent(vessel.id)}`, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
     const d = await res.json();
     if (!res.ok || d.status === 'offline') throw new Error(d.error || ('bad status ' + res.status));
+    // Field mapping fixed 2026-07-24: initial guesses (d.pressure, d.wind_speed,
+    // d.true_wind_speed, d.heading) didn't match either vessel's real JSON shape.
+    // Kirt Chouest (full rig): barometer.pressure_mb, wind.speed_kts,
+    // wind.direction_deg, accel.heading_deg. Kirt-239 (BME680-only pilot unit,
+    // no wind/heading hardware yet): bme680.pressure_mb, no wind/heading fields
+    // at all -- those correctly stay '--' until NMEA0183 integration lands.
+    const pressure = d.barometer?.pressure_mb ?? d.bme680?.pressure_mb ?? null;
+    const wind = d.wind?.speed_kts ?? null;
+    const heading = d.accel?.heading_deg ?? d.wind?.direction_deg ?? null;
     return {
       status: 'online',
-      pressure: d.pressure ?? d.bme680?.pressure_mb ?? null,
-      wind: d.true_wind_speed ?? d.wind_speed ?? null,
-      heading: d.heading ?? null,
+      pressure,
+      wind,
+      heading,
       lastSeen: 'Live',
     };
   } catch (e) {
