@@ -1830,17 +1830,24 @@ function fleetTimeAgo(iso) {
   return `${Math.round(hrs / 24)} day(s) ago`;
 }
 
+const FLEET_RELAY_URL = 'https://beau.beaufort-ai.com/api/fleet-relay';
+
 async function fetchVesselData(vessel) {
-  // Kirt Chouest's tunnel_url IS the same PI_FEED_URL already polled
-  // by the CONDITIONS tab — fetch independently here so the FLEET tab
-  // doesn't depend on CONDITIONS having been visited first.
+  // 2026-07-24: fetch via Spark's server-side relay (/api/fleet-relay/<id>)
+  // instead of vessel.tunnel_url directly. Pilot Pis (Kirt-239 and 5 more
+  // coming) only have private Tailscale IPs -- a public browser can't route
+  // to those at all, and even if it could, an HTTPS page fetching a raw
+  // HTTP tunnel_url gets blocked by mixed-content rules. Spark is already
+  // on the tailnet, so it does the actual fetch and this just calls Spark.
+  // Scales to any number of pilot vessels with zero new public exposure
+  // per Pi -- no per-Pi tunnel/funnel to install, maintain, or secure.
   try {
-    const res = await fetch(vessel.tunnel_url, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
-    if (!res.ok) throw new Error('bad status ' + res.status);
+    const res = await fetch(`${FLEET_RELAY_URL}/${encodeURIComponent(vessel.id)}`, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
     const d = await res.json();
+    if (!res.ok || d.status === 'offline') throw new Error(d.error || ('bad status ' + res.status));
     return {
       status: 'online',
-      pressure: d.pressure ?? null,
+      pressure: d.pressure ?? d.bme680?.pressure_mb ?? null,
       wind: d.true_wind_speed ?? d.wind_speed ?? null,
       heading: d.heading ?? null,
       lastSeen: 'Live',
