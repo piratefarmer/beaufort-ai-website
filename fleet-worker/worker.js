@@ -24,6 +24,7 @@
  *
  * Endpoints:
  *   GET  /api/fleet/vessels
+ *   POST /api/fleet/vessels                [admin key required]
  *   GET  /api/fleet/advisories            (only active=true unless ?all=1)
  *   POST /api/fleet/advisories             [admin key required]
  *   POST /api/fleet/advisories/:id/clear   [admin key required]
@@ -122,6 +123,48 @@ export default {
           await putJSON(env, "vessels", vessels);
         }
         return json({ vessels }, 200, origin);
+      }
+
+      // ── POST /api/fleet/vessels (RMC/admin adds a pilot vessel) ──
+      // Added 2026-07-24: fleet pilot expanding beyond the single seeded
+      // KIRT CHOUEST entry (6 more Raspberry Pi 5 sensor rigs arriving).
+      // Same admin-key gate as advisories -- this is a fleet-composition
+      // change, not a routine vessel action, so it stays admin-only.
+      if (path === "/api/fleet/vessels" && request.method === "POST") {
+        if (!(await requireAdmin(request, env))) {
+          return json({ error: "Unauthorized — admin key required" }, 401, origin);
+        }
+        const body = await request.json().catch(() => ({}));
+        const id = esc(body.id);
+        const name = esc(body.name);
+        const role = esc(body.role) || "Sensor Pilot Unit";
+        const tunnelUrl = esc(body.tunnel_url);
+
+        if (!id || !name) {
+          return json({ error: "id and name are required" }, 400, origin);
+        }
+        if (!/^[a-z0-9_-]+$/i.test(id)) {
+          return json({ error: "id must be alphanumeric (dashes/underscores ok)" }, 400, origin);
+        }
+
+        let vessels = await getJSON(env, "vessels", null);
+        if (vessels == null) vessels = DEFAULT_VESSELS;
+
+        if (vessels.some(v => v.id === id)) {
+          return json({ error: `Vessel id "${id}" already exists` }, 409, origin);
+        }
+
+        const vessel = {
+          id,
+          name,
+          role,
+          tunnel_url: tunnelUrl || null,
+          added_at: new Date().toISOString(),
+        };
+        vessels.push(vessel);
+        await putJSON(env, "vessels", vessels);
+
+        return json({ status: "ok", vessel }, 200, origin);
       }
 
       // ── GET /api/fleet/advisories ───────────────────────────
