@@ -453,16 +453,13 @@
 
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
-      <div class="sys-row"><span class="sys-label">SENSORS</span><span class="sys-value" id="stat-sensors">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">HISTORY</span><span class="sys-value" id="stat-history">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">BEAU</span><span class="sys-value" id="stat-beau">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">AIS</span><span class="sys-value" id="stat-ais">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">ALERT STATUS</span><span class="sys-value green-text" id="alert-status">NOMINAL</span></div>
       <div class="sys-row"><span class="sys-label">TOTAL QUERIES</span><span class="sys-value" id="query-count">0</span></div>
-      <div class="sys-row"><span class="sys-label">STATUS CHECK</span><span class="sys-value" id="stat-checked" style="font-size:10px">&mdash;</span></div>
     </div>
 
     <div class="auto-toggle-row">
@@ -618,17 +615,6 @@
           <span class="sparkline-label" id="wind-trend-label" style="color:var(--muted)"></span>
         </div>
         <canvas class="sparkline-canvas" id="pressure-sparkline" style="width:100%"></canvas>
-      </div>
-    </div>
-
-    <!-- TIDE + MOON PHASE (added 2026-08-05, Cap request) -->
-    <div class="forecast-strip" id="tide-moon-strip">
-      <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; TIDE &amp; MOON PHASE</span>
-        <span class="forecast-strip-meta" id="tide-moon-meta">Loading...</span>
-      </div>
-      <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
-        <div class="forecast-loading">Fetching tide/moon data...</div>
       </div>
     </div>
 
@@ -985,79 +971,30 @@
 // independently of the sensor/forecast/AIS polling loops so it works even
 // if those are erroring out.
 let maintenanceBannerVisible = false;
-function setLiveStat(id, ok, warn, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'sys-value ' + (ok ? 'green-text' : (warn ? 'amber-text' : 'red-text'));
-  el.innerHTML = '● ' + text;
-}
-
-async function probeJson(url, timeoutMs) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-// Cap harden 2026-07-31: real multi-service status strip (no more fake ACTIVE)
 async function checkLiveSystemsStatus() {
   const banner = document.getElementById('maintenance-banner');
-  let beauOk = false;
-
+  if (!banner) return;
   try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/beau/health', 6000);
-    beauOk = d && d.status === 'ready';
-    if (beauOk) setLiveStat('stat-beau', true, false, 'READY');
-    else setLiveStat('stat-beau', false, true, (d && d.status) ? String(d.status).toUpperCase() : 'DEGRADED');
-  } catch (e) {
-    setLiveStat('stat-beau', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensors', 6000);
-    const age = Number(d && d.data_age_sec);
-    const stale = !!(d && (d.stale || (Number.isFinite(age) && age > 60)));
-    const hasBaro = !!(d && d.barometer && d.barometer.pressure_mb != null);
-    if (hasBaro && !stale) setLiveStat('stat-sensors', true, false, 'LIVE');
-    else if (hasBaro && stale) setLiveStat('stat-sensors', false, true, 'STALE');
-    else setLiveStat('stat-sensors', false, false, 'OFFLINE');
-  } catch (e) {
-    setLiveStat('stat-sensors', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensor-history/window?hours=6', 8000);
-    const n = (d && Array.isArray(d.readings)) ? d.readings.length : 0;
-    if (n > 0) setLiveStat('stat-history', true, false, n + ' PTS');
-    else setLiveStat('stat-history', false, true, 'EMPTY');
-  } catch (e) {
-    setLiveStat('stat-history', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/ais', 6000);
-    const fleet = (d && d.fleet) || {};
-    const n = Number(fleet.active_vessels || (Array.isArray(fleet.vessels) ? fleet.vessels.length : 0) || 0);
-    const zoneOk = !!(d && d.zone && d.zone.center_lat != null);
-    if (zoneOk || n > 0) setLiveStat('stat-ais', true, false, n + ' VES');
-    else setLiveStat('stat-ais', false, true, 'NO DATA');
-  } catch (e) {
-    setLiveStat('stat-ais', false, false, 'DOWN');
-  }
-
-  const checked = document.getElementById('stat-checked');
-  if (checked) checked.textContent = new Date().toLocaleTimeString();
-
-  if (banner) {
-    if (beauOk && maintenanceBannerVisible) {
+    const res = await fetch('https://beau.beaufort-ai.com/api/beau/health', { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    const healthy = d.status === 'ready';
+    if (healthy && maintenanceBannerVisible) {
       banner.style.display = 'none';
       maintenanceBannerVisible = false;
-    } else if (!beauOk && !maintenanceBannerVisible) {
+    } else if (!healthy && !maintenanceBannerVisible) {
+      banner.style.display = 'block';
+      maintenanceBannerVisible = true;
+    }
+  } catch (e) {
+    // Unreachable entirely (server stopped, network error, timeout) — same
+    // treatment as an unhealthy response.
+    if (!maintenanceBannerVisible) {
       banner.style.display = 'block';
       maintenanceBannerVisible = true;
     }
   }
 }
-
 
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
@@ -1079,11 +1016,6 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
-let piFeedFailCount = 0;
-let piFeedBackoffMs = 5000;
-const PI_FEED_BASE_MS = 5000;
-const PI_FEED_MAX_MS = 15000;
-
 let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
 let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
@@ -1246,7 +1178,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
   // first useful tokens (context build + 70B). Abort was mislabeled as
   // "model loading" even when llama3.3:70b was already hot. Use a long
   // overall budget + idle timeout that resets on each chunk.
-  // Fable5 C1 (2026-08-01): special-case 429 busy with retry_after + no generic throw.
   const controller = new AbortController();
   const OVERALL_MS = 240000; // 4 min hard ceiling
   const IDLE_MS = 120000;    // abort only if no bytes for 2 min after start
@@ -1269,16 +1200,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       signal: controller.signal,
     });
     bumpIdle();
-
-    if (res.status === 429) {
-      const j = await res.json().catch(() => ({}));
-      const wait = (j.retry_after_sec || 15) * 1000;
-      const err = new Error(j.message || 'Beau is busy');
-      err.busy = true;
-      err.retryMs = wait;
-      onError(err);
-      return;
-    }
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
@@ -1307,27 +1228,11 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
           if (!raw || raw === '[DONE]') continue;
           try {
             const parsed = JSON.parse(raw);
-            // Server busy SSE (lock deferred to Ollama path)
-            if (parsed.error === 'busy') {
-              const wait = (parsed.retry_after_sec || 15) * 1000;
-              const err = new Error(parsed.message || 'Beau is busy');
-              err.busy = true;
-              err.retryMs = wait;
-              onError(err);
-              return;
-            }
-            // Skip empty preparing keepalives in UI
-            if (parsed.status === 'preparing' && !parsed.token) continue;
             if (parsed.token) {
               onToken(parsed.token);
             }
             if (parsed.done) {
               finalData = parsed;
-            }
-            if (parsed.error && parsed.error !== 'busy') {
-              const err = new Error(parsed.message || parsed.error);
-              onError(err);
-              return;
             }
           } catch(e) {
             // raw text token fallback
@@ -1340,14 +1245,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     } else {
       // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
-      if (data && data.error === 'busy') {
-        const wait = (data.retry_after_sec || 15) * 1000;
-        const err = new Error(data.message || 'Beau is busy');
-        err.busy = true;
-        err.retryMs = wait;
-        onError(err);
-        return;
-      }
       const prediction = data.prediction || data;
       // Extract text — prefer response field (cached sensor hits), then answer, then description
       const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
@@ -1480,33 +1377,17 @@ async function runSensorAnalysis() {
         cachedAt: Date.now()
       };
     },
-        (err) => {
+    (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      // Fable5 C1 (2026-08-01): busy is not a hard failure - show queue + one auto-retry.
-      if (err && err.busy) {
-        const waitMs = err.retryMs || 15000;
-        const waitSec = Math.round(waitMs / 1000);
-        const msg = `Beau busy — retrying in ${waitSec}s`;
-        if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
-        if (box) box.classList.remove('streaming');
-        setStatus('#f59e0b', `Busy 🏅 retry ${waitSec}s`);
-        addHistory('SENSOR', 'BUSY', msg, null, payload);
-        if (autoEnabled && !window.__beauBusyRetryTimer) {
-          const jitter = waitMs * (0.8 + Math.random() * 0.4);
-          window.__beauBusyRetryTimer = setTimeout(() => {
-            window.__beauBusyRetryTimer = null;
-            if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis();
-          }, jitter);
-        }
-        return;
-      }
       const isTimeout = err.name === 'AbortError' || (err.message||'').includes('524') || (err.message||'').toLowerCase().includes('timeout');
+      // Cap 2026-07-31: do NOT claim model loading — 70B is usually already hot.
+      // Aborts here are almost always slow first-byte / long inference / CF 524.
       const msg = isTimeout
         ? 'Beau timed out waiting for a response (slow inference or proxy cutoff). Try once more — if it keeps failing, the 70B path is overloaded.'
         : `Error: ${err.message}`;
       if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
       if (box) box.classList.remove('streaming');
-      setStatus('#f59e0b', `Timeout · ${elapsed}s`);
+      setStatus('#f59e0b', `Timeout \u00b7 ${elapsed}s`);
       addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
@@ -1886,15 +1767,6 @@ async function fetchPiFeed() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
-    // Fable5 M2 (2026-08-01): reset backoff on success
-    if (typeof piFeedFailCount !== 'undefined' && (piFeedFailCount > 0 || piFeedBackoffMs !== PI_FEED_BASE_MS)) {
-      piFeedFailCount = 0;
-      piFeedBackoffMs = PI_FEED_BASE_MS;
-      if (piFeedEnabled && piFeedInterval) {
-        clearInterval(piFeedInterval);
-        piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-      }
-    }
 
     // Populate sensor fields
     const set = (id, val) => {
@@ -1999,15 +1871,6 @@ async function fetchPiFeed() {
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
-    // Fable5 M2 fail-backoff (2026-08-01)
-    piFeedFailCount = (piFeedFailCount || 0) + 1;
-    const nextMs = Math.min(PI_FEED_MAX_MS || 15000, (PI_FEED_BASE_MS || 5000) * Math.pow(2, Math.min(piFeedFailCount - 1, 2)));
-    if (nextMs !== piFeedBackoffMs && piFeedEnabled) {
-      piFeedBackoffMs = nextMs;
-      if (piFeedInterval) clearInterval(piFeedInterval);
-      piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-    }
-
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
   }
@@ -2798,7 +2661,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 5000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -2838,7 +2701,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (piFeedToggleEl && piFeedToggleEl.checked) {
     piFeedEnabled = true;
     fetchPiFeed();
-    piFeedInterval = setInterval(fetchPiFeed, 5000);
+    piFeedInterval = setInterval(fetchPiFeed, 2000);
   }
 
   // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
@@ -2879,7 +2742,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
-  setInterval(() => { if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
   // Run once on load after a short delay
   setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
@@ -2938,79 +2801,11 @@ async function fetchForecast() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.status === 'success') {
-      renderForecast(data);
-      renderTideMoon(data);
-    }
+    if (data.status === 'success') renderForecast(data);
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
     document.getElementById('forecast-meta').textContent = 'Forecast offline';
-  }
-}
-
-// ── Tide + moon phase (added 2026-08-05, Cap request) ──────────────────────
-// Rides the same /api/beau/forecast payload as the wind/wave forecast strip
-// (backend now includes "tide" + "moon" fields, see beau_server.py get_tide_data()
-// / get_moon_phase()) — one fetch, no separate network round-trip needed.
-const MOON_EMOJI = {
-  'New Moon': '\u{1F311}', 'Waxing Crescent': '\u{1F312}', 'First Quarter': '\u{1F313}',
-  'Waxing Gibbous': '\u{1F314}', 'Full Moon': '\u{1F315}', 'Waning Gibbous': '\u{1F316}',
-  'Last Quarter': '\u{1F317}', 'Waning Crescent': '\u{1F318}'
-};
-
-function renderTideMoon(data) {
-  const container = document.getElementById('tide-moon-container');
-  const metaEl = document.getElementById('tide-moon-meta');
-  if (!container) return;
-
-  const tide = data.tide;
-  const moon = data.moon;
-
-  let html = '';
-
-  // Moon phase card
-  if (moon) {
-    const emoji = MOON_EMOJI[moon.phase_name] || '\u{1F311}';
-    html += `
-      <div class="forecast-card" style="min-width:140px">
-        <div class="fc-time">MOON PHASE</div>
-        <div class="fc-wind" style="font-size:28px">${emoji}</div>
-        <div class="fc-dir">${moon.phase_name}</div>
-        <div class="fc-press">${moon.illumination_pct}% illum.</div>
-      </div>`;
-  }
-
-  // Tide station + forecast card
-  if (tide && tide.forecast && tide.forecast.extremes && tide.forecast.extremes.length) {
-    const extremes = tide.forecast.extremes.slice(0, 6); // next few highs/lows
-    const stationName = tide.forecast.station_name || (tide.stations[0] && tide.stations[0].name) || 'Nearest station';
-    html += `<div class="forecast-card" style="min-width:260px;align-items:flex-start;text-align:left">
-        <div class="fc-time">TIDE — ${stationName}</div>`;
-    extremes.forEach(ex => {
-      const t = new Date(ex.dt * 1000).toLocaleString('en-US', {weekday:'short', hour:'2-digit', minute:'2-digit'});
-      const typeLabel = (ex.type || '').toUpperCase();
-      const color = typeLabel === 'HIGH' ? '#38bdf8' : '#f59e0b';
-      html += `<div style="font-size:12px;color:${color};padding:2px 0">${typeLabel} ${ex.height.toFixed(2)}m — ${t}</div>`;
-    });
-    html += `</div>`;
-
-    // Nearby stations list (closest 5)
-    if (tide.stations && tide.stations.length) {
-      html += `<div class="forecast-card" style="min-width:220px;align-items:flex-start;text-align:left">
-        <div class="fc-time">NEAREST STATIONS</div>`;
-      tide.stations.forEach(st => {
-        html += `<div style="font-size:11px;color:var(--muted);padding:1px 0">${st.name} — ${st.distance_km}km</div>`;
-      });
-      html += `</div>`;
-    }
-  } else if (!tide) {
-    html += '<div class="forecast-loading" style="color:var(--amber)">Tide data unavailable</div>';
-  }
-
-  container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
-  if (metaEl) {
-    metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
   }
 }
 

@@ -1,0 +1,11 @@
+# Fable5 H1/H2 (2026-08-01): do not ship source-history or tooling to Pages
+*.bak
+*.bak_*
+dashboard.html.bak_*
+_*.py
+DEPLOY_WHEN_TOKEN.sh
+*.md
+.wrangler/
+src/
+.git/
+.github/

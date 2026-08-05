@@ -326,31 +326,6 @@
     .weather-map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:6px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--muted)}
     .weather-map-legend .front-swatch{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle}
     .ais-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
-.ais-infer-banner{display:none;margin:0;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;line-height:1.35}
-.ais-infer-banner.show{display:block}
-.ais-infer-banner.info{background:rgba(59,130,246,.08);color:#93c5fd;border-bottom-color:rgba(59,130,246,.25)}
-.ais-infer-banner.watch{background:rgba(245,158,11,.10);color:#fbbf24;border-bottom-color:rgba(245,158,11,.28)}
-.ais-infer-banner.warning{background:rgba(239,68,68,.10);color:#fca5a5;border-bottom-color:rgba(239,68,68,.30)}
-.ais-infer-banner .ais-infer-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:4px}
-.ais-infer-banner .ais-infer-line{color:inherit}
-.ais-infer-banner .ais-infer-meta{margin-top:4px;font-size:10px;opacity:.8}
-.beau-alert-pill{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:rgba(148,163,184,.08)}
-.beau-alert-pill.clear{color:#86efac;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
-.beau-alert-pill.watch{color:#fbbf24;border-color:rgba(245,158,11,.40);background:rgba(245,158,11,.12)}
-.beau-alert-pill.warning,.beau-alert-pill.caution{color:#fdba74;border-color:rgba(249,115,22,.45);background:rgba(249,115,22,.12)}
-.beau-alert-pill.alert,.beau-alert-pill.alarm{color:#fca5a5;border-color:rgba(239,68,68,.50);background:rgba(239,68,68,.14)}
-.ais-cpa-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--muted)}
-.ais-cpa-bar label{display:flex;align-items:center;gap:6px}
-.ais-cpa-bar input[type=number]{width:70px;background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
-.ais-cpa-bar select{background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
-.ais-cpa-bar button{background:none;border:1px solid var(--border);border-radius:6px;color:var(--blue);padding:3px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer}
-.ais-cpa-bar button:hover{border-color:var(--blue)}
-.ais-cpa-meta{opacity:.85}
-.ais-vessel-row.cpa-watch{background:rgba(245,158,11,.08)}
-.ais-vessel-row.cpa-warning{background:rgba(249,115,22,.10)}
-.ais-vessel-row.cpa-alarm{background:rgba(239,68,68,.12)}
-.dash-tab-btn .tab-badge.alert{background:rgba(239,68,68,.20);color:#fca5a5}
-.dash-tab-btn .tab-badge.watch{background:rgba(245,158,11,.18);color:#fbbf24}
     .ais-vessel-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) var(--border);border-top:1px solid var(--border)}
     .ais-vessel-list::-webkit-scrollbar{width:4px}.ais-vessel-list::-webkit-scrollbar-track{background:var(--border)}.ais-vessel-list::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
     .ais-vessel-row{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border2);font-family:var(--font-mono);font-size:11px}
@@ -440,9 +415,7 @@
       <p class="dash-subtitle">Vessel Sensor Integration &middot; AI Maritime Analysis &middot; Real-Time &middot; Dual Mode</p>
     </div>
     <div class="dash-status">
-      <div class="status-row">
-          <span class="beau-alert-pill clear" id="beau-alert-pill" title="Beau alert status">BEAU: CLEAR</span>
-<span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
+      <div class="status-row"><span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
       <div class="last-updated" id="last-updated">&mdash;</div>
     </div>
   </div>
@@ -453,16 +426,13 @@
 
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
-      <div class="sys-row"><span class="sys-label">SENSORS</span><span class="sys-value" id="stat-sensors">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">HISTORY</span><span class="sys-value" id="stat-history">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">BEAU</span><span class="sys-value" id="stat-beau">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">AIS</span><span class="sys-value" id="stat-ais">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">ALERT STATUS</span><span class="sys-value green-text" id="alert-status">NOMINAL</span></div>
       <div class="sys-row"><span class="sys-label">TOTAL QUERIES</span><span class="sys-value" id="query-count">0</span></div>
-      <div class="sys-row"><span class="sys-label">STATUS CHECK</span><span class="sys-value" id="stat-checked" style="font-size:10px">&mdash;</span></div>
     </div>
 
     <div class="auto-toggle-row">
@@ -621,17 +591,6 @@
       </div>
     </div>
 
-    <!-- TIDE + MOON PHASE (added 2026-08-05, Cap request) -->
-    <div class="forecast-strip" id="tide-moon-strip">
-      <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; TIDE &amp; MOON PHASE</span>
-        <span class="forecast-strip-meta" id="tide-moon-meta">Loading...</span>
-      </div>
-      <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
-        <div class="forecast-loading">Fetching tide/moon data...</div>
-      </div>
-    </div>
-
     </div>
     <!-- /TAB: CONDITIONS -->
 
@@ -689,27 +648,6 @@
         <button class="ais-radar-toggle active" id="ais-follow-toggle" onclick="aisToggleFollow()" title="Auto-recenter map on vessel position while underway. Pauses automatically if you pan/zoom manually -- click to resume.">&#x1F4CD; Follow: ON</button>
         <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
       </div>
-      <div class="ais-infer-banner" id="ais-infer-banner">
-        <div class="ais-infer-title">Fleet Behavioral Inference (P-2406)</div>
-        <div class="ais-infer-line" id="ais-infer-line">Waiting for fleet signal...</div>
-        <div class="ais-infer-meta" id="ais-infer-meta"></div>
-      </div>
-      <div class="ais-cpa-bar" id="ais-cpa-bar">
-        <label>Safe CPA (nm)
-          <input type="number" id="ais-safe-cpa" min="0.05" max="5" step="0.05" value="1.0" title="Preferred Safe CPA. PORT relaxes it; DP/UNDERWAY use full value.">
-        </label>
-        <label>Mode
-          <select id="ais-cpa-mode" title="AUTO chooses Underway/DP/Port. Manual override anytime.">
-            <option value="auto">AUTO</option>
-            <option value="underway">UNDERWAY</option>
-            <option value="dp">DP</option>
-            <option value="port">PORT</option>
-          </select>
-        </label>
-        <button type="button" id="ais-cpa-save" onclick="aisSaveCpaSettings()">Save</button>
-        <span class="ais-cpa-meta" id="ais-cpa-meta">CPA engine loading...</span>
-      </div>
-
       <div id="ais-map"></div>
       <div class="ais-footer">
         <span class="ais-zone-label" id="ais-zone-label">Drag circle to reposition &bull; drag edge handle to resize &bull; watching vessels inside the zone</span>
@@ -985,79 +923,30 @@
 // independently of the sensor/forecast/AIS polling loops so it works even
 // if those are erroring out.
 let maintenanceBannerVisible = false;
-function setLiveStat(id, ok, warn, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'sys-value ' + (ok ? 'green-text' : (warn ? 'amber-text' : 'red-text'));
-  el.innerHTML = '● ' + text;
-}
-
-async function probeJson(url, timeoutMs) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-// Cap harden 2026-07-31: real multi-service status strip (no more fake ACTIVE)
 async function checkLiveSystemsStatus() {
   const banner = document.getElementById('maintenance-banner');
-  let beauOk = false;
-
+  if (!banner) return;
   try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/beau/health', 6000);
-    beauOk = d && d.status === 'ready';
-    if (beauOk) setLiveStat('stat-beau', true, false, 'READY');
-    else setLiveStat('stat-beau', false, true, (d && d.status) ? String(d.status).toUpperCase() : 'DEGRADED');
-  } catch (e) {
-    setLiveStat('stat-beau', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensors', 6000);
-    const age = Number(d && d.data_age_sec);
-    const stale = !!(d && (d.stale || (Number.isFinite(age) && age > 60)));
-    const hasBaro = !!(d && d.barometer && d.barometer.pressure_mb != null);
-    if (hasBaro && !stale) setLiveStat('stat-sensors', true, false, 'LIVE');
-    else if (hasBaro && stale) setLiveStat('stat-sensors', false, true, 'STALE');
-    else setLiveStat('stat-sensors', false, false, 'OFFLINE');
-  } catch (e) {
-    setLiveStat('stat-sensors', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensor-history/window?hours=6', 8000);
-    const n = (d && Array.isArray(d.readings)) ? d.readings.length : 0;
-    if (n > 0) setLiveStat('stat-history', true, false, n + ' PTS');
-    else setLiveStat('stat-history', false, true, 'EMPTY');
-  } catch (e) {
-    setLiveStat('stat-history', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/ais', 6000);
-    const fleet = (d && d.fleet) || {};
-    const n = Number(fleet.active_vessels || (Array.isArray(fleet.vessels) ? fleet.vessels.length : 0) || 0);
-    const zoneOk = !!(d && d.zone && d.zone.center_lat != null);
-    if (zoneOk || n > 0) setLiveStat('stat-ais', true, false, n + ' VES');
-    else setLiveStat('stat-ais', false, true, 'NO DATA');
-  } catch (e) {
-    setLiveStat('stat-ais', false, false, 'DOWN');
-  }
-
-  const checked = document.getElementById('stat-checked');
-  if (checked) checked.textContent = new Date().toLocaleTimeString();
-
-  if (banner) {
-    if (beauOk && maintenanceBannerVisible) {
+    const res = await fetch('https://beau.beaufort-ai.com/api/beau/health', { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    const healthy = d.status === 'ready';
+    if (healthy && maintenanceBannerVisible) {
       banner.style.display = 'none';
       maintenanceBannerVisible = false;
-    } else if (!beauOk && !maintenanceBannerVisible) {
+    } else if (!healthy && !maintenanceBannerVisible) {
+      banner.style.display = 'block';
+      maintenanceBannerVisible = true;
+    }
+  } catch (e) {
+    // Unreachable entirely (server stopped, network error, timeout) — same
+    // treatment as an unhealthy response.
+    if (!maintenanceBannerVisible) {
       banner.style.display = 'block';
       maintenanceBannerVisible = true;
     }
   }
 }
-
 
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
@@ -1079,11 +968,6 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
-let piFeedFailCount = 0;
-let piFeedBackoffMs = 5000;
-const PI_FEED_BASE_MS = 5000;
-const PI_FEED_MAX_MS = 15000;
-
 let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
 let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
@@ -1091,7 +975,7 @@ let piFeedInterval = null;
 // ANALYSIS CACHE — only re-run Beau when conditions change meaningfully
 let lastAnalysisResult = null; // {text, alertLevel, wind_speed, pressure, cachedAt}
 const ANALYSIS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — force refresh
-const WIND_CHANGE_THRESHOLD = 5;   // kts (raised 3->5 2026-07-31: ultrasonic noise was thrashing auto-analysis)
+const WIND_CHANGE_THRESHOLD = 3;   // kts
 const PRESSURE_CHANGE_THRESHOLD = 1; // mb
 
 function shouldReanalyze(payload) {
@@ -1242,21 +1126,8 @@ function renderSensorGrid(p) {
 // ── STREAMING FETCH HELPER ───────────────────────────────────
 // Returns tokens via onToken(str) callback; calls onDone(finalData) when complete
 async function streamBeauRequest(body, onToken, onDone, onError) {
-  // Cap 2026-07-31: 90s was too short. Live STREAM Q often 70-100s+ before
-  // first useful tokens (context build + 70B). Abort was mislabeled as
-  // "model loading" even when llama3.3:70b was already hot. Use a long
-  // overall budget + idle timeout that resets on each chunk.
-  // Fable5 C1 (2026-08-01): special-case 429 busy with retry_after + no generic throw.
   const controller = new AbortController();
-  const OVERALL_MS = 240000; // 4 min hard ceiling
-  const IDLE_MS = 120000;    // abort only if no bytes for 2 min after start
-  let idleTimer = null;
-  const overallTimer = setTimeout(() => controller.abort(), OVERALL_MS);
-  const bumpIdle = () => {
-    if (idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => controller.abort(), IDLE_MS);
-  };
-  bumpIdle();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s client timeout
   try {
     const res = await fetch(BEAU_API_URL, {
       method: 'POST',
@@ -1268,17 +1139,7 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       body: JSON.stringify(body),
       signal: controller.signal,
     });
-    bumpIdle();
-
-    if (res.status === 429) {
-      const j = await res.json().catch(() => ({}));
-      const wait = (j.retry_after_sec || 15) * 1000;
-      const err = new Error(j.message || 'Beau is busy');
-      err.busy = true;
-      err.retryMs = wait;
-      onError(err);
-      return;
-    }
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
@@ -1297,7 +1158,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       while (true) {
         const {done, value} = await reader.read();
         if (done) break;
-        bumpIdle();
         buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split('\n');
         buffer = lines.pop(); // keep incomplete last line
@@ -1307,27 +1167,11 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
           if (!raw || raw === '[DONE]') continue;
           try {
             const parsed = JSON.parse(raw);
-            // Server busy SSE (lock deferred to Ollama path)
-            if (parsed.error === 'busy') {
-              const wait = (parsed.retry_after_sec || 15) * 1000;
-              const err = new Error(parsed.message || 'Beau is busy');
-              err.busy = true;
-              err.retryMs = wait;
-              onError(err);
-              return;
-            }
-            // Skip empty preparing keepalives in UI
-            if (parsed.status === 'preparing' && !parsed.token) continue;
             if (parsed.token) {
               onToken(parsed.token);
             }
             if (parsed.done) {
               finalData = parsed;
-            }
-            if (parsed.error && parsed.error !== 'busy') {
-              const err = new Error(parsed.message || parsed.error);
-              onError(err);
-              return;
             }
           } catch(e) {
             // raw text token fallback
@@ -1340,14 +1184,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     } else {
       // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
-      if (data && data.error === 'busy') {
-        const wait = (data.retry_after_sec || 15) * 1000;
-        const err = new Error(data.message || 'Beau is busy');
-        err.busy = true;
-        err.retryMs = wait;
-        onError(err);
-        return;
-      }
       const prediction = data.prediction || data;
       // Extract text — prefer response field (cached sensor hits), then answer, then description
       const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
@@ -1363,17 +1199,12 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     }
   } catch(err) {
     onError(err);
-  } finally {
-    if (idleTimer) clearTimeout(idleTimer);
-    clearTimeout(overallTimer);
   }
 }
 
 // ── MODE 1: SENSOR ANALYSIS ──────────────────────────────────
 async function runSensorAnalysis() {
   if (sensorRequestInFlight) return;
-  // Cap 2026-07-31: don't steal the 70B while Cap is mid Q&A
-  if (qaRequestInFlight) return;
 
   const payload = buildPayload();
   lastPayload = payload;
@@ -1480,33 +1311,15 @@ async function runSensorAnalysis() {
         cachedAt: Date.now()
       };
     },
-        (err) => {
+    (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      // Fable5 C1 (2026-08-01): busy is not a hard failure - show queue + one auto-retry.
-      if (err && err.busy) {
-        const waitMs = err.retryMs || 15000;
-        const waitSec = Math.round(waitMs / 1000);
-        const msg = `Beau busy — retrying in ${waitSec}s`;
-        if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
-        if (box) box.classList.remove('streaming');
-        setStatus('#f59e0b', `Busy 🏅 retry ${waitSec}s`);
-        addHistory('SENSOR', 'BUSY', msg, null, payload);
-        if (autoEnabled && !window.__beauBusyRetryTimer) {
-          const jitter = waitMs * (0.8 + Math.random() * 0.4);
-          window.__beauBusyRetryTimer = setTimeout(() => {
-            window.__beauBusyRetryTimer = null;
-            if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis();
-          }, jitter);
-        }
-        return;
-      }
-      const isTimeout = err.name === 'AbortError' || (err.message||'').includes('524') || (err.message||'').toLowerCase().includes('timeout');
+      const isTimeout = err.name === 'AbortError' || err.message.includes('524') || err.message.includes('timeout');
       const msg = isTimeout
-        ? 'Beau timed out waiting for a response (slow inference or proxy cutoff). Try once more — if it keeps failing, the 70B path is overloaded.'
+        ? 'Beau is waking up — model loading. Try again in 30 seconds.'
         : `Error: ${err.message}`;
       if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
       if (box) box.classList.remove('streaming');
-      setStatus('#f59e0b', `Timeout · ${elapsed}s`);
+      setStatus('#f59e0b', `Timeout \u00b7 ${elapsed}s`);
       addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
@@ -1886,15 +1699,6 @@ async function fetchPiFeed() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
-    // Fable5 M2 (2026-08-01): reset backoff on success
-    if (typeof piFeedFailCount !== 'undefined' && (piFeedFailCount > 0 || piFeedBackoffMs !== PI_FEED_BASE_MS)) {
-      piFeedFailCount = 0;
-      piFeedBackoffMs = PI_FEED_BASE_MS;
-      if (piFeedEnabled && piFeedInterval) {
-        clearInterval(piFeedInterval);
-        piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-      }
-    }
 
     // Populate sensor fields
     const set = (id, val) => {
@@ -1999,15 +1803,6 @@ async function fetchPiFeed() {
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
-    // Fable5 M2 fail-backoff (2026-08-01)
-    piFeedFailCount = (piFeedFailCount || 0) + 1;
-    const nextMs = Math.min(PI_FEED_MAX_MS || 15000, (PI_FEED_BASE_MS || 5000) * Math.pow(2, Math.min(piFeedFailCount - 1, 2)));
-    if (nextMs !== piFeedBackoffMs && piFeedEnabled) {
-      piFeedBackoffMs = nextMs;
-      if (piFeedInterval) clearInterval(piFeedInterval);
-      piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-    }
-
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
   }
@@ -2798,7 +2593,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 5000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -2838,7 +2633,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (piFeedToggleEl && piFeedToggleEl.checked) {
     piFeedEnabled = true;
     fetchPiFeed();
-    piFeedInterval = setInterval(fetchPiFeed, 5000);
+    piFeedInterval = setInterval(fetchPiFeed, 2000);
   }
 
   // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
@@ -2879,7 +2674,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
-  setInterval(() => { if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
   // Run once on load after a short delay
   setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
@@ -2938,79 +2733,11 @@ async function fetchForecast() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.status === 'success') {
-      renderForecast(data);
-      renderTideMoon(data);
-    }
+    if (data.status === 'success') renderForecast(data);
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
     document.getElementById('forecast-meta').textContent = 'Forecast offline';
-  }
-}
-
-// ── Tide + moon phase (added 2026-08-05, Cap request) ──────────────────────
-// Rides the same /api/beau/forecast payload as the wind/wave forecast strip
-// (backend now includes "tide" + "moon" fields, see beau_server.py get_tide_data()
-// / get_moon_phase()) — one fetch, no separate network round-trip needed.
-const MOON_EMOJI = {
-  'New Moon': '\u{1F311}', 'Waxing Crescent': '\u{1F312}', 'First Quarter': '\u{1F313}',
-  'Waxing Gibbous': '\u{1F314}', 'Full Moon': '\u{1F315}', 'Waning Gibbous': '\u{1F316}',
-  'Last Quarter': '\u{1F317}', 'Waning Crescent': '\u{1F318}'
-};
-
-function renderTideMoon(data) {
-  const container = document.getElementById('tide-moon-container');
-  const metaEl = document.getElementById('tide-moon-meta');
-  if (!container) return;
-
-  const tide = data.tide;
-  const moon = data.moon;
-
-  let html = '';
-
-  // Moon phase card
-  if (moon) {
-    const emoji = MOON_EMOJI[moon.phase_name] || '\u{1F311}';
-    html += `
-      <div class="forecast-card" style="min-width:140px">
-        <div class="fc-time">MOON PHASE</div>
-        <div class="fc-wind" style="font-size:28px">${emoji}</div>
-        <div class="fc-dir">${moon.phase_name}</div>
-        <div class="fc-press">${moon.illumination_pct}% illum.</div>
-      </div>`;
-  }
-
-  // Tide station + forecast card
-  if (tide && tide.forecast && tide.forecast.extremes && tide.forecast.extremes.length) {
-    const extremes = tide.forecast.extremes.slice(0, 6); // next few highs/lows
-    const stationName = tide.forecast.station_name || (tide.stations[0] && tide.stations[0].name) || 'Nearest station';
-    html += `<div class="forecast-card" style="min-width:260px;align-items:flex-start;text-align:left">
-        <div class="fc-time">TIDE — ${stationName}</div>`;
-    extremes.forEach(ex => {
-      const t = new Date(ex.dt * 1000).toLocaleString('en-US', {weekday:'short', hour:'2-digit', minute:'2-digit'});
-      const typeLabel = (ex.type || '').toUpperCase();
-      const color = typeLabel === 'HIGH' ? '#38bdf8' : '#f59e0b';
-      html += `<div style="font-size:12px;color:${color};padding:2px 0">${typeLabel} ${ex.height.toFixed(2)}m — ${t}</div>`;
-    });
-    html += `</div>`;
-
-    // Nearby stations list (closest 5)
-    if (tide.stations && tide.stations.length) {
-      html += `<div class="forecast-card" style="min-width:220px;align-items:flex-start;text-align:left">
-        <div class="fc-time">NEAREST STATIONS</div>`;
-      tide.stations.forEach(st => {
-        html += `<div style="font-size:11px;color:var(--muted);padding:1px 0">${st.name} — ${st.distance_km}km</div>`;
-      });
-      html += `</div>`;
-    }
-  } else if (!tide) {
-    html += '<div class="forecast-loading" style="color:var(--amber)">Tide data unavailable</div>';
-  }
-
-  container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
-  if (metaEl) {
-    metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
   }
 }
 
@@ -3551,16 +3278,6 @@ aisMap.on('moveend zoomend', () => {
 // Backward-compat alias so the existing invalidateSize()/redraw() call
 // sites (tab-switch handler, zone-load handler) keep working unchanged.
 const noaaChartLayer = { redraw: noaaChartRedraw };
-
-// Cap 2026-07-31: NOAA MCS charts are US-only. In Campos Basin the export
-// returns a fully transparent PNG, so the AIS map looked blank/"not loading".
-// Put a global basemap underneath; keep NOAA chart as an overlay when present.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 19,
-    opacity: 1.0
-}).addTo(aisMap);
-
 noaaChartRedraw();
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
@@ -4159,162 +3876,6 @@ function aisUpdateZone(zone) {
     }
 }
 
-function aisUpdateInference(inf) {
-    const banner = document.getElementById('ais-infer-banner');
-    const line = document.getElementById('ais-infer-line');
-    const meta = document.getElementById('ais-infer-meta');
-    if (!banner || !line || !meta) return;
-    if (!inf) {
-        banner.className = 'ais-infer-banner';
-        line.textContent = 'Inference unavailable';
-        meta.textContent = '';
-        return;
-    }
-    const summary = inf.summary || {};
-    const feat = inf.fleet_features || {};
-    const signals = inf.signals || [];
-    const top = signals[0] || null;
-    const sevRaw = (summary.top_severity || (top && top.severity) || 'INFO').toLowerCase();
-    const sev = ['info','watch','warning','alarm'].includes(sevRaw) ? sevRaw : 'info';
-    const one = summary.one_liner || (top && top.message) || 'No fleet behavioral signal yet.';
-    banner.className = 'ais-infer-banner show ' + sev;
-    line.textContent = one;
-    const bits = [];
-    if (feat.vessels_in_zone != null) bits.push(feat.vessels_in_zone + ' in zone');
-    if (feat.mean_sog_kts != null) bits.push('mean SOG ' + Number(feat.mean_sog_kts).toFixed(1) + ' kt');
-    if (feat.local_wind_kts != null) bits.push('local wind ' + Number(feat.local_wind_kts).toFixed(1) + ' kt' + (feat.local_wind_deg != null ? (' @ ' + Math.round(feat.local_wind_deg) + '°') : ''));
-    if (top && top.proxy_wind_from_deg != null) bits.push('proxy FROM ' + Math.round(top.proxy_wind_from_deg) + '°');
-    if (top && top.local_agreement) bits.push('vs local: ' + top.local_agreement);
-    if (top && top.claim_ref) bits.push(top.claim_ref);
-    meta.textContent = bits.join(' · ');
-    if (typeof aisUpdateCpaUi === 'function') aisUpdateCpaUi(inf);
-}
-
-// --- CPA + Beau alert indicator (2026-07-30) ---
-const AIS_CPA_SETTINGS_URL = (typeof AIS_API_URL === 'string')
-  ? AIS_API_URL.replace(/\/api\/ais\/?$/, '/api/ais_cpa_settings')
-  : 'https://beau.beaufort-ai.com/api/ais_cpa_settings';
-let aisCpaSettingsLoaded = false;
-let aisLastAlertKey = null;
-
-function beauSetAlertPill(level, text) {
-  const el = document.getElementById('beau-alert-pill');
-  if (!el) return;
-  const lvl = (level || 'clear').toLowerCase();
-  const cls = ['clear','watch','warning','caution','alert','alarm'].includes(lvl) ? lvl : 'clear';
-  el.className = 'beau-alert-pill ' + cls;
-  el.textContent = text || ('BEAU: ' + cls.toUpperCase());
-}
-
-function aisSetTabBadge(count, severity) {
-  const el = document.getElementById('tab-badge-ais');
-  if (!el) return;
-  const n = count || 0;
-  el.textContent = n > 9 ? '9+' : String(n);
-  el.classList.toggle('show', n > 0);
-  el.classList.remove('watch','alert');
-  const sev = (severity || '').toLowerCase();
-  if (n > 0) {
-    if (sev === 'alarm' || sev === 'warning' || sev === 'alert') el.classList.add('alert');
-    else el.classList.add('watch');
-  }
-}
-
-function aisMaybeToastClosePass(sig) {
-  if (!sig || !sig.message) return;
-  const key = [sig.type, sig.mmsi || '', sig.severity || '', sig.tcpa_min || '', sig.cpa_nm || ''].join('|');
-  if (key === aisLastAlertKey) return;
-  aisLastAlertKey = key;
-  if (typeof fleetShowToast === 'function') {
-    const sev = (sig.severity || 'WATCH').toLowerCase();
-    fleetShowToast({
-      severity: sev === 'alarm' ? 'critical' : sev === 'warning' ? 'warning' : 'info',
-      title: 'AIS Close-Pass',
-      body: sig.message,
-    });
-  }
-}
-
-function aisUpdateCpaUi(inf) {
-  const cpa = (inf && inf.cpa) || {};
-  const meta = document.getElementById('ais-cpa-meta');
-  const safeInput = document.getElementById('ais-safe-cpa');
-  const modeSel = document.getElementById('ais-cpa-mode');
-  if (safeInput && cpa.safe_cpa_nm != null && !safeInput.matches(':focus')) safeInput.value = Number(cpa.safe_cpa_nm).toFixed(2);
-  if (modeSel && cpa.settings && cpa.settings.mode && !modeSel.matches(':focus')) modeSel.value = cpa.settings.mode;
-  if (meta) {
-    const bits = [];
-    bits.push('mode ' + String(cpa.mode || '--').toUpperCase());
-    if (cpa.safe_cpa_nm != null) bits.push('safe ' + Number(cpa.safe_cpa_nm).toFixed(2) + 'nm');
-    if (cpa.effective_safe_cpa_nm != null) bits.push('eff ' + Number(cpa.effective_safe_cpa_nm).toFixed(2) + 'nm');
-    if (cpa.own_sog_kts != null) bits.push('own ' + Number(cpa.own_sog_kts).toFixed(1) + 'kt');
-    if (cpa.alert_count != null) bits.push(cpa.alert_count + ' CPA alert' + (cpa.alert_count === 1 ? '' : 's'));
-    if (cpa.mode === 'port') bits.push('port quieting ON');
-    meta.textContent = bits.join(' · ');
-  }
-  const contacts = cpa.contacts || [];
-  const byMmsi = {};
-  contacts.forEach(c => { if (c && c.mmsi != null) byMmsi[String(c.mmsi)] = c; });
-  document.querySelectorAll('.ais-vessel-row[data-mmsi]').forEach(row => {
-    row.classList.remove('cpa-watch','cpa-warning','cpa-alarm');
-    const c = byMmsi[row.getAttribute('data-mmsi')];
-    if (!c || !c.severity) return;
-    const sev = String(c.severity).toLowerCase();
-    if (sev === 'alarm') row.classList.add('cpa-alarm');
-    else if (sev === 'warning') row.classList.add('cpa-warning');
-    else if (sev === 'watch') row.classList.add('cpa-watch');
-  });
-  const signals = (inf && inf.signals) || [];
-  const close = signals.filter(s => s && s.type === 'close_pass');
-  const topClose = close[0] || null;
-  const topSev = (inf && inf.summary && inf.summary.top_severity) || (topClose && topClose.severity) || null;
-  aisSetTabBadge(close.length || ((inf && inf.summary && inf.summary.cpa_alert_count) || 0), topSev);
-  if (topClose) {
-    aisMaybeToastClosePass(topClose);
-    const lvl = String(topClose.severity || 'watch').toLowerCase();
-    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + (topClose.severity || 'WATCH') + ' · CPA');
-  } else if (topSev && String(topSev).toUpperCase() !== 'INFO') {
-    const lvl = String(topSev).toLowerCase();
-    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + String(topSev).toUpperCase());
-  } else {
-    beauSetAlertPill('clear', 'BEAU: CLEAR');
-  }
-}
-
-async function aisLoadCpaSettings() {
-  try {
-    const res = await fetch(AIS_CPA_SETTINGS_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const s = await res.json();
-    const safeInput = document.getElementById('ais-safe-cpa');
-    const modeSel = document.getElementById('ais-cpa-mode');
-    if (safeInput && s.safe_cpa_nm != null) safeInput.value = Number(s.safe_cpa_nm).toFixed(2);
-    if (modeSel && s.mode) modeSel.value = s.mode;
-    aisCpaSettingsLoaded = true;
-    const meta = document.getElementById('ais-cpa-meta');
-    if (meta) meta.textContent = 'saved safe ' + Number(s.safe_cpa_nm || 1).toFixed(2) + 'nm · mode ' + String(s.mode || 'auto').toUpperCase() + (s.effective_mode ? (' · now ' + String(s.effective_mode).toUpperCase()) : '');
-  } catch (e) {
-    const meta = document.getElementById('ais-cpa-meta');
-    if (meta) meta.textContent = 'CPA settings unavailable';
-  }
-}
-
-async function aisSaveCpaSettings() {
-  const safeInput = document.getElementById('ais-safe-cpa');
-  const modeSel = document.getElementById('ais-cpa-mode');
-  const meta = document.getElementById('ais-cpa-meta');
-  const body = { safe_cpa_nm: safeInput ? Number(safeInput.value) : 1.0, mode: modeSel ? modeSel.value : 'auto' };
-  try {
-    const res = await fetch(AIS_CPA_SETTINGS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const s = await res.json();
-    if (meta) meta.textContent = 'saved · safe ' + Number(s.safe_cpa_nm || body.safe_cpa_nm).toFixed(2) + 'nm · mode ' + String(s.mode || body.mode).toUpperCase();
-    if (typeof aisPoll === 'function') aisPoll();
-  } catch (e) {
-    if (meta) meta.textContent = 'save failed';
-  }
-}
-
 async function aisPoll() {
     try {
         const res = await fetch(AIS_API_URL, { cache: 'no-store' });
@@ -4322,17 +3883,12 @@ async function aisPoll() {
         const data = await res.json();
         aisUpdateChart(data);
         aisUpdateZone(data.zone);
-        aisUpdateInference(data.inference);
-        if (!aisCpaSettingsLoaded) aisLoadCpaSettings();
     } catch (e) {
         document.getElementById('ais-status').textContent = 'AIS feed unavailable';
-        aisUpdateInference(null);
-        beauSetAlertPill('clear', 'BEAU: OFFLINE');
     }
 }
 setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
 </script>
-  <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
 </body>
 </html>

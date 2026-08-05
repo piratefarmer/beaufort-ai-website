@@ -1,4 +1,11 @@
 /dashboard.html /dashboard.html 200
 /weather.html /weather.html 200
 /storm-nov2022.html /storm-nov2022.html 200
+# Fable5 H1 (2026-08-01): block source-history backups (explicit paths; SPA catch-all must not win)
+/dashboard.html.bak_pre_ais_basemap_20260731_195105 /404 404
+/dashboard.html.bak_pre_ais_infer_ui_20260730_1643 /404 404
+/dashboard.html.bak_pre_cpa_ui_20260730_1818 /404 404
+/dashboard.html.bak_pre_dp_ui_20260730_1842 /404 404
+/dashboard.html.bak_pre_status_strip_20260731_210713 /404 404
+/dashboard.html.bak_pre_timeout_fix_20260731_191331 /404 404
 /* /index.html 200
