@@ -630,6 +630,9 @@
       <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
         <div class="forecast-loading">Fetching tide/moon data...</div>
       </div>
+      <div style="padding:0 16px 12px">
+        <canvas class="sparkline-canvas" id="tide-curve-canvas" style="width:100%;height:110px"></canvas>
+      </div>
     </div>
 
     </div>
@@ -3011,6 +3014,128 @@ function renderTideMoon(data) {
   container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
   if (metaEl) {
     metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
+  }
+
+  // Tide height curve (added 2026-08-05, Cap request) — draws the raw
+  // 30-min-interval height samples WorldTides already returns alongside
+  // extremes, so no extra API call. Same canvas-drawing approach as the
+  // sensor-history sparkline (time-proportional x-axis, gap-aware).
+  if (tide && tide.forecast && tide.forecast.heights && tide.forecast.heights.length > 1) {
+    drawTideCurve(tide.forecast.heights, tide.forecast.extremes || []);
+  }
+}
+
+function drawTideCurve(heights, extremes) {
+  const canvas = document.getElementById('tide-curve-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth  || 400;
+  canvas.height = canvas.offsetHeight || 110;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+
+  const marginLeft = 34, marginRight = 10, marginTop = 8, marginBottom = 16;
+  const plotW = W - marginLeft - marginRight;
+  const plotH = H - marginTop - marginBottom;
+  const plotX = marginLeft, plotY = marginTop;
+
+  const heightVals = heights.map(h => h.height);
+  const tMs = heights.map(h => h.dt * 1000);
+  const tMin = tMs[0], tMax = tMs[tMs.length - 1];
+  const tRange = tMax > tMin ? (tMax - tMin) : 1;
+
+  const min = Math.min(...heightVals), max = Math.max(...heightVals);
+  const pad = (max - min) * 0.12 || 0.1;
+  const yMin = min - pad, yMax = max + pad, yRange = (yMax - yMin) || 1;
+
+  function xFor(ms) { return plotX + ((ms - tMin) / tRange) * plotW; }
+  function yFor(v)  { return plotY + plotH - ((v - yMin) / yRange) * plotH; }
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  const GRID_ROWS = 3, GRID_COLS = 6;
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    ctx.beginPath(); ctx.moveTo(plotX, y); ctx.lineTo(plotX + plotW, y); ctx.stroke();
+  }
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const x = plotX + (g / GRID_COLS) * plotW;
+    ctx.beginPath(); ctx.moveTo(x, plotY); ctx.lineTo(x, plotY + plotH); ctx.stroke();
+  }
+
+  // Zero-height reference line (chart datum), dashed
+  if (yMin < 0 && yMax > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.setLineDash([3, 3]);
+    const y0 = yFor(0);
+    ctx.beginPath(); ctx.moveTo(plotX, y0); ctx.lineTo(plotX + plotW, y0); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Tide curve line + fill
+  ctx.beginPath();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 1.75;
+  heights.forEach((h, i) => {
+    const x = xFor(h.dt * 1000), y = yFor(h.height);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.lineTo(xFor(tMax), plotY + plotH);
+  ctx.lineTo(xFor(tMin), plotY + plotH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(56,189,248,0.10)';
+  ctx.fill();
+
+  // High/low markers from extremes (dots + labels)
+  ctx.font = '9px var(--font-mono, monospace)';
+  extremes.forEach(ex => {
+    const ms = ex.dt * 1000;
+    if (ms < tMin || ms > tMax) return;
+    const x = xFor(ms), y = yFor(ex.height);
+    const isHigh = (ex.type || '').toLowerCase() === 'high';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = isHigh ? '#38bdf8' : '#f59e0b';
+    ctx.fill();
+    ctx.fillStyle = isHigh ? '#7dd3fc' : '#fbbf24';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = isHigh ? 'bottom' : 'top';
+    ctx.fillText(ex.height.toFixed(1) + 'm', x, isHigh ? y - 5 : y + 5);
+  });
+
+  // "Now" marker
+  const nowMs = Date.now();
+  if (nowMs >= tMin && nowMs <= tMax) {
+    const xNow = xFor(nowMs);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(xNow, plotY); ctx.lineTo(xNow, plotY + plotH); ctx.stroke();
+  }
+
+  // Left axis: height scale (m)
+  ctx.font = '9px var(--font-mono, monospace)';
+  ctx.fillStyle = '#38bdf8';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = yMax - (g / GRID_ROWS) * yRange;
+    ctx.fillText(val.toFixed(1) + 'm', plotX - 4, y);
+  }
+
+  // Bottom axis: day/time labels
+  ctx.fillStyle = 'var(--muted, #888)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const frac = g / GRID_COLS;
+    const ms = tMin + frac * tRange;
+    const x = plotX + frac * plotW;
+    const d = new Date(ms);
+    const label = d.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+    ctx.fillText(label, x, plotY + plotH + 3);
   }
 }
 
