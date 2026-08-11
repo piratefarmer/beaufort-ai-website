@@ -162,6 +162,10 @@
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
+    .sensor-card.caution{background:rgba(249,115,22,.12) !important; border-color:rgba(249,115,22,.45) !important;}
+    .sensor-card.caution::before{background:#f97316 !important; opacity:1 !important;}
+    .sensor-card.alert{background:rgba(239,68,68,.14) !important; border-color:rgba(239,68,68,.50) !important;}
+    .sensor-card.alert::before{background:#ef4444 !important; opacity:1 !important;}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
     .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
     .sensor-card:hover .sc-tooltip{display:block}
@@ -1277,19 +1281,34 @@ function renderSensorGrid(p) {
   </div>`;
 
   // WEATHERDOT group (gold) — pressure, humidity, air temp, dew point
+  // Map categories to CSS classes
+  const getSeverityClass = (cat) => {
+    if (!cat) return '';
+    const c = cat.toLowerCase();
+    if (c.includes('extreme') || c.includes('high') || c.includes('danger')) return 'alert';
+    if (c.includes('caution') || c.includes('moderate') || c.includes('elevated')) return 'caution';
+    return '';
+  };
+
+  const fogCls = getSeverityClass(p.fog_category);
+  const heatCls = getSeverityClass(p.heat_index_category);
+
   const weatherCards = [
     {label:'PRESSURE', value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',
-     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline'},
+     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline',
+     extraCls: p.pressure > 0 ? (p.pressure < 995 ? 'alert' : (p.pressure < 1005 ? 'caution' : '')) : ''},
     {label:'HUMIDITY',  value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',
-     unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
+     unit:p.humidity > 0 ? '% RH' : 'sensor offline', extraCls: ''},
     {label:'AIR TEMP',  value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',
      unit:p.air_temp > 0 ? '°F' : 'sensor offline',
-     tip:'Barometer sensor temperature.'},
+     tip: p.heat_index_category && p.heat_index_category !== 'Normal' ? `Heat Index: ${p.heat_index_category}` : 'Barometer sensor temperature.',
+     extraCls: heatCls},
     {label:'DEW POINT', value:dewPt,
      unit:(p.air_temp>0 && p.humidity>0) ? '°F' : 'sensor offline',
-     tip:'When air temp ≈ dew point → fog risk.'},
+     tip: p.fog_category && p.fog_category !== 'Normal' ? `Fog Risk: ${p.fog_category}` : 'When air temp ≈ dew point → fog risk.',
+     extraCls: fogCls},
   ].map(c =>
-    `<div class="sensor-card pressure">${tooltipHtml(c.tip)}
+    `<div class="sensor-card pressure ${c.extraCls}">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
@@ -1297,17 +1316,24 @@ function renderSensorGrid(p) {
   ).join('');
 
   // IMU group (purple) — roll, pitch, yaw, magnitude
+  const getImuClass = (val, threshold) => (val != null && Math.abs(val) > threshold) ? 'alert' : '';
+  const getMagClass = (val) => (val > 2.5) ? 'alert' : (val > 1.8) ? 'caution' : '';
+
   const imuCards = [
     {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}°` : '--',
-     unit:'lateral tilt', tip:'Positive = starboard down.'},
+     unit:'lateral tilt', tip:'Positive = starboard down.',
+     extraCls: getImuClass(p.roll, 15)},
     {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}°` : '--',
-     unit:'fore-aft tilt', tip:'Positive = bow up.'},
+     unit:'fore-aft tilt', tip:'Positive = bow up.',
+     extraCls: getImuClass(p.pitch, 10)},
     {label:'YAW',       value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}°` : '--',
-     unit:'rotation', tip:'Positive = turning right.'},
+     unit:'rotation', tip:'Positive = turning right.',
+     extraCls: ''},
     {label:'MAGNITUDE', value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--',
-     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.'},
+     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.',
+     extraCls: getMagClass(p.magnitude)},
   ].map(c =>
-    `<div class="sensor-card motion">${tooltipHtml(c.tip)}
+    `<div class="sensor-card motion ${c.extraCls}">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
