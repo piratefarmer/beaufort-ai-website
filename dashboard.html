@@ -700,6 +700,7 @@
              map, not the vessel/chart map. -->
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
+        <button class="ais-radar-toggle" id="ais-goes-toggle" onclick="aisToggleGoes()" title="Toggle GOES-East full-disk satellite imagery (GeoColor, NOAA/NESDIS)">&#x1F6F0;&#xFE0F; Satellite: OFF</button>
         <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
       </div>
       <!-- Radar playback bar -- shown only while radar overlay is toggled ON. -->
@@ -715,6 +716,20 @@
         <span><span class="legend-dot mid"></span>Recent</span>
         <span><span class="legend-dot dim"></span>Older (fading out)</span>
         <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
+      </div>
+      <!-- GOES-East satellite legend -- shown only while the Satellite toggle is ON.
+           Added 2026-08-11 (Cap request). GOES-19 is the current GOES-East bird
+           (took over from GOES-16 in Apr 2025); label deliberately says
+           "GOES-East" not a hardcoded satellite number so it stays correct
+           whenever NOAA rotates satellites again. Full Disk sector chosen
+           over CONUS/mesoscale because it's the only fixed sector that covers
+           both Gulf of Mexico and Campos Basin (Brazil) ops without per-region
+           switching logic -- see BEAU_FEATURES.md phase-2 note for the
+           GPS-cropped zoom-in idea that was deferred. -->
+      <div class="ais-lightning-legend" id="ais-goes-legend">
+        <span>&#x1F6F0;&#xFE0F; GOES-East Full Disk &middot; GeoColor (NOAA/NESDIS/STAR)</span>
+        <span id="ais-goes-timestamp" style="color:var(--text-dim)">Loading...</span>
+        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min</span>
       </div>
       <div id="weather-map"></div>
       <div class="weather-map-legend" id="weather-map-legend">
@@ -3983,6 +3998,72 @@ function aisToggleLightning() {
         if (lightningLayer && weatherMap.hasLayer(lightningLayer)) weatherMap.removeLayer(lightningLayer);
         lightningLayer = null;
         btn.textContent = '\u26A1 Lightning: OFF';
+        btn.classList.remove('active');
+        legend.style.display = 'none';
+        setTimeout(() => weatherMap.invalidateSize(), 0);
+    }
+}
+
+// ── GOES-East satellite imagery overlay (added 2026-08-11, Cap request) ────
+// NOAA/NESDIS/STAR publishes GOES-East Full Disk GeoColor as a single static
+// JPEG (not a tile pyramid), so this uses Leaflet's ImageOverlay bound to the
+// image's real geographic extent rather than a tileLayer like radar/lightning.
+// Full Disk bounds below are the standard GOES-East ABI full-disk earth-view
+// extent (~-81.3 to 81.3 lat, full visible-disk longitude span centered on
+// 75.2W) -- approximate edges (deep space corners) are simply transparent/
+// black in the source image, which renders fine as an overlay.
+// Source: currently GOES-19 (took over as "GOES-East" from GOES-16 in Apr
+// 2025) -- deliberately fetched via the satellite-agnostic "latest" GOES-East
+// path so this doesn't silently go stale on the next satellite rotation.
+const GOES_IMAGE_URL = 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/1808x1808.jpg';
+const GOES_BOUNDS = [[-81.3, -156.2], [81.3, 5.8]]; // [[south,west],[north,east]]
+let goesLayer = null;
+let goesEnabled = false;
+let goesRefreshTimer = null;
+
+function goesMakeLayer() {
+    // cache-bust so the browser always pulls NOAA's latest frame instead of
+    // serving a stale cached copy of the same URL
+    return L.imageOverlay(GOES_IMAGE_URL + '?_=' + Date.now(), GOES_BOUNDS, {
+        opacity: 0.85,
+        zIndex: 4  // below radar (5) and lightning (6) so those stay visible on top
+    });
+}
+
+function goesUpdateTimestamp() {
+    const el = document.getElementById('ais-goes-timestamp');
+    if (el) el.textContent = 'Last refreshed ' + now();
+}
+
+function aisToggleGoes() {
+    const btn = document.getElementById('ais-goes-toggle');
+    const legend = document.getElementById('ais-goes-legend');
+    goesEnabled = !goesEnabled;
+
+    if (goesEnabled) {
+        goesLayer = goesMakeLayer();
+        goesLayer.addTo(weatherMap);
+        goesUpdateTimestamp();
+        btn.textContent = '\u{1F6F0}\uFE0F Satellite: ON';
+        btn.classList.add('active');
+        legend.style.display = 'flex';
+        setTimeout(() => weatherMap.invalidateSize(), 0);
+        // GOES-East full disk updates on a ~10 min cadence -- refresh to match
+        if (goesRefreshTimer) clearInterval(goesRefreshTimer);
+        goesRefreshTimer = setInterval(() => {
+            if (!goesEnabled) return;
+            const fresh = goesMakeLayer();
+            fresh.addTo(weatherMap);
+            const old = goesLayer;
+            goesLayer = fresh;
+            if (old && weatherMap.hasLayer(old)) weatherMap.removeLayer(old);
+            goesUpdateTimestamp();
+        }, 10 * 60 * 1000);
+    } else {
+        if (goesRefreshTimer) { clearInterval(goesRefreshTimer); goesRefreshTimer = null; }
+        if (goesLayer && weatherMap.hasLayer(goesLayer)) weatherMap.removeLayer(goesLayer);
+        goesLayer = null;
+        btn.textContent = '\u{1F6F0}\uFE0F Satellite: OFF';
         btn.classList.remove('active');
         legend.style.display = 'none';
         setTimeout(() => weatherMap.invalidateSize(), 0);
