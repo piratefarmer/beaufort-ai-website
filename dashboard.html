@@ -264,6 +264,8 @@
     .forecast-card{flex:1 1 0;min-width:90px;padding:14px 8px;border-right:1px solid var(--border);text-align:center;transition:background .2s}
     .forecast-card:last-child{border-right:none}
     .forecast-card:hover{background:rgba(255,255,255,.03)}
+    .forecast-card.current{background:rgba(59,130,246,0.15); border-top:2px solid var(--blue); position:relative;}
+    .forecast-card.current::after{content:"CURRENT";position:absolute;top:2px;right:4px;font-size:8px;color:var(--blue);letter-spacing:1px;}
     .fc-time{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;font-weight:600}
     .fc-wind{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
     .fc-wind-unit{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
@@ -391,7 +393,52 @@
     .fleet-toast-dismiss:hover{color:var(--text)}
     .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
     @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
-  </style>
+  
+    /* ── LIGHT THEME ── */
+    body.light-theme { background: #f0f4f8; color: #1a2a3a; }
+    body.light-theme .site-header { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .dash-header { background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); border-color: #cbd5e1; }
+    body.light-theme .dash-title { color: #0f172a; }
+    body.light-theme .sys-panel { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .sys-row { border-color: #cbd5e1; }
+    body.light-theme .sys-value { color: #0f172a; }
+    body.light-theme .auto-toggle-row { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .sensor-panel { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .buoy-card { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    body.light-theme .buoy-card-header { border-color: #cbd5e1; }
+    body.light-theme .analysis-box { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .analysis-content { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+    body.light-theme .forecast-strip { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .forecast-strip-header { background: rgba(59,130,246,.05); border-color: #cbd5e1; }
+    body.light-theme .forecast-card { border-color: #cbd5e1; }
+    body.light-theme .forecast-card:hover { background: rgba(0,0,0,.03); }
+    body.light-theme .forecast-sparkline { border-color: #cbd5e1; }
+    body.light-theme .wr-box { background: #ffffff; border-color: #cbd5e1; }
+    body.light-theme .wr-value { color: #0f172a; }
+    body.light-theme #wind-rose { background: #f8fafc; border: 1px solid #cbd5e1; }
+    body.light-theme .query-input { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
+    body.light-theme .query-input::placeholder { color: #94a3b8; }
+    body.light-theme .ops-btn { background: #f8fafc; border-color: #cbd5e1; color: #475569; }
+    body.light-theme .ops-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+    body.light-theme .ops-btn.active.short { background: #dcfce7; border-color: #16a34a; color: #166534; }
+    body.light-theme .ops-btn.active.long { background: #ffedd5; border-color: #ea580c; color: #9a3412; }
+    body.light-theme .ops-btn.active.transit { background: #e0f2fe; border-color: #3b82f6; color: #1e40af; }
+    body.light-theme .fc-time { color: #64748b; }
+    body.light-theme .fc-dir { color: #64748b; }
+    body.light-theme .fc-press { color: #64748b; }
+    body.light-theme .fc-temp { color: #64748b; }
+    
+    .theme-toggle {
+        background: none; border: 1px solid var(--muted); color: var(--text-dim);
+        border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;
+        margin-left: 10px; font-family: var(--font-mono); transition: all 0.2s;
+        vertical-align: middle;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: var(--text-dim); }
+    body.light-theme .theme-toggle { border-color: #94a3b8; color: #64748b; }
+    body.light-theme .theme-toggle:hover { color: #0f172a; border-color: #64748b; }
+    </style>
+    
 </head>
 <body>
 
@@ -436,7 +483,7 @@
 <div class="dash-header">
   <div class="dash-header-inner">
     <div>
-      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard</h1>
+      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀ Light Mode</button></h1>
       <p class="dash-subtitle">Vessel Sensor Integration &middot; AI Maritime Analysis &middot; Real-Time &middot; Dual Mode</p>
     </div>
     <div class="dash-status">
@@ -3166,7 +3213,7 @@ function renderForecast(data) {
 
   // Forecast cards
   let html = '<div class="forecast-cards">';
-  fc.forEach(f => {
+  fc.forEach((f, idx) => {
     const col      = windColor(f.wind_kts);
     const arrow    = windArrow(f.wind_dir_deg);
     const cardinal = windCardinal(f.wind_dir_deg);
@@ -3175,7 +3222,7 @@ function renderForecast(data) {
     const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
     const timeLabel = f.valid_time || `+${f.lead_hours}H`;
     html += `
-      <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
+      <div class="forecast-card ${idx === 0 ? \'current\' : \'\'}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
         <div class="fc-time">${timeLabel}</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
@@ -4390,7 +4437,7 @@ function aisUpdateCpaUi(inf) {
     else if (sev === 'watch') row.classList.add('cpa-watch');
   });
   const signals = (inf && inf.signals) || [];
-  const close = signals.filter(s => s && s.type === 'close_pass');
+  const close = signals.filter(s => s && s.type === 'close_pass' && !(s.message && s.message.toUpperCase().includes('KIRT')));
   const topClose = close[0] || null;
   const topSev = (inf && inf.summary && inf.summary.top_severity) || (topClose && topClose.severity) || null;
   aisSetTabBadge(close.length || ((inf && inf.summary && inf.summary.cpa_alert_count) || 0), topSev);
@@ -4458,6 +4505,28 @@ async function aisPoll() {
 setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
 </script>
-  <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
+  <script src="/js/analytics-beacon.js?v=20260731c" defer>
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        if (body.classList.contains('light-theme')) {
+            body.classList.remove('light-theme');
+            btn.innerHTML = '☀ Light Mode';
+            localStorage.setItem('beauTheme', 'dark');
+        } else {
+            body.classList.add('light-theme');
+            btn.innerHTML = '🌙 Dark Mode';
+            localStorage.setItem('beauTheme', 'light');
+        }
+        if (typeof drawSparkline === 'function' && windSpeedHistory && windSpeedHistory.length > 0) {
+            drawSparkline();
+        }
+    }
+    if (localStorage.getItem('beauTheme') === 'light') {
+        document.body.classList.add('light-theme');
+        const btn = document.getElementById('themeBtn');
+        if (btn) btn.innerHTML = '🌙 Dark Mode';
+    }
+</script>
 </body>
 </html>
