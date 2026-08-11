@@ -717,19 +717,32 @@
         <span><span class="legend-dot dim"></span>Older (fading out)</span>
         <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
       </div>
-      <!-- GOES-East satellite legend -- shown only while the Satellite toggle is ON.
-           Added 2026-08-11 (Cap request). GOES-19 is the current GOES-East bird
-           (took over from GOES-16 in Apr 2025); label deliberately says
-           "GOES-East" not a hardcoded satellite number so it stays correct
-           whenever NOAA rotates satellites again. Full Disk sector chosen
-           over CONUS/mesoscale because it's the only fixed sector that covers
-           both Gulf of Mexico and Campos Basin (Brazil) ops without per-region
-           switching logic -- see BEAU_FEATURES.md phase-2 note for the
-           GPS-cropped zoom-in idea that was deferred. -->
+      <!-- GOES-East satellite panel -- shown only while the Satellite toggle is ON.
+           Added 2026-08-11 (Cap request), CHANGED same day: originally built as a
+           Leaflet ImageOverlay draped on the zoomable map, but Cap caught two real
+           bugs on first look: (1) the full-disk image is a circle, mapped as a
+           rectangle, so zoomed-out views showed the base OSM map bleeding through
+           the "deep space" corners; (2) zooming in on the vessel's own position just
+           blows up the same ~1808px full-disk JPEG -- there's no hidden detail
+           underneath, so it renders as an undifferentiated white cloud blob with
+           zero useful information. Both are hard resolution/shape ceilings of the
+           Full Disk product, not fixable with CSS or zoom caps. Downgraded to a
+           plain static (non-zoomable, non-pannable) image panel instead -- this is
+           an honest match for what Full Disk GeoColor can actually provide: a
+           single current snapshot of the whole GOES-East hemisphere, not a
+           zoomable local view. GOES-19 is the current GOES-East bird (took over
+           from GOES-16 in Apr 2025); label deliberately says "GOES-East" not a
+           hardcoded satellite number so it stays correct through future rotations.
+           Real zoomed-in local detail requires NOAA mesoscale/regional sector
+           crops + GPS-based reprojection -- logged as an open phase-2 item, not
+           yet built, not yet added to BEAU_FEATURES.md per Cap's hold request. -->
       <div class="ais-lightning-legend" id="ais-goes-legend">
         <span>&#x1F6F0;&#xFE0F; GOES-East Full Disk &middot; GeoColor (NOAA/NESDIS/STAR)</span>
         <span id="ais-goes-timestamp" style="color:var(--text-dim)">Loading...</span>
-        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min</span>
+        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min &bull; static snapshot, not zoomable</span>
+      </div>
+      <div id="goes-static-panel" style="display:none;text-align:center;padding:10px 16px;background:#05070c">
+        <img id="goes-static-img" src="" alt="GOES-East Full Disk GeoColor" style="max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border)">
       </div>
       <div id="weather-map"></div>
       <div class="weather-map-legend" id="weather-map-legend">
@@ -4004,65 +4017,53 @@ function aisToggleLightning() {
     }
 }
 
-// ── GOES-East satellite imagery overlay (added 2026-08-11, Cap request) ────
-// NOAA/NESDIS/STAR publishes GOES-East Full Disk GeoColor as a single static
-// JPEG (not a tile pyramid), so this uses Leaflet's ImageOverlay bound to the
-// image's real geographic extent rather than a tileLayer like radar/lightning.
-// Full Disk bounds below are the standard GOES-East ABI full-disk earth-view
-// extent (~-81.3 to 81.3 lat, full visible-disk longitude span centered on
-// 75.2W) -- approximate edges (deep space corners) are simply transparent/
-// black in the source image, which renders fine as an overlay.
+// ── GOES-East satellite imagery panel (added 2026-08-11, Cap request) ──────
+// CHANGED same day: originally a Leaflet ImageOverlay draped on the zoomable
+// map. Cap caught two real bugs on first live look: (1) Full Disk imagery is
+// a circular disk, mapped as a rectangle, so the "deep space" corners of that
+// rectangle let the base OSM map bleed through at low/med zoom; (2) zooming
+// in on the vessel's own position just upscales the same ~1808px full-disk
+// JPEG -- no hidden detail underneath, renders as a useless white cloud blob.
+// Both are hard resolution/shape ceilings of the Full Disk product itself,
+// not fixable with zoom caps or CSS. Fix: plain static <img>, not a map
+// layer -- no zoom, no pan, no seam, no false promise of local detail. This
+// honestly matches what Full Disk GeoColor actually is: one current snapshot
+// of the whole GOES-East hemisphere. True zoomed-in local detail needs NOAA
+// mesoscale/regional sector crops + GPS reprojection -- open phase-2 item,
+// not yet built, not yet logged to BEAU_FEATURES.md per Cap's hold request.
 // Source: currently GOES-19 (took over as "GOES-East" from GOES-16 in Apr
-// 2025) -- deliberately fetched via the satellite-agnostic "latest" GOES-East
-// path so this doesn't silently go stale on the next satellite rotation.
+// 2025) -- label says "GOES-East" generically so it stays correct through
+// future satellite rotations.
 const GOES_IMAGE_URL = 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/1808x1808.jpg';
-const GOES_BOUNDS = [[-81.3, -156.2], [81.3, 5.8]]; // [[south,west],[north,east]]
-let goesLayer = null;
 let goesEnabled = false;
 let goesRefreshTimer = null;
 
-function goesMakeLayer() {
-    // cache-bust so the browser always pulls NOAA's latest frame instead of
-    // serving a stale cached copy of the same URL
-    return L.imageOverlay(GOES_IMAGE_URL + '?_=' + Date.now(), GOES_BOUNDS, {
-        opacity: 0.85,
-        zIndex: 4  // below radar (5) and lightning (6) so those stay visible on top
-    });
-}
-
-function goesUpdateTimestamp() {
-    const el = document.getElementById('ais-goes-timestamp');
-    if (el) el.textContent = 'Last refreshed ' + now();
+function goesRefreshImage() {
+    const img = document.getElementById('goes-static-img');
+    if (img) img.src = GOES_IMAGE_URL + '?_=' + Date.now(); // cache-bust for latest frame
+    const ts = document.getElementById('ais-goes-timestamp');
+    if (ts) ts.textContent = 'Last refreshed ' + now();
 }
 
 function aisToggleGoes() {
     const btn = document.getElementById('ais-goes-toggle');
     const legend = document.getElementById('ais-goes-legend');
+    const panel = document.getElementById('goes-static-panel');
     goesEnabled = !goesEnabled;
 
     if (goesEnabled) {
-        goesLayer = goesMakeLayer();
-        goesLayer.addTo(weatherMap);
-        goesUpdateTimestamp();
+        goesRefreshImage();
+        panel.style.display = 'block';
         btn.textContent = '\u{1F6F0}\uFE0F Satellite: ON';
         btn.classList.add('active');
         legend.style.display = 'flex';
         setTimeout(() => weatherMap.invalidateSize(), 0);
         // GOES-East full disk updates on a ~10 min cadence -- refresh to match
         if (goesRefreshTimer) clearInterval(goesRefreshTimer);
-        goesRefreshTimer = setInterval(() => {
-            if (!goesEnabled) return;
-            const fresh = goesMakeLayer();
-            fresh.addTo(weatherMap);
-            const old = goesLayer;
-            goesLayer = fresh;
-            if (old && weatherMap.hasLayer(old)) weatherMap.removeLayer(old);
-            goesUpdateTimestamp();
-        }, 10 * 60 * 1000);
+        goesRefreshTimer = setInterval(() => { if (goesEnabled) goesRefreshImage(); }, 10 * 60 * 1000);
     } else {
         if (goesRefreshTimer) { clearInterval(goesRefreshTimer); goesRefreshTimer = null; }
-        if (goesLayer && weatherMap.hasLayer(goesLayer)) weatherMap.removeLayer(goesLayer);
-        goesLayer = null;
+        panel.style.display = 'none';
         btn.textContent = '\u{1F6F0}\uFE0F Satellite: OFF';
         btn.classList.remove('active');
         legend.style.display = 'none';
