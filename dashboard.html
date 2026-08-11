@@ -3222,7 +3222,7 @@ function renderForecast(data) {
     const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
     const timeLabel = f.valid_time || `+${f.lead_hours}H`;
     html += `
-      <div class="forecast-card ${idx === 0 ? \'current\' : \'\'}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
+      <div class="forecast-card ${idx === 0 ? 'current' : ''}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
         <div class="fc-time">${timeLabel}</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
@@ -4505,7 +4505,8 @@ async function aisPoll() {
 setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
 </script>
-  <script src="/js/analytics-beacon.js?v=20260731c" defer>
+  <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
+  <script>
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
@@ -4518,7 +4519,7 @@ aisPoll(); // immediate first load
             btn.innerHTML = '🌙 Dark Mode';
             localStorage.setItem('beauTheme', 'light');
         }
-        if (typeof drawSparkline === 'function' && windSpeedHistory && windSpeedHistory.length > 0) {
+        if (typeof drawSparkline === 'function' && typeof windSpeedHistory !== 'undefined' && windSpeedHistory && windSpeedHistory.length > 0) {
             drawSparkline();
         }
     }
@@ -4527,6 +4528,6 @@ aisPoll(); // immediate first load
         const btn = document.getElementById('themeBtn');
         if (btn) btn.innerHTML = '🌙 Dark Mode';
     }
-</script>
+  </script>
 </body>
 </html>
