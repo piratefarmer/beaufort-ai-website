@@ -162,10 +162,6 @@
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
-    .sensor-card.caution{background:rgba(249,115,22,.12) !important; border-color:rgba(249,115,22,.45) !important;}
-    .sensor-card.caution::before{background:#f97316 !important; opacity:1 !important;}
-    .sensor-card.alert{background:rgba(239,68,68,.14) !important; border-color:rgba(239,68,68,.50) !important;}
-    .sensor-card.alert::before{background:#ef4444 !important; opacity:1 !important;}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
     .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
     .sensor-card:hover .sc-tooltip{display:block}
@@ -268,8 +264,6 @@
     .forecast-card{flex:1 1 0;min-width:90px;padding:14px 8px;border-right:1px solid var(--border);text-align:center;transition:background .2s}
     .forecast-card:last-child{border-right:none}
     .forecast-card:hover{background:rgba(255,255,255,.03)}
-    .forecast-card.current{background:rgba(59,130,246,0.15); border-top:2px solid var(--blue); position:relative;}
-    .forecast-card.current::after{content:"CURRENT";position:absolute;top:2px;right:4px;font-size:8px;color:var(--blue);letter-spacing:1px;}
     .fc-time{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;font-weight:600}
     .fc-wind{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
     .fc-wind-unit{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
@@ -340,23 +334,6 @@
 .ais-infer-banner .ais-infer-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:4px}
 .ais-infer-banner .ais-infer-line{color:inherit}
 .ais-infer-banner .ais-infer-meta{margin-top:4px;font-size:10px;opacity:.8}
-.beau-alert-pill{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:rgba(148,163,184,.08)}
-.beau-alert-pill.clear{color:#86efac;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
-.beau-alert-pill.watch{color:#fbbf24;border-color:rgba(245,158,11,.40);background:rgba(245,158,11,.12)}
-.beau-alert-pill.warning,.beau-alert-pill.caution{color:#fdba74;border-color:rgba(249,115,22,.45);background:rgba(249,115,22,.12)}
-.beau-alert-pill.alert,.beau-alert-pill.alarm{color:#fca5a5;border-color:rgba(239,68,68,.50);background:rgba(239,68,68,.14)}
-.ais-cpa-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--muted)}
-.ais-cpa-bar label{display:flex;align-items:center;gap:6px}
-.ais-cpa-bar input[type=number]{width:70px;background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
-.ais-cpa-bar select{background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
-.ais-cpa-bar button{background:none;border:1px solid var(--border);border-radius:6px;color:var(--blue);padding:3px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer}
-.ais-cpa-bar button:hover{border-color:var(--blue)}
-.ais-cpa-meta{opacity:.85}
-.ais-vessel-row.cpa-watch{background:rgba(245,158,11,.08)}
-.ais-vessel-row.cpa-warning{background:rgba(249,115,22,.10)}
-.ais-vessel-row.cpa-alarm{background:rgba(239,68,68,.12)}
-.dash-tab-btn .tab-badge.alert{background:rgba(239,68,68,.20);color:#fca5a5}
-.dash-tab-btn .tab-badge.watch{background:rgba(245,158,11,.18);color:#fbbf24}
     .ais-vessel-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) var(--border);border-top:1px solid var(--border)}
     .ais-vessel-list::-webkit-scrollbar{width:4px}.ais-vessel-list::-webkit-scrollbar-track{background:var(--border)}.ais-vessel-list::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
     .ais-vessel-row{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border2);font-family:var(--font-mono);font-size:11px}
@@ -397,52 +374,7 @@
     .fleet-toast-dismiss:hover{color:var(--text)}
     .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
     @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
-  
-    /* ── LIGHT THEME ── */
-    body.light-theme { background: #f0f4f8; color: #1a2a3a; }
-    body.light-theme .site-header { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .dash-header { background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); border-color: #cbd5e1; }
-    body.light-theme .dash-title { color: #0f172a; }
-    body.light-theme .sys-panel { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .sys-row { border-color: #cbd5e1; }
-    body.light-theme .sys-value { color: #0f172a; }
-    body.light-theme .auto-toggle-row { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .sensor-panel { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .buoy-card { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    body.light-theme .buoy-card-header { border-color: #cbd5e1; }
-    body.light-theme .analysis-box { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .analysis-content { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
-    body.light-theme .forecast-strip { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .forecast-strip-header { background: rgba(59,130,246,.05); border-color: #cbd5e1; }
-    body.light-theme .forecast-card { border-color: #cbd5e1; }
-    body.light-theme .forecast-card:hover { background: rgba(0,0,0,.03); }
-    body.light-theme .forecast-sparkline { border-color: #cbd5e1; }
-    body.light-theme .wr-box { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .wr-value { color: #0f172a; }
-    body.light-theme #wind-rose { background: #f8fafc; border: 1px solid #cbd5e1; }
-    body.light-theme .query-input { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
-    body.light-theme .query-input::placeholder { color: #94a3b8; }
-    body.light-theme .ops-btn { background: #f8fafc; border-color: #cbd5e1; color: #475569; }
-    body.light-theme .ops-btn:hover { border-color: #3b82f6; color: #3b82f6; }
-    body.light-theme .ops-btn.active.short { background: #dcfce7; border-color: #16a34a; color: #166534; }
-    body.light-theme .ops-btn.active.long { background: #ffedd5; border-color: #ea580c; color: #9a3412; }
-    body.light-theme .ops-btn.active.transit { background: #e0f2fe; border-color: #3b82f6; color: #1e40af; }
-    body.light-theme .fc-time { color: #64748b; }
-    body.light-theme .fc-dir { color: #64748b; }
-    body.light-theme .fc-press { color: #64748b; }
-    body.light-theme .fc-temp { color: #64748b; }
-    
-    .theme-toggle {
-        background: none; border: 1px solid var(--muted); color: var(--text-dim);
-        border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;
-        margin-left: 10px; font-family: var(--font-mono); transition: all 0.2s;
-        vertical-align: middle;
-    }
-    .theme-toggle:hover { color: var(--text); border-color: var(--text-dim); }
-    body.light-theme .theme-toggle { border-color: #94a3b8; color: #64748b; }
-    body.light-theme .theme-toggle:hover { color: #0f172a; border-color: #64748b; }
-    </style>
-    
+  </style>
 </head>
 <body>
 
@@ -487,13 +419,11 @@
 <div class="dash-header">
   <div class="dash-header-inner">
     <div>
-      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀ Light Mode</button></h1>
+      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard</h1>
       <p class="dash-subtitle">Vessel Sensor Integration &middot; AI Maritime Analysis &middot; Real-Time &middot; Dual Mode</p>
     </div>
     <div class="dash-status">
-      <div class="status-row">
-          <span class="beau-alert-pill clear" id="beau-alert-pill" title="Beau alert status">BEAU: CLEAR</span>
-<span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
+      <div class="status-row"><span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
       <div class="last-updated" id="last-updated">&mdash;</div>
     </div>
   </div>
@@ -504,16 +434,13 @@
 
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
-      <div class="sys-row"><span class="sys-label">SENSORS</span><span class="sys-value" id="stat-sensors">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">HISTORY</span><span class="sys-value" id="stat-history">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">BEAU</span><span class="sys-value" id="stat-beau">&#9679; CHECKING</span></div>
-      <div class="sys-row"><span class="sys-label">AIS</span><span class="sys-value" id="stat-ais">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
+      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">ALERT STATUS</span><span class="sys-value green-text" id="alert-status">NOMINAL</span></div>
       <div class="sys-row"><span class="sys-label">TOTAL QUERIES</span><span class="sys-value" id="query-count">0</span></div>
-      <div class="sys-row"><span class="sys-label">STATUS CHECK</span><span class="sys-value" id="stat-checked" style="font-size:10px">&mdash;</span></div>
     </div>
 
     <div class="auto-toggle-row">
@@ -672,20 +599,6 @@
       </div>
     </div>
 
-    <!-- TIDE + MOON PHASE (added 2026-08-05, Cap request) -->
-    <div class="forecast-strip" id="tide-moon-strip">
-      <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; TIDE &amp; MOON PHASE</span>
-        <span class="forecast-strip-meta" id="tide-moon-meta">Loading...</span>
-      </div>
-      <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
-        <div class="forecast-loading">Fetching tide/moon data...</div>
-      </div>
-      <div style="padding:0 16px 12px">
-        <canvas class="sparkline-canvas" id="tide-curve-canvas" style="width:100%;height:110px"></canvas>
-      </div>
-    </div>
-
     </div>
     <!-- /TAB: CONDITIONS -->
 
@@ -704,7 +617,6 @@
              map, not the vessel/chart map. -->
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
-        <button class="ais-radar-toggle" id="ais-goes-toggle" onclick="aisToggleGoes()" title="Toggle GOES-East full-disk satellite imagery (GeoColor, NOAA/NESDIS)">&#x1F6F0;&#xFE0F; Satellite: OFF</button>
         <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
       </div>
       <!-- Radar playback bar -- shown only while radar overlay is toggled ON. -->
@@ -720,33 +632,6 @@
         <span><span class="legend-dot mid"></span>Recent</span>
         <span><span class="legend-dot dim"></span>Older (fading out)</span>
         <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
-      </div>
-      <!-- GOES-East satellite panel -- shown only while the Satellite toggle is ON.
-           Added 2026-08-11 (Cap request), CHANGED same day: originally built as a
-           Leaflet ImageOverlay draped on the zoomable map, but Cap caught two real
-           bugs on first look: (1) the full-disk image is a circle, mapped as a
-           rectangle, so zoomed-out views showed the base OSM map bleeding through
-           the "deep space" corners; (2) zooming in on the vessel's own position just
-           blows up the same ~1808px full-disk JPEG -- there's no hidden detail
-           underneath, so it renders as an undifferentiated white cloud blob with
-           zero useful information. Both are hard resolution/shape ceilings of the
-           Full Disk product, not fixable with CSS or zoom caps. Downgraded to a
-           plain static (non-zoomable, non-pannable) image panel instead -- this is
-           an honest match for what Full Disk GeoColor can actually provide: a
-           single current snapshot of the whole GOES-East hemisphere, not a
-           zoomable local view. GOES-19 is the current GOES-East bird (took over
-           from GOES-16 in Apr 2025); label deliberately says "GOES-East" not a
-           hardcoded satellite number so it stays correct through future rotations.
-           Real zoomed-in local detail requires NOAA mesoscale/regional sector
-           crops + GPS-based reprojection -- logged as an open phase-2 item, not
-           yet built, not yet added to BEAU_FEATURES.md per Cap's hold request. -->
-      <div class="ais-lightning-legend" id="ais-goes-legend">
-        <span>&#x1F6F0;&#xFE0F; GOES-East Full Disk &middot; GeoColor (NOAA/NESDIS/STAR)</span>
-        <span id="ais-goes-timestamp" style="color:var(--text-dim)">Loading...</span>
-        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min &bull; static snapshot, not zoomable</span>
-      </div>
-      <div id="goes-static-panel" style="display:none;text-align:center;padding:10px 16px;background:#05070c">
-        <img id="goes-static-img" src="" alt="GOES-East Full Disk GeoColor" style="max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border)">
       </div>
       <div id="weather-map"></div>
       <div class="weather-map-legend" id="weather-map-legend">
@@ -776,22 +661,6 @@
         <div class="ais-infer-line" id="ais-infer-line">Waiting for fleet signal...</div>
         <div class="ais-infer-meta" id="ais-infer-meta"></div>
       </div>
-      <div class="ais-cpa-bar" id="ais-cpa-bar">
-        <label>Safe CPA (nm)
-          <input type="number" id="ais-safe-cpa" min="0.05" max="5" step="0.05" value="1.0" title="Preferred Safe CPA. PORT relaxes it; DP/UNDERWAY use full value.">
-        </label>
-        <label>Mode
-          <select id="ais-cpa-mode" title="AUTO chooses Underway/DP/Port. Manual override anytime.">
-            <option value="auto">AUTO</option>
-            <option value="underway">UNDERWAY</option>
-            <option value="dp">DP</option>
-            <option value="port">PORT</option>
-          </select>
-        </label>
-        <button type="button" id="ais-cpa-save" onclick="aisSaveCpaSettings()">Save</button>
-        <span class="ais-cpa-meta" id="ais-cpa-meta">CPA engine loading...</span>
-      </div>
-
       <div id="ais-map"></div>
       <div class="ais-footer">
         <span class="ais-zone-label" id="ais-zone-label">Drag circle to reposition &bull; drag edge handle to resize &bull; watching vessels inside the zone</span>
@@ -1067,79 +936,30 @@
 // independently of the sensor/forecast/AIS polling loops so it works even
 // if those are erroring out.
 let maintenanceBannerVisible = false;
-function setLiveStat(id, ok, warn, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'sys-value ' + (ok ? 'green-text' : (warn ? 'amber-text' : 'red-text'));
-  el.innerHTML = '● ' + text;
-}
-
-async function probeJson(url, timeoutMs) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
-
-// Cap harden 2026-07-31: real multi-service status strip (no more fake ACTIVE)
 async function checkLiveSystemsStatus() {
   const banner = document.getElementById('maintenance-banner');
-  let beauOk = false;
-
+  if (!banner) return;
   try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/beau/health', 6000);
-    beauOk = d && d.status === 'ready';
-    if (beauOk) setLiveStat('stat-beau', true, false, 'READY');
-    else setLiveStat('stat-beau', false, true, (d && d.status) ? String(d.status).toUpperCase() : 'DEGRADED');
-  } catch (e) {
-    setLiveStat('stat-beau', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensors', 6000);
-    const age = Number(d && d.data_age_sec);
-    const stale = !!(d && (d.stale || (Number.isFinite(age) && age > 60)));
-    const hasBaro = !!(d && d.barometer && d.barometer.pressure_mb != null);
-    if (hasBaro && !stale) setLiveStat('stat-sensors', true, false, 'LIVE');
-    else if (hasBaro && stale) setLiveStat('stat-sensors', false, true, 'STALE');
-    else setLiveStat('stat-sensors', false, false, 'OFFLINE');
-  } catch (e) {
-    setLiveStat('stat-sensors', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/sensor-history/window?hours=6', 8000);
-    const n = (d && Array.isArray(d.readings)) ? d.readings.length : 0;
-    if (n > 0) setLiveStat('stat-history', true, false, n + ' PTS');
-    else setLiveStat('stat-history', false, true, 'EMPTY');
-  } catch (e) {
-    setLiveStat('stat-history', false, false, 'DOWN');
-  }
-
-  try {
-    const d = await probeJson('https://beau.beaufort-ai.com/api/ais', 6000);
-    const fleet = (d && d.fleet) || {};
-    const n = Number(fleet.active_vessels || (Array.isArray(fleet.vessels) ? fleet.vessels.length : 0) || 0);
-    const zoneOk = !!(d && d.zone && d.zone.center_lat != null);
-    if (zoneOk || n > 0) setLiveStat('stat-ais', true, false, n + ' VES');
-    else setLiveStat('stat-ais', false, true, 'NO DATA');
-  } catch (e) {
-    setLiveStat('stat-ais', false, false, 'DOWN');
-  }
-
-  const checked = document.getElementById('stat-checked');
-  if (checked) checked.textContent = new Date().toLocaleTimeString();
-
-  if (banner) {
-    if (beauOk && maintenanceBannerVisible) {
+    const res = await fetch('https://beau.beaufort-ai.com/api/beau/health', { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+    const healthy = d.status === 'ready';
+    if (healthy && maintenanceBannerVisible) {
       banner.style.display = 'none';
       maintenanceBannerVisible = false;
-    } else if (!beauOk && !maintenanceBannerVisible) {
+    } else if (!healthy && !maintenanceBannerVisible) {
+      banner.style.display = 'block';
+      maintenanceBannerVisible = true;
+    }
+  } catch (e) {
+    // Unreachable entirely (server stopped, network error, timeout) — same
+    // treatment as an unhealthy response.
+    if (!maintenanceBannerVisible) {
       banner.style.display = 'block';
       maintenanceBannerVisible = true;
     }
   }
 }
-
 
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
@@ -1161,11 +981,6 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
-let piFeedFailCount = 0;
-let piFeedBackoffMs = 5000;
-const PI_FEED_BASE_MS = 5000;
-const PI_FEED_MAX_MS = 15000;
-
 let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
 let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
@@ -1173,7 +988,7 @@ let piFeedInterval = null;
 // ANALYSIS CACHE — only re-run Beau when conditions change meaningfully
 let lastAnalysisResult = null; // {text, alertLevel, wind_speed, pressure, cachedAt}
 const ANALYSIS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — force refresh
-const WIND_CHANGE_THRESHOLD = 5;   // kts (raised 3->5 2026-07-31: ultrasonic noise was thrashing auto-analysis)
+const WIND_CHANGE_THRESHOLD = 3;   // kts
 const PRESSURE_CHANGE_THRESHOLD = 1; // mb
 
 function shouldReanalyze(payload) {
@@ -1281,34 +1096,19 @@ function renderSensorGrid(p) {
   </div>`;
 
   // WEATHERDOT group (gold) — pressure, humidity, air temp, dew point
-  // Map categories to CSS classes
-  const getSeverityClass = (cat) => {
-    if (!cat) return '';
-    const c = cat.toLowerCase();
-    if (c.includes('extreme') || c.includes('high') || c.includes('danger')) return 'alert';
-    if (c.includes('caution') || c.includes('moderate') || c.includes('elevated')) return 'caution';
-    return '';
-  };
-
-  const fogCls = getSeverityClass(p.fog_category);
-  const heatCls = getSeverityClass(p.heat_index_category);
-
   const weatherCards = [
     {label:'PRESSURE', value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',
-     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline',
-     extraCls: p.pressure > 0 ? (p.pressure < 995 ? 'alert' : (p.pressure < 1005 ? 'caution' : '')) : ''},
+     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline'},
     {label:'HUMIDITY',  value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',
-     unit:p.humidity > 0 ? '% RH' : 'sensor offline', extraCls: ''},
+     unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
     {label:'AIR TEMP',  value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',
      unit:p.air_temp > 0 ? '°F' : 'sensor offline',
-     tip: p.heat_index_category && p.heat_index_category !== 'Normal' ? `Heat Index: ${p.heat_index_category}` : 'Barometer sensor temperature.',
-     extraCls: heatCls},
+     tip:'Barometer sensor temperature.'},
     {label:'DEW POINT', value:dewPt,
      unit:(p.air_temp>0 && p.humidity>0) ? '°F' : 'sensor offline',
-     tip: p.fog_category && p.fog_category !== 'Normal' ? `Fog Risk: ${p.fog_category}` : 'When air temp ≈ dew point → fog risk.',
-     extraCls: fogCls},
+     tip:'When air temp ≈ dew point → fog risk.'},
   ].map(c =>
-    `<div class="sensor-card pressure ${c.extraCls}">${tooltipHtml(c.tip)}
+    `<div class="sensor-card pressure">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
@@ -1316,24 +1116,17 @@ function renderSensorGrid(p) {
   ).join('');
 
   // IMU group (purple) — roll, pitch, yaw, magnitude
-  const getImuClass = (val, threshold) => (val != null && Math.abs(val) > threshold) ? 'alert' : '';
-  const getMagClass = (val) => (val > 2.5) ? 'alert' : (val > 1.8) ? 'caution' : '';
-
   const imuCards = [
     {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}°` : '--',
-     unit:'lateral tilt', tip:'Positive = starboard down.',
-     extraCls: getImuClass(p.roll, 15)},
+     unit:'lateral tilt', tip:'Positive = starboard down.'},
     {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}°` : '--',
-     unit:'fore-aft tilt', tip:'Positive = bow up.',
-     extraCls: getImuClass(p.pitch, 10)},
+     unit:'fore-aft tilt', tip:'Positive = bow up.'},
     {label:'YAW',       value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}°` : '--',
-     unit:'rotation', tip:'Positive = turning right.',
-     extraCls: ''},
+     unit:'rotation', tip:'Positive = turning right.'},
     {label:'MAGNITUDE', value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--',
-     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.',
-     extraCls: getMagClass(p.magnitude)},
+     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.'},
   ].map(c =>
-    `<div class="sensor-card motion ${c.extraCls}">${tooltipHtml(c.tip)}
+    `<div class="sensor-card motion">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
@@ -1346,21 +1139,8 @@ function renderSensorGrid(p) {
 // ── STREAMING FETCH HELPER ───────────────────────────────────
 // Returns tokens via onToken(str) callback; calls onDone(finalData) when complete
 async function streamBeauRequest(body, onToken, onDone, onError) {
-  // Cap 2026-07-31: 90s was too short. Live STREAM Q often 70-100s+ before
-  // first useful tokens (context build + 70B). Abort was mislabeled as
-  // "model loading" even when llama3.3:70b was already hot. Use a long
-  // overall budget + idle timeout that resets on each chunk.
-  // Fable5 C1 (2026-08-01): special-case 429 busy with retry_after + no generic throw.
   const controller = new AbortController();
-  const OVERALL_MS = 240000; // 4 min hard ceiling
-  const IDLE_MS = 120000;    // abort only if no bytes for 2 min after start
-  let idleTimer = null;
-  const overallTimer = setTimeout(() => controller.abort(), OVERALL_MS);
-  const bumpIdle = () => {
-    if (idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => controller.abort(), IDLE_MS);
-  };
-  bumpIdle();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s client timeout
   try {
     const res = await fetch(BEAU_API_URL, {
       method: 'POST',
@@ -1372,17 +1152,7 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       body: JSON.stringify(body),
       signal: controller.signal,
     });
-    bumpIdle();
-
-    if (res.status === 429) {
-      const j = await res.json().catch(() => ({}));
-      const wait = (j.retry_after_sec || 15) * 1000;
-      const err = new Error(j.message || 'Beau is busy');
-      err.busy = true;
-      err.retryMs = wait;
-      onError(err);
-      return;
-    }
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
@@ -1401,7 +1171,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       while (true) {
         const {done, value} = await reader.read();
         if (done) break;
-        bumpIdle();
         buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split('\n');
         buffer = lines.pop(); // keep incomplete last line
@@ -1411,27 +1180,11 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
           if (!raw || raw === '[DONE]') continue;
           try {
             const parsed = JSON.parse(raw);
-            // Server busy SSE (lock deferred to Ollama path)
-            if (parsed.error === 'busy') {
-              const wait = (parsed.retry_after_sec || 15) * 1000;
-              const err = new Error(parsed.message || 'Beau is busy');
-              err.busy = true;
-              err.retryMs = wait;
-              onError(err);
-              return;
-            }
-            // Skip empty preparing keepalives in UI
-            if (parsed.status === 'preparing' && !parsed.token) continue;
             if (parsed.token) {
               onToken(parsed.token);
             }
             if (parsed.done) {
               finalData = parsed;
-            }
-            if (parsed.error && parsed.error !== 'busy') {
-              const err = new Error(parsed.message || parsed.error);
-              onError(err);
-              return;
             }
           } catch(e) {
             // raw text token fallback
@@ -1444,14 +1197,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     } else {
       // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
-      if (data && data.error === 'busy') {
-        const wait = (data.retry_after_sec || 15) * 1000;
-        const err = new Error(data.message || 'Beau is busy');
-        err.busy = true;
-        err.retryMs = wait;
-        onError(err);
-        return;
-      }
       const prediction = data.prediction || data;
       // Extract text — prefer response field (cached sensor hits), then answer, then description
       const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
@@ -1467,17 +1212,12 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     }
   } catch(err) {
     onError(err);
-  } finally {
-    if (idleTimer) clearTimeout(idleTimer);
-    clearTimeout(overallTimer);
   }
 }
 
 // ── MODE 1: SENSOR ANALYSIS ──────────────────────────────────
 async function runSensorAnalysis() {
   if (sensorRequestInFlight) return;
-  // Cap 2026-07-31: don't steal the 70B while Cap is mid Q&A
-  if (qaRequestInFlight) return;
 
   const payload = buildPayload();
   lastPayload = payload;
@@ -1584,33 +1324,15 @@ async function runSensorAnalysis() {
         cachedAt: Date.now()
       };
     },
-        (err) => {
+    (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      // Fable5 C1 (2026-08-01): busy is not a hard failure - show queue + one auto-retry.
-      if (err && err.busy) {
-        const waitMs = err.retryMs || 15000;
-        const waitSec = Math.round(waitMs / 1000);
-        const msg = `Beau busy — retrying in ${waitSec}s`;
-        if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
-        if (box) box.classList.remove('streaming');
-        setStatus('#f59e0b', `Busy 🏅 retry ${waitSec}s`);
-        addHistory('SENSOR', 'BUSY', msg, null, payload);
-        if (autoEnabled && !window.__beauBusyRetryTimer) {
-          const jitter = waitMs * (0.8 + Math.random() * 0.4);
-          window.__beauBusyRetryTimer = setTimeout(() => {
-            window.__beauBusyRetryTimer = null;
-            if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis();
-          }, jitter);
-        }
-        return;
-      }
-      const isTimeout = err.name === 'AbortError' || (err.message||'').includes('524') || (err.message||'').toLowerCase().includes('timeout');
+      const isTimeout = err.name === 'AbortError' || err.message.includes('524') || err.message.includes('timeout');
       const msg = isTimeout
-        ? 'Beau timed out waiting for a response (slow inference or proxy cutoff). Try once more — if it keeps failing, the 70B path is overloaded.'
+        ? 'Beau is waking up — model loading. Try again in 30 seconds.'
         : `Error: ${err.message}`;
       if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
       if (box) box.classList.remove('streaming');
-      setStatus('#f59e0b', `Timeout · ${elapsed}s`);
+      setStatus('#f59e0b', `Timeout \u00b7 ${elapsed}s`);
       addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
@@ -1990,15 +1712,6 @@ async function fetchPiFeed() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
-    // Fable5 M2 (2026-08-01): reset backoff on success
-    if (typeof piFeedFailCount !== 'undefined' && (piFeedFailCount > 0 || piFeedBackoffMs !== PI_FEED_BASE_MS)) {
-      piFeedFailCount = 0;
-      piFeedBackoffMs = PI_FEED_BASE_MS;
-      if (piFeedEnabled && piFeedInterval) {
-        clearInterval(piFeedInterval);
-        piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-      }
-    }
 
     // Populate sensor fields
     const set = (id, val) => {
@@ -2103,15 +1816,6 @@ async function fetchPiFeed() {
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
-    // Fable5 M2 fail-backoff (2026-08-01)
-    piFeedFailCount = (piFeedFailCount || 0) + 1;
-    const nextMs = Math.min(PI_FEED_MAX_MS || 15000, (PI_FEED_BASE_MS || 5000) * Math.pow(2, Math.min(piFeedFailCount - 1, 2)));
-    if (nextMs !== piFeedBackoffMs && piFeedEnabled) {
-      piFeedBackoffMs = nextMs;
-      if (piFeedInterval) clearInterval(piFeedInterval);
-      piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-    }
-
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
   }
@@ -2902,7 +2606,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 5000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -2942,7 +2646,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (piFeedToggleEl && piFeedToggleEl.checked) {
     piFeedEnabled = true;
     fetchPiFeed();
-    piFeedInterval = setInterval(fetchPiFeed, 5000);
+    piFeedInterval = setInterval(fetchPiFeed, 2000);
   }
 
   // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
@@ -2983,7 +2687,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
-  setInterval(() => { if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
   // Run once on load after a short delay
   setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
@@ -3042,201 +2746,11 @@ async function fetchForecast() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.status === 'success') {
-      renderForecast(data);
-      renderTideMoon(data);
-    }
+    if (data.status === 'success') renderForecast(data);
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
     document.getElementById('forecast-meta').textContent = 'Forecast offline';
-  }
-}
-
-// ── Tide + moon phase (added 2026-08-05, Cap request) ──────────────────────
-// Rides the same /api/beau/forecast payload as the wind/wave forecast strip
-// (backend now includes "tide" + "moon" fields, see beau_server.py get_tide_data()
-// / get_moon_phase()) — one fetch, no separate network round-trip needed.
-const MOON_EMOJI = {
-  'New Moon': '\u{1F311}', 'Waxing Crescent': '\u{1F312}', 'First Quarter': '\u{1F313}',
-  'Waxing Gibbous': '\u{1F314}', 'Full Moon': '\u{1F315}', 'Waning Gibbous': '\u{1F316}',
-  'Last Quarter': '\u{1F317}', 'Waning Crescent': '\u{1F318}'
-};
-
-function renderTideMoon(data) {
-  const container = document.getElementById('tide-moon-container');
-  const metaEl = document.getElementById('tide-moon-meta');
-  if (!container) return;
-
-  const tide = data.tide;
-  const moon = data.moon;
-
-  let html = '';
-
-  // Moon phase card
-  if (moon) {
-    const emoji = MOON_EMOJI[moon.phase_name] || '\u{1F311}';
-    html += `
-      <div class="forecast-card" style="min-width:140px">
-        <div class="fc-time">MOON PHASE</div>
-        <div class="fc-wind" style="font-size:28px">${emoji}</div>
-        <div class="fc-dir">${moon.phase_name}</div>
-        <div class="fc-press">${moon.illumination_pct}% illum.</div>
-      </div>`;
-  }
-
-  // Tide station + forecast card
-  if (tide && tide.forecast && tide.forecast.extremes && tide.forecast.extremes.length) {
-    const extremes = tide.forecast.extremes.slice(0, 6); // next few highs/lows
-    const stationName = tide.forecast.station_name || (tide.stations[0] && tide.stations[0].name) || 'Nearest station';
-    html += `<div class="forecast-card" style="min-width:260px;align-items:flex-start;text-align:left">
-        <div class="fc-time">TIDE — ${stationName}</div>`;
-    extremes.forEach(ex => {
-      const t = new Date(ex.dt * 1000).toLocaleString('en-US', {weekday:'short', hour:'2-digit', minute:'2-digit'});
-      const typeLabel = (ex.type || '').toUpperCase();
-      const color = typeLabel === 'HIGH' ? '#38bdf8' : '#f59e0b';
-      html += `<div style="font-size:12px;color:${color};padding:2px 0">${typeLabel} ${ex.height.toFixed(2)}m — ${t}</div>`;
-    });
-    html += `</div>`;
-
-    // Nearby stations list (closest 5)
-    if (tide.stations && tide.stations.length) {
-      html += `<div class="forecast-card" style="min-width:220px;align-items:flex-start;text-align:left">
-        <div class="fc-time">NEAREST STATIONS</div>`;
-      tide.stations.forEach(st => {
-        html += `<div style="font-size:11px;color:var(--muted);padding:1px 0">${st.name} — ${st.distance_km}km</div>`;
-      });
-      html += `</div>`;
-    }
-  } else if (!tide) {
-    html += '<div class="forecast-loading" style="color:var(--amber)">Tide data unavailable</div>';
-  }
-
-  container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
-  if (metaEl) {
-    metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
-  }
-
-  // Tide height curve (added 2026-08-05, Cap request) — draws the raw
-  // 30-min-interval height samples WorldTides already returns alongside
-  // extremes, so no extra API call. Same canvas-drawing approach as the
-  // sensor-history sparkline (time-proportional x-axis, gap-aware).
-  if (tide && tide.forecast && tide.forecast.heights && tide.forecast.heights.length > 1) {
-    drawTideCurve(tide.forecast.heights, tide.forecast.extremes || []);
-  }
-}
-
-function drawTideCurve(heights, extremes) {
-  const canvas = document.getElementById('tide-curve-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width  = canvas.offsetWidth  || 400;
-  canvas.height = canvas.offsetHeight || 110;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-
-  const marginLeft = 34, marginRight = 10, marginTop = 8, marginBottom = 16;
-  const plotW = W - marginLeft - marginRight;
-  const plotH = H - marginTop - marginBottom;
-  const plotX = marginLeft, plotY = marginTop;
-
-  const heightVals = heights.map(h => h.height);
-  const tMs = heights.map(h => h.dt * 1000);
-  const tMin = tMs[0], tMax = tMs[tMs.length - 1];
-  const tRange = tMax > tMin ? (tMax - tMin) : 1;
-
-  const min = Math.min(...heightVals), max = Math.max(...heightVals);
-  const pad = (max - min) * 0.12 || 0.1;
-  const yMin = min - pad, yMax = max + pad, yRange = (yMax - yMin) || 1;
-
-  function xFor(ms) { return plotX + ((ms - tMin) / tRange) * plotW; }
-  function yFor(v)  { return plotY + plotH - ((v - yMin) / yRange) * plotH; }
-
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 1;
-  const GRID_ROWS = 3, GRID_COLS = 6;
-  for (let g = 0; g <= GRID_ROWS; g++) {
-    const y = plotY + (g / GRID_ROWS) * plotH;
-    ctx.beginPath(); ctx.moveTo(plotX, y); ctx.lineTo(plotX + plotW, y); ctx.stroke();
-  }
-  for (let g = 0; g <= GRID_COLS; g++) {
-    const x = plotX + (g / GRID_COLS) * plotW;
-    ctx.beginPath(); ctx.moveTo(x, plotY); ctx.lineTo(x, plotY + plotH); ctx.stroke();
-  }
-
-  // Zero-height reference line (chart datum), dashed
-  if (yMin < 0 && yMax > 0) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.setLineDash([3, 3]);
-    const y0 = yFor(0);
-    ctx.beginPath(); ctx.moveTo(plotX, y0); ctx.lineTo(plotX + plotW, y0); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // Tide curve line + fill
-  ctx.beginPath();
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 1.75;
-  heights.forEach((h, i) => {
-    const x = xFor(h.dt * 1000), y = yFor(h.height);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.lineTo(xFor(tMax), plotY + plotH);
-  ctx.lineTo(xFor(tMin), plotY + plotH);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(56,189,248,0.10)';
-  ctx.fill();
-
-  // High/low markers from extremes (dots + labels)
-  ctx.font = '9px var(--font-mono, monospace)';
-  extremes.forEach(ex => {
-    const ms = ex.dt * 1000;
-    if (ms < tMin || ms > tMax) return;
-    const x = xFor(ms), y = yFor(ex.height);
-    const isHigh = (ex.type || '').toLowerCase() === 'high';
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = isHigh ? '#38bdf8' : '#f59e0b';
-    ctx.fill();
-    ctx.fillStyle = isHigh ? '#7dd3fc' : '#fbbf24';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = isHigh ? 'bottom' : 'top';
-    ctx.fillText(ex.height.toFixed(1) + 'm', x, isHigh ? y - 5 : y + 5);
-  });
-
-  // "Now" marker
-  const nowMs = Date.now();
-  if (nowMs >= tMin && nowMs <= tMax) {
-    const xNow = xFor(nowMs);
-    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(xNow, plotY); ctx.lineTo(xNow, plotY + plotH); ctx.stroke();
-  }
-
-  // Left axis: height scale (m)
-  ctx.font = '9px var(--font-mono, monospace)';
-  ctx.fillStyle = '#38bdf8';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  for (let g = 0; g <= GRID_ROWS; g++) {
-    const y = plotY + (g / GRID_ROWS) * plotH;
-    const val = yMax - (g / GRID_ROWS) * yRange;
-    ctx.fillText(val.toFixed(1) + 'm', plotX - 4, y);
-  }
-
-  // Bottom axis: day/time labels
-  ctx.fillStyle = 'var(--muted, #888)';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  for (let g = 0; g <= GRID_COLS; g++) {
-    const frac = g / GRID_COLS;
-    const ms = tMin + frac * tRange;
-    const x = plotX + frac * plotW;
-    const d = new Date(ms);
-    const label = d.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
-    ctx.fillText(label, x, plotY + plotH + 3);
   }
 }
 
@@ -3267,7 +2781,7 @@ function renderForecast(data) {
 
   // Forecast cards
   let html = '<div class="forecast-cards">';
-  fc.forEach((f, idx) => {
+  fc.forEach(f => {
     const col      = windColor(f.wind_kts);
     const arrow    = windArrow(f.wind_dir_deg);
     const cardinal = windCardinal(f.wind_dir_deg);
@@ -3276,7 +2790,7 @@ function renderForecast(data) {
     const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
     const timeLabel = f.valid_time || `+${f.lead_hours}H`;
     html += `
-      <div class="forecast-card ${idx === 0 ? 'current' : ''}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
+      <div class="forecast-card" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
         <div class="fc-time">${timeLabel}</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
@@ -3777,16 +3291,6 @@ aisMap.on('moveend zoomend', () => {
 // Backward-compat alias so the existing invalidateSize()/redraw() call
 // sites (tab-switch handler, zone-load handler) keep working unchanged.
 const noaaChartLayer = { redraw: noaaChartRedraw };
-
-// Cap 2026-07-31: NOAA MCS charts are US-only. In Campos Basin the export
-// returns a fully transparent PNG, so the AIS map looked blank/"not loading".
-// Put a global basemap underneath; keep NOAA chart as an overlay when present.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 19,
-    opacity: 1.0
-}).addTo(aisMap);
-
 noaaChartRedraw();
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
@@ -4037,60 +3541,6 @@ function aisToggleLightning() {
         if (lightningLayer && weatherMap.hasLayer(lightningLayer)) weatherMap.removeLayer(lightningLayer);
         lightningLayer = null;
         btn.textContent = '\u26A1 Lightning: OFF';
-        btn.classList.remove('active');
-        legend.style.display = 'none';
-        setTimeout(() => weatherMap.invalidateSize(), 0);
-    }
-}
-
-// ── GOES-East satellite imagery panel (added 2026-08-11, Cap request) ──────
-// CHANGED same day: originally a Leaflet ImageOverlay draped on the zoomable
-// map. Cap caught two real bugs on first live look: (1) Full Disk imagery is
-// a circular disk, mapped as a rectangle, so the "deep space" corners of that
-// rectangle let the base OSM map bleed through at low/med zoom; (2) zooming
-// in on the vessel's own position just upscales the same ~1808px full-disk
-// JPEG -- no hidden detail underneath, renders as a useless white cloud blob.
-// Both are hard resolution/shape ceilings of the Full Disk product itself,
-// not fixable with zoom caps or CSS. Fix: plain static <img>, not a map
-// layer -- no zoom, no pan, no seam, no false promise of local detail. This
-// honestly matches what Full Disk GeoColor actually is: one current snapshot
-// of the whole GOES-East hemisphere. True zoomed-in local detail needs NOAA
-// mesoscale/regional sector crops + GPS reprojection -- open phase-2 item,
-// not yet built, not yet logged to BEAU_FEATURES.md per Cap's hold request.
-// Source: currently GOES-19 (took over as "GOES-East" from GOES-16 in Apr
-// 2025) -- label says "GOES-East" generically so it stays correct through
-// future satellite rotations.
-const GOES_IMAGE_URL = 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/1808x1808.jpg';
-let goesEnabled = false;
-let goesRefreshTimer = null;
-
-function goesRefreshImage() {
-    const img = document.getElementById('goes-static-img');
-    if (img) img.src = GOES_IMAGE_URL + '?_=' + Date.now(); // cache-bust for latest frame
-    const ts = document.getElementById('ais-goes-timestamp');
-    if (ts) ts.textContent = 'Last refreshed ' + now();
-}
-
-function aisToggleGoes() {
-    const btn = document.getElementById('ais-goes-toggle');
-    const legend = document.getElementById('ais-goes-legend');
-    const panel = document.getElementById('goes-static-panel');
-    goesEnabled = !goesEnabled;
-
-    if (goesEnabled) {
-        goesRefreshImage();
-        panel.style.display = 'block';
-        btn.textContent = '\u{1F6F0}\uFE0F Satellite: ON';
-        btn.classList.add('active');
-        legend.style.display = 'flex';
-        setTimeout(() => weatherMap.invalidateSize(), 0);
-        // GOES-East full disk updates on a ~10 min cadence -- refresh to match
-        if (goesRefreshTimer) clearInterval(goesRefreshTimer);
-        goesRefreshTimer = setInterval(() => { if (goesEnabled) goesRefreshImage(); }, 10 * 60 * 1000);
-    } else {
-        if (goesRefreshTimer) { clearInterval(goesRefreshTimer); goesRefreshTimer = null; }
-        panel.style.display = 'none';
-        btn.textContent = '\u{1F6F0}\uFE0F Satellite: OFF';
         btn.classList.remove('active');
         legend.style.display = 'none';
         setTimeout(() => weatherMap.invalidateSize(), 0);
@@ -4467,132 +3917,6 @@ function aisUpdateInference(inf) {
     if (top && top.local_agreement) bits.push('vs local: ' + top.local_agreement);
     if (top && top.claim_ref) bits.push(top.claim_ref);
     meta.textContent = bits.join(' · ');
-    if (typeof aisUpdateCpaUi === 'function') aisUpdateCpaUi(inf);
-}
-
-// --- CPA + Beau alert indicator (2026-07-30) ---
-const AIS_CPA_SETTINGS_URL = (typeof AIS_API_URL === 'string')
-  ? AIS_API_URL.replace(/\/api\/ais\/?$/, '/api/ais_cpa_settings')
-  : 'https://beau.beaufort-ai.com/api/ais_cpa_settings';
-let aisCpaSettingsLoaded = false;
-let aisLastAlertKey = null;
-
-function beauSetAlertPill(level, text) {
-  const el = document.getElementById('beau-alert-pill');
-  if (!el) return;
-  const lvl = (level || 'clear').toLowerCase();
-  const cls = ['clear','watch','warning','caution','alert','alarm'].includes(lvl) ? lvl : 'clear';
-  el.className = 'beau-alert-pill ' + cls;
-  el.textContent = text || ('BEAU: ' + cls.toUpperCase());
-}
-
-function aisSetTabBadge(count, severity) {
-  const el = document.getElementById('tab-badge-ais');
-  if (!el) return;
-  const n = count || 0;
-  el.textContent = n > 9 ? '9+' : String(n);
-  el.classList.toggle('show', n > 0);
-  el.classList.remove('watch','alert');
-  const sev = (severity || '').toLowerCase();
-  if (n > 0) {
-    if (sev === 'alarm' || sev === 'warning' || sev === 'alert') el.classList.add('alert');
-    else el.classList.add('watch');
-  }
-}
-
-function aisMaybeToastClosePass(sig) {
-  if (!sig || !sig.message) return;
-  const key = [sig.type, sig.mmsi || '', sig.severity || '', sig.tcpa_min || '', sig.cpa_nm || ''].join('|');
-  if (key === aisLastAlertKey) return;
-  aisLastAlertKey = key;
-  if (typeof fleetShowToast === 'function') {
-    const sev = (sig.severity || 'WATCH').toLowerCase();
-    fleetShowToast({
-      severity: sev === 'alarm' ? 'critical' : sev === 'warning' ? 'warning' : 'info',
-      title: 'AIS Close-Pass',
-      body: sig.message,
-    });
-  }
-}
-
-function aisUpdateCpaUi(inf) {
-  const cpa = (inf && inf.cpa) || {};
-  const meta = document.getElementById('ais-cpa-meta');
-  const safeInput = document.getElementById('ais-safe-cpa');
-  const modeSel = document.getElementById('ais-cpa-mode');
-  if (safeInput && cpa.safe_cpa_nm != null && !safeInput.matches(':focus')) safeInput.value = Number(cpa.safe_cpa_nm).toFixed(2);
-  if (modeSel && cpa.settings && cpa.settings.mode && !modeSel.matches(':focus')) modeSel.value = cpa.settings.mode;
-  if (meta) {
-    const bits = [];
-    bits.push('mode ' + String(cpa.mode || '--').toUpperCase());
-    if (cpa.safe_cpa_nm != null) bits.push('safe ' + Number(cpa.safe_cpa_nm).toFixed(2) + 'nm');
-    if (cpa.effective_safe_cpa_nm != null) bits.push('eff ' + Number(cpa.effective_safe_cpa_nm).toFixed(2) + 'nm');
-    if (cpa.own_sog_kts != null) bits.push('own ' + Number(cpa.own_sog_kts).toFixed(1) + 'kt');
-    if (cpa.alert_count != null) bits.push(cpa.alert_count + ' CPA alert' + (cpa.alert_count === 1 ? '' : 's'));
-    if (cpa.mode === 'port') bits.push('port quieting ON');
-    meta.textContent = bits.join(' · ');
-  }
-  const contacts = cpa.contacts || [];
-  const byMmsi = {};
-  contacts.forEach(c => { if (c && c.mmsi != null) byMmsi[String(c.mmsi)] = c; });
-  document.querySelectorAll('.ais-vessel-row[data-mmsi]').forEach(row => {
-    row.classList.remove('cpa-watch','cpa-warning','cpa-alarm');
-    const c = byMmsi[row.getAttribute('data-mmsi')];
-    if (!c || !c.severity) return;
-    const sev = String(c.severity).toLowerCase();
-    if (sev === 'alarm') row.classList.add('cpa-alarm');
-    else if (sev === 'warning') row.classList.add('cpa-warning');
-    else if (sev === 'watch') row.classList.add('cpa-watch');
-  });
-  const signals = (inf && inf.signals) || [];
-  const close = signals.filter(s => s && s.type === 'close_pass' && !(s.message && s.message.toUpperCase().includes('KIRT')));
-  const topClose = close[0] || null;
-  const topSev = (inf && inf.summary && inf.summary.top_severity) || (topClose && topClose.severity) || null;
-  aisSetTabBadge(close.length || ((inf && inf.summary && inf.summary.cpa_alert_count) || 0), topSev);
-  if (topClose) {
-    aisMaybeToastClosePass(topClose);
-    const lvl = String(topClose.severity || 'watch').toLowerCase();
-    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + (topClose.severity || 'WATCH') + ' · CPA');
-  } else if (topSev && String(topSev).toUpperCase() !== 'INFO') {
-    const lvl = String(topSev).toLowerCase();
-    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + String(topSev).toUpperCase());
-  } else {
-    beauSetAlertPill('clear', 'BEAU: CLEAR');
-  }
-}
-
-async function aisLoadCpaSettings() {
-  try {
-    const res = await fetch(AIS_CPA_SETTINGS_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const s = await res.json();
-    const safeInput = document.getElementById('ais-safe-cpa');
-    const modeSel = document.getElementById('ais-cpa-mode');
-    if (safeInput && s.safe_cpa_nm != null) safeInput.value = Number(s.safe_cpa_nm).toFixed(2);
-    if (modeSel && s.mode) modeSel.value = s.mode;
-    aisCpaSettingsLoaded = true;
-    const meta = document.getElementById('ais-cpa-meta');
-    if (meta) meta.textContent = 'saved safe ' + Number(s.safe_cpa_nm || 1).toFixed(2) + 'nm · mode ' + String(s.mode || 'auto').toUpperCase() + (s.effective_mode ? (' · now ' + String(s.effective_mode).toUpperCase()) : '');
-  } catch (e) {
-    const meta = document.getElementById('ais-cpa-meta');
-    if (meta) meta.textContent = 'CPA settings unavailable';
-  }
-}
-
-async function aisSaveCpaSettings() {
-  const safeInput = document.getElementById('ais-safe-cpa');
-  const modeSel = document.getElementById('ais-cpa-mode');
-  const meta = document.getElementById('ais-cpa-meta');
-  const body = { safe_cpa_nm: safeInput ? Number(safeInput.value) : 1.0, mode: modeSel ? modeSel.value : 'auto' };
-  try {
-    const res = await fetch(AIS_CPA_SETTINGS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const s = await res.json();
-    if (meta) meta.textContent = 'saved · safe ' + Number(s.safe_cpa_nm || body.safe_cpa_nm).toFixed(2) + 'nm · mode ' + String(s.mode || body.mode).toUpperCase();
-    if (typeof aisPoll === 'function') aisPoll();
-  } catch (e) {
-    if (meta) meta.textContent = 'save failed';
-  }
 }
 
 async function aisPoll() {
@@ -4603,39 +3927,13 @@ async function aisPoll() {
         aisUpdateChart(data);
         aisUpdateZone(data.zone);
         aisUpdateInference(data.inference);
-        if (!aisCpaSettingsLoaded) aisLoadCpaSettings();
     } catch (e) {
         document.getElementById('ais-status').textContent = 'AIS feed unavailable';
         aisUpdateInference(null);
-        beauSetAlertPill('clear', 'BEAU: OFFLINE');
     }
 }
 setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
 </script>
-  <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
-  <script>
-    function toggleTheme() {
-        const body = document.body;
-        const btn = document.getElementById('themeBtn');
-        if (body.classList.contains('light-theme')) {
-            body.classList.remove('light-theme');
-            btn.innerHTML = '☀ Light Mode';
-            localStorage.setItem('beauTheme', 'dark');
-        } else {
-            body.classList.add('light-theme');
-            btn.innerHTML = '🌙 Dark Mode';
-            localStorage.setItem('beauTheme', 'light');
-        }
-        if (typeof drawSparkline === 'function' && typeof windSpeedHistory !== 'undefined' && windSpeedHistory && windSpeedHistory.length > 0) {
-            drawSparkline();
-        }
-    }
-    if (localStorage.getItem('beauTheme') === 'light') {
-        document.body.classList.add('light-theme');
-        const btn = document.getElementById('themeBtn');
-        if (btn) btn.innerHTML = '🌙 Dark Mode';
-    }
-  </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "beau-fleet-worker",
+  "version": "1.0.0",
+  "description": "Fleet vessel registry, advisories, and hazard-report backend for Beau pilot",
+  "main": "worker.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mimetext": "^3.0.28"
+  }
+}

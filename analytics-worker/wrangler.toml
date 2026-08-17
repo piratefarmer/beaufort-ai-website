@@ -1,0 +1,12 @@
+name = "beau-analytics"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+routes = [
+  { pattern = "analytics.beaufortai.ai/*", zone_name = "beaufortai.ai" }
+]
+
+kv_namespaces = [
+  { binding = "BEAU_ANALYTICS", id = "c0722678fb3a448c8fc76d04b6e9bb72" }
+]

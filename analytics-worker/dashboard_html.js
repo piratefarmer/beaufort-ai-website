@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+// Auto-generated from dashboard.html
+export const DASHBOARD_HTML = `<!DOCTYPE html>
 <!-- BEAU LIVE DASHBOARD v2.0 - Dual Mode: Sensor Auto-Analysis + Operational Q&A
      Mode 1: Any sensor field change auto-triggers Beau analysis (1.5s debounce)
      Mode 2: Text question input -> Beau maritime knowledge response
@@ -162,10 +163,6 @@
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
-    .sensor-card.caution{background:rgba(249,115,22,.12) !important; border-color:rgba(249,115,22,.45) !important;}
-    .sensor-card.caution::before{background:#f97316 !important; opacity:1 !important;}
-    .sensor-card.alert{background:rgba(239,68,68,.14) !important; border-color:rgba(239,68,68,.50) !important;}
-    .sensor-card.alert::before{background:#ef4444 !important; opacity:1 !important;}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
     .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
     .sensor-card:hover .sc-tooltip{display:block}
@@ -268,8 +265,6 @@
     .forecast-card{flex:1 1 0;min-width:90px;padding:14px 8px;border-right:1px solid var(--border);text-align:center;transition:background .2s}
     .forecast-card:last-child{border-right:none}
     .forecast-card:hover{background:rgba(255,255,255,.03)}
-    .forecast-card.current{background:rgba(59,130,246,0.15); border-top:2px solid var(--blue); position:relative;}
-    .forecast-card.current::after{content:"CURRENT";position:absolute;top:2px;right:4px;font-size:8px;color:var(--blue);letter-spacing:1px;}
     .fc-time{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;font-weight:600}
     .fc-wind{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
     .fc-wind-unit{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
@@ -397,52 +392,7 @@
     .fleet-toast-dismiss:hover{color:var(--text)}
     .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
     @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
-  
-    /* ── LIGHT THEME ── */
-    body.light-theme { background: #f0f4f8; color: #1a2a3a; }
-    body.light-theme .site-header { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .dash-header { background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); border-color: #cbd5e1; }
-    body.light-theme .dash-title { color: #0f172a; }
-    body.light-theme .sys-panel { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .sys-row { border-color: #cbd5e1; }
-    body.light-theme .sys-value { color: #0f172a; }
-    body.light-theme .auto-toggle-row { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .sensor-panel { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .buoy-card { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    body.light-theme .buoy-card-header { border-color: #cbd5e1; }
-    body.light-theme .analysis-box { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .analysis-content { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
-    body.light-theme .forecast-strip { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .forecast-strip-header { background: rgba(59,130,246,.05); border-color: #cbd5e1; }
-    body.light-theme .forecast-card { border-color: #cbd5e1; }
-    body.light-theme .forecast-card:hover { background: rgba(0,0,0,.03); }
-    body.light-theme .forecast-sparkline { border-color: #cbd5e1; }
-    body.light-theme .wr-box { background: #ffffff; border-color: #cbd5e1; }
-    body.light-theme .wr-value { color: #0f172a; }
-    body.light-theme #wind-rose { background: #f8fafc; border: 1px solid #cbd5e1; }
-    body.light-theme .query-input { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
-    body.light-theme .query-input::placeholder { color: #94a3b8; }
-    body.light-theme .ops-btn { background: #f8fafc; border-color: #cbd5e1; color: #475569; }
-    body.light-theme .ops-btn:hover { border-color: #3b82f6; color: #3b82f6; }
-    body.light-theme .ops-btn.active.short { background: #dcfce7; border-color: #16a34a; color: #166534; }
-    body.light-theme .ops-btn.active.long { background: #ffedd5; border-color: #ea580c; color: #9a3412; }
-    body.light-theme .ops-btn.active.transit { background: #e0f2fe; border-color: #3b82f6; color: #1e40af; }
-    body.light-theme .fc-time { color: #64748b; }
-    body.light-theme .fc-dir { color: #64748b; }
-    body.light-theme .fc-press { color: #64748b; }
-    body.light-theme .fc-temp { color: #64748b; }
-    
-    .theme-toggle {
-        background: none; border: 1px solid var(--muted); color: var(--text-dim);
-        border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;
-        margin-left: 10px; font-family: var(--font-mono); transition: all 0.2s;
-        vertical-align: middle;
-    }
-    .theme-toggle:hover { color: var(--text); border-color: var(--text-dim); }
-    body.light-theme .theme-toggle { border-color: #94a3b8; color: #64748b; }
-    body.light-theme .theme-toggle:hover { color: #0f172a; border-color: #64748b; }
-    </style>
-    
+  </style>
 </head>
 <body>
 
@@ -487,7 +437,7 @@
 <div class="dash-header">
   <div class="dash-header-inner">
     <div>
-      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀ Light Mode</button></h1>
+      <h1 class="dash-title">BEAU <span class="accent">Live</span> Dashboard</h1>
       <p class="dash-subtitle">Vessel Sensor Integration &middot; AI Maritime Analysis &middot; Real-Time &middot; Dual Mode</p>
     </div>
     <div class="dash-status">
@@ -672,20 +622,6 @@
       </div>
     </div>
 
-    <!-- TIDE + MOON PHASE (added 2026-08-05, Cap request) -->
-    <div class="forecast-strip" id="tide-moon-strip">
-      <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; TIDE &amp; MOON PHASE</span>
-        <span class="forecast-strip-meta" id="tide-moon-meta">Loading...</span>
-      </div>
-      <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
-        <div class="forecast-loading">Fetching tide/moon data...</div>
-      </div>
-      <div style="padding:0 16px 12px">
-        <canvas class="sparkline-canvas" id="tide-curve-canvas" style="width:100%;height:110px"></canvas>
-      </div>
-    </div>
-
     </div>
     <!-- /TAB: CONDITIONS -->
 
@@ -704,7 +640,6 @@
              map, not the vessel/chart map. -->
         <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
         <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
-        <button class="ais-radar-toggle" id="ais-goes-toggle" onclick="aisToggleGoes()" title="Toggle GOES-East full-disk satellite imagery (GeoColor, NOAA/NESDIS)">&#x1F6F0;&#xFE0F; Satellite: OFF</button>
         <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
       </div>
       <!-- Radar playback bar -- shown only while radar overlay is toggled ON. -->
@@ -720,33 +655,6 @@
         <span><span class="legend-dot mid"></span>Recent</span>
         <span><span class="legend-dot dim"></span>Older (fading out)</span>
         <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
-      </div>
-      <!-- GOES-East satellite panel -- shown only while the Satellite toggle is ON.
-           Added 2026-08-11 (Cap request), CHANGED same day: originally built as a
-           Leaflet ImageOverlay draped on the zoomable map, but Cap caught two real
-           bugs on first look: (1) the full-disk image is a circle, mapped as a
-           rectangle, so zoomed-out views showed the base OSM map bleeding through
-           the "deep space" corners; (2) zooming in on the vessel's own position just
-           blows up the same ~1808px full-disk JPEG -- there's no hidden detail
-           underneath, so it renders as an undifferentiated white cloud blob with
-           zero useful information. Both are hard resolution/shape ceilings of the
-           Full Disk product, not fixable with CSS or zoom caps. Downgraded to a
-           plain static (non-zoomable, non-pannable) image panel instead -- this is
-           an honest match for what Full Disk GeoColor can actually provide: a
-           single current snapshot of the whole GOES-East hemisphere, not a
-           zoomable local view. GOES-19 is the current GOES-East bird (took over
-           from GOES-16 in Apr 2025); label deliberately says "GOES-East" not a
-           hardcoded satellite number so it stays correct through future rotations.
-           Real zoomed-in local detail requires NOAA mesoscale/regional sector
-           crops + GPS-based reprojection -- logged as an open phase-2 item, not
-           yet built, not yet added to BEAU_FEATURES.md per Cap's hold request. -->
-      <div class="ais-lightning-legend" id="ais-goes-legend">
-        <span>&#x1F6F0;&#xFE0F; GOES-East Full Disk &middot; GeoColor (NOAA/NESDIS/STAR)</span>
-        <span id="ais-goes-timestamp" style="color:var(--text-dim)">Loading...</span>
-        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min &bull; static snapshot, not zoomable</span>
-      </div>
-      <div id="goes-static-panel" style="display:none;text-align:center;padding:10px 16px;background:#05070c">
-        <img id="goes-static-img" src="" alt="GOES-East Full Disk GeoColor" style="max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border)">
       </div>
       <div id="weather-map"></div>
       <div class="weather-map-legend" id="weather-map-legend">
@@ -1161,11 +1069,6 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
-let piFeedFailCount = 0;
-let piFeedBackoffMs = 5000;
-const PI_FEED_BASE_MS = 5000;
-const PI_FEED_MAX_MS = 15000;
-
 let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
 let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
@@ -1195,10 +1098,10 @@ function renderCachedAnalysis() {
   if (badge) {
     badge.textContent = lastAnalysisResult.alertLevel;
     const lvlCls = lastAnalysisResult.alertLevel==='ADVISORY'?'advisory':lastAnalysisResult.alertLevel==='CAUTION'?'caution':'normal';
-    badge.className = `analysis-alert-badge ${lvlCls}`;
+    badge.className = \`analysis-alert-badge \${lvlCls}\`;
   }
   const ageS = Math.round((Date.now() - lastAnalysisResult.cachedAt) / 1000);
-  if (conf) { conf.textContent = `Cached · ${ageS}s ago`; conf.style.display = 'block'; }
+  if (conf) { conf.textContent = \`Cached · \${ageS}s ago\`; conf.style.display = 'block'; }
   if (box) box.classList.remove('streaming');
   return true;
 }
@@ -1266,78 +1169,56 @@ function renderSensorGrid(p) {
   function tooltipHtml(tip) { return tip ? '<div class="sc-tooltip">' + tip + '</div>' : ''; }
 
   // POSITION card — single card, both coords same size
-  const posCard = `<div class="sensor-card position">
+  const posCard = \`<div class="sensor-card position">
     <div class="sc-label">POSITION</div>
-    <div class="sc-value" style="font-size:18px">${(p.latitude && p.longitude) ? decToDMS(p.latitude, true) : '--'}</div>
-    <div class="sc-value" style="font-size:18px;margin-top:4px">${(p.latitude && p.longitude) ? decToDMS(p.longitude, false) : '--'}</div>
-    <div class="sc-unit">${(p.latitude && p.longitude) ? '' : 'no GPS fix'}</div>
-  </div>`;
+    <div class="sc-value" style="font-size:18px">\${(p.latitude && p.longitude) ? decToDMS(p.latitude, true) : '--'}</div>
+    <div class="sc-value" style="font-size:18px;margin-top:4px">\${(p.latitude && p.longitude) ? decToDMS(p.longitude, false) : '--'}</div>
+    <div class="sc-unit">\${(p.latitude && p.longitude) ? '' : 'no GPS fix'}</div>
+  </div>\`;
 
   // SOG card (renamed from VESSEL MOTION 2026-07-11, Cap's request)
-  const motionCard = `<div class="sensor-card position">
+  const motionCard = \`<div class="sensor-card position">
     <div class="sc-label">SOG</div>
-    <div class="sc-value">${p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--'}</div>
-    <div class="sc-unit">${p.speed_over_ground > 0 ? 'kt SOG &middot; COG ' + p.course_over_ground + '&deg;' : 'at rest'}</div>
-  </div>`;
+    <div class="sc-value">\${p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--'}</div>
+    <div class="sc-unit">\${p.speed_over_ground > 0 ? 'kt SOG &middot; COG ' + p.course_over_ground + '&deg;' : 'at rest'}</div>
+  </div>\`;
 
   // WEATHERDOT group (gold) — pressure, humidity, air temp, dew point
-  // Map categories to CSS classes
-  const getSeverityClass = (cat) => {
-    if (!cat) return '';
-    const c = cat.toLowerCase();
-    if (c.includes('extreme') || c.includes('high') || c.includes('danger')) return 'alert';
-    if (c.includes('caution') || c.includes('moderate') || c.includes('elevated')) return 'caution';
-    return '';
-  };
-
-  const fogCls = getSeverityClass(p.fog_category);
-  const heatCls = getSeverityClass(p.heat_index_category);
-
   const weatherCards = [
     {label:'PRESSURE', value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',
-     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline',
-     extraCls: p.pressure > 0 ? (p.pressure < 995 ? 'alert' : (p.pressure < 1005 ? 'caution' : '')) : ''},
+     unit:p.pressure > 0 ? \`hPa\${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}\` : 'sensor offline'},
     {label:'HUMIDITY',  value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',
-     unit:p.humidity > 0 ? '% RH' : 'sensor offline', extraCls: ''},
+     unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
     {label:'AIR TEMP',  value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',
      unit:p.air_temp > 0 ? '°F' : 'sensor offline',
-     tip: p.heat_index_category && p.heat_index_category !== 'Normal' ? `Heat Index: ${p.heat_index_category}` : 'Barometer sensor temperature.',
-     extraCls: heatCls},
+     tip:'Barometer sensor temperature.'},
     {label:'DEW POINT', value:dewPt,
      unit:(p.air_temp>0 && p.humidity>0) ? '°F' : 'sensor offline',
-     tip: p.fog_category && p.fog_category !== 'Normal' ? `Fog Risk: ${p.fog_category}` : 'When air temp ≈ dew point → fog risk.',
-     extraCls: fogCls},
+     tip:'When air temp ≈ dew point → fog risk.'},
   ].map(c =>
-    `<div class="sensor-card pressure ${c.extraCls}">${tooltipHtml(c.tip)}
-      <div class="sc-label">${c.label}</div>
-      <div class="sc-value">${c.value}</div>
-      <div class="sc-unit">${c.unit}</div>
-    </div>`
+    \`<div class="sensor-card pressure">\${tooltipHtml(c.tip)}
+      <div class="sc-label">\${c.label}</div>
+      <div class="sc-value">\${c.value}</div>
+      <div class="sc-unit">\${c.unit}</div>
+    </div>\`
   ).join('');
 
   // IMU group (purple) — roll, pitch, yaw, magnitude
-  const getImuClass = (val, threshold) => (val != null && Math.abs(val) > threshold) ? 'alert' : '';
-  const getMagClass = (val) => (val > 2.5) ? 'alert' : (val > 1.8) ? 'caution' : '';
-
   const imuCards = [
-    {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}°` : '--',
-     unit:'lateral tilt', tip:'Positive = starboard down.',
-     extraCls: getImuClass(p.roll, 15)},
-    {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}°` : '--',
-     unit:'fore-aft tilt', tip:'Positive = bow up.',
-     extraCls: getImuClass(p.pitch, 10)},
-    {label:'YAW',       value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}°` : '--',
-     unit:'rotation', tip:'Positive = turning right.',
-     extraCls: ''},
+    {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? \`\${p.roll>0?'+':''}\${p.roll.toFixed(1)}°\` : '--',
+     unit:'lateral tilt', tip:'Positive = starboard down.'},
+    {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? \`\${p.pitch>0?'+':''}\${p.pitch.toFixed(1)}°\` : '--',
+     unit:'fore-aft tilt', tip:'Positive = bow up.'},
+    {label:'YAW',       value:p.yaw != null ? \`\${p.yaw>0?'+':''}\${p.yaw.toFixed(1)}°\` : '--',
+     unit:'rotation', tip:'Positive = turning right.'},
     {label:'MAGNITUDE', value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--',
-     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.',
-     extraCls: getMagClass(p.magnitude)},
+     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.'},
   ].map(c =>
-    `<div class="sensor-card motion ${c.extraCls}">${tooltipHtml(c.tip)}
-      <div class="sc-label">${c.label}</div>
-      <div class="sc-value">${c.value}</div>
-      <div class="sc-unit">${c.unit}</div>
-    </div>`
+    \`<div class="sensor-card motion">\${tooltipHtml(c.tip)}
+      <div class="sc-label">\${c.label}</div>
+      <div class="sc-value">\${c.value}</div>
+      <div class="sc-unit">\${c.unit}</div>
+    </div>\`
   ).join('');
 
   grid.innerHTML = posCard + motionCard + weatherCards + imuCards;
@@ -1350,7 +1231,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
   // first useful tokens (context build + 70B). Abort was mislabeled as
   // "model loading" even when llama3.3:70b was already hot. Use a long
   // overall budget + idle timeout that resets on each chunk.
-  // Fable5 C1 (2026-08-01): special-case 429 busy with retry_after + no generic throw.
   const controller = new AbortController();
   const OVERALL_MS = 240000; // 4 min hard ceiling
   const IDLE_MS = 120000;    // abort only if no bytes for 2 min after start
@@ -1374,19 +1254,9 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     });
     bumpIdle();
 
-    if (res.status === 429) {
-      const j = await res.json().catch(() => ({}));
-      const wait = (j.retry_after_sec || 15) * 1000;
-      const err = new Error(j.message || 'Beau is busy');
-      err.busy = true;
-      err.retryMs = wait;
-      onError(err);
-      return;
-    }
-
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
-      throw new Error(`HTTP ${res.status}: ${errText.slice(0,200)}`);
+      throw new Error(\`HTTP \${res.status}: \${errText.slice(0,200)}\`);
     }
 
     const contentType = res.headers.get('content-type') || '';
@@ -1403,7 +1273,7 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
         if (done) break;
         bumpIdle();
         buffer += decoder.decode(value, {stream: true});
-        const lines = buffer.split('\n');
+        const lines = buffer.split('\\n');
         buffer = lines.pop(); // keep incomplete last line
         for (const line of lines) {
           if (!line.startsWith('data:')) continue;
@@ -1411,27 +1281,11 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
           if (!raw || raw === '[DONE]') continue;
           try {
             const parsed = JSON.parse(raw);
-            // Server busy SSE (lock deferred to Ollama path)
-            if (parsed.error === 'busy') {
-              const wait = (parsed.retry_after_sec || 15) * 1000;
-              const err = new Error(parsed.message || 'Beau is busy');
-              err.busy = true;
-              err.retryMs = wait;
-              onError(err);
-              return;
-            }
-            // Skip empty preparing keepalives in UI
-            if (parsed.status === 'preparing' && !parsed.token) continue;
             if (parsed.token) {
               onToken(parsed.token);
             }
             if (parsed.done) {
               finalData = parsed;
-            }
-            if (parsed.error && parsed.error !== 'busy') {
-              const err = new Error(parsed.message || parsed.error);
-              onError(err);
-              return;
             }
           } catch(e) {
             // raw text token fallback
@@ -1444,14 +1298,6 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     } else {
       // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
-      if (data && data.error === 'busy') {
-        const wait = (data.retry_after_sec || 15) * 1000;
-        const err = new Error(data.message || 'Beau is busy');
-        err.busy = true;
-        err.retryMs = wait;
-        onError(err);
-        return;
-      }
       const prediction = data.prediction || data;
       // Extract text — prefer response field (cached sensor hits), then answer, then description
       const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
@@ -1508,7 +1354,7 @@ async function runSensorAnalysis() {
   if (badge) {badge.className='analysis-alert-badge'; badge.textContent='';}
   if (conf)  {conf.style.display='none'; conf.textContent='';}
   if (box)   box.classList.add('streaming');
-  if (body)  body.innerHTML = `<div class="thinking-state"><div class="spinner"></div><span>Beau is analyzing sensor data<span class="thinking-dots"></span></span></div>`;
+  if (body)  body.innerHTML = \`<div class="thinking-state"><div class="spinner"></div><span>Beau is analyzing sensor data<span class="thinking-dots"></span></span></div>\`;
 
   setStatus('#f59e0b', 'Sensor analysis...');
   setEl('analysis-time', now());
@@ -1526,7 +1372,7 @@ async function runSensorAnalysis() {
       }
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
       }
     },
     (finalData) => {
@@ -1551,29 +1397,29 @@ async function runSensorAnalysis() {
       if (badge) {
         badge.textContent = alertLevel;
         const lvlCls = alertLevel==='ADVISORY'?'advisory':alertLevel==='CAUTION'?'caution':'normal';
-        badge.className = `analysis-alert-badge ${lvlCls}`;
+        badge.className = \`analysis-alert-badge \${lvlCls}\`;
       }
       if (conf) {
-        conf.textContent = `Confidence: ${confidence !== null ? (confidence*100).toFixed(0)+'%' : 'N/A'}  \u00b7  Inference: ${elapsed}s`;
+        conf.textContent = \`Confidence: \${confidence !== null ? (confidence*100).toFixed(0)+'%' : 'N/A'}  \\u00b7  Inference: \${elapsed}s\`;
         conf.style.display = 'block';
       }
       if (box) box.classList.remove('streaming');
 
       // Sidebar
-      setEl('inference-time', `${elapsed}s`);
+      setEl('inference-time', \`\${elapsed}s\`);
       setEl('last-query-time', now());
-      setEl('last-updated', `Sensor query: ${now()}`);
+      setEl('last-updated', \`Sensor query: \${now()}\`);
       queryCount++;
       setEl('query-count', queryCount.toString());
 
       const alertEl = document.getElementById('alert-status');
       if (alertEl) {
         if (alertLevel==='ADVISORY') {alertEl.textContent='! ADVISORY'; alertEl.className='sys-value red-text';}
-        else if (alertLevel==='CAUTION') {alertEl.textContent='\u25c8 CAUTION'; alertEl.className='sys-value amber-text';}
-        else {alertEl.textContent='\u25cf NORMAL'; alertEl.className='sys-value green-text';}
+        else if (alertLevel==='CAUTION') {alertEl.textContent='\\u25c8 CAUTION'; alertEl.className='sys-value amber-text';}
+        else {alertEl.textContent='\\u25cf NORMAL'; alertEl.className='sys-value green-text';}
       }
 
-      setStatus('#22c55e', `Sensor OK \u00b7 ${elapsed}s`);
+      setStatus('#22c55e', \`Sensor OK \\u00b7 \${elapsed}s\`);
       addHistory('SENSOR', alertLevel, streamedText.trim(), confidence, payload);
       // Save to client-side cache
       lastAnalysisResult = {
@@ -1584,39 +1430,23 @@ async function runSensorAnalysis() {
         cachedAt: Date.now()
       };
     },
-        (err) => {
+    (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      // Fable5 C1 (2026-08-01): busy is not a hard failure - show queue + one auto-retry.
-      if (err && err.busy) {
-        const waitMs = err.retryMs || 15000;
-        const waitSec = Math.round(waitMs / 1000);
-        const msg = `Beau busy — retrying in ${waitSec}s`;
-        if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
-        if (box) box.classList.remove('streaming');
-        setStatus('#f59e0b', `Busy 🏅 retry ${waitSec}s`);
-        addHistory('SENSOR', 'BUSY', msg, null, payload);
-        if (autoEnabled && !window.__beauBusyRetryTimer) {
-          const jitter = waitMs * (0.8 + Math.random() * 0.4);
-          window.__beauBusyRetryTimer = setTimeout(() => {
-            window.__beauBusyRetryTimer = null;
-            if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis();
-          }, jitter);
-        }
-        return;
-      }
       const isTimeout = err.name === 'AbortError' || (err.message||'').includes('524') || (err.message||'').toLowerCase().includes('timeout');
+      // Cap 2026-07-31: do NOT claim model loading — 70B is usually already hot.
+      // Aborts here are almost always slow first-byte / long inference / CF 524.
       const msg = isTimeout
         ? 'Beau timed out waiting for a response (slow inference or proxy cutoff). Try once more — if it keeps failing, the 70B path is overloaded.'
-        : `Error: ${err.message}`;
-      if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
+        : \`Error: \${err.message}\`;
+      if (body) body.innerHTML = \`<span style="color:var(--amber)">\${msg}</span>\`;
       if (box) box.classList.remove('streaming');
-      setStatus('#f59e0b', `Timeout · ${elapsed}s`);
+      setStatus('#f59e0b', \`Timeout \\u00b7 \${elapsed}s\`);
       addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
 
   sensorRequestInFlight = false;
-  if (btn) {btn.disabled = false; btn.textContent = 'SEND TO BEAU \u2192';}
+  if (btn) {btn.disabled = false; btn.textContent = 'SEND TO BEAU \\u2192';}
 }
 
 // ── MODE 2: OPERATIONAL Q&A ──────────────────────────────────
@@ -1632,7 +1462,7 @@ async function runQAQuery() {
 
   // Show question
   const qDisplay = document.getElementById('qa-question-display');
-  if (qDisplay) {qDisplay.textContent = '\u201c' + question + '\u201d'; qDisplay.classList.add('visible');}
+  if (qDisplay) {qDisplay.textContent = '\\u201c' + question + '\\u201d'; qDisplay.classList.add('visible');}
 
   // UI: thinking state
   const box  = document.getElementById('qa-analysis-box');
@@ -1640,7 +1470,7 @@ async function runQAQuery() {
   const conf = document.getElementById('qa-analysis-confidence');
   if (conf) {conf.style.display='none'; conf.textContent='';}
   if (box)  box.classList.add('streaming');
-  if (body) body.innerHTML = `<div class="thinking-state"><div class="spinner purple"></div><span>Beau is thinking<span class="thinking-dots"></span></span></div>`;
+  if (body) body.innerHTML = \`<div class="thinking-state"><div class="spinner purple"></div><span>Beau is thinking<span class="thinking-dots"></span></span></div>\`;
 
   setStatus('#8b5cf6', 'Q&A query...');
   setEl('qa-analysis-time', now());
@@ -1662,7 +1492,7 @@ async function runQAQuery() {
       if (!streamedText) body.innerHTML = '';
       streamedText += token;
       if (body) {
-        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
+        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor purple"></span>';
       }
     },
     (finalData) => {
@@ -1670,29 +1500,29 @@ async function runQAQuery() {
       if (body) body.textContent = streamedText.trim();
       if (box) box.classList.remove('streaming');
       if (conf) {
-        conf.textContent = `Response time: ${elapsed}s`;
+        conf.textContent = \`Response time: \${elapsed}s\`;
         conf.style.display = 'block';
       }
       setEl('last-query-time', now());
-      setEl('last-updated', `Q&A query: ${now()}`);
+      setEl('last-updated', \`Q&A query: \${now()}\`);
       queryCount++;
       setEl('query-count', queryCount.toString());
-      setEl('inference-time', `${elapsed}s`);
-      setStatus('#22c55e', `Q&A OK \u00b7 ${elapsed}s`);
+      setEl('inference-time', \`\${elapsed}s\`);
+      setStatus('#22c55e', \`Q&A OK \\u00b7 \${elapsed}s\`);
       if (qaInput) qaInput.value = '';
       addHistory('QA', 'QA', streamedText.trim(), null, {question});
     },
     (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      if (body) body.innerHTML = `<span style="color:var(--red)">Error: ${err.message}</span>`;
+      if (body) body.innerHTML = \`<span style="color:var(--red)">Error: \${err.message}</span>\`;
       if (box) box.classList.remove('streaming');
-      setStatus('#ef4444', `Q&A Error \u00b7 ${elapsed}s`);
+      setStatus('#ef4444', \`Q&A Error \\u00b7 \${elapsed}s\`);
       addHistory('QA', 'ERROR', err.message, null, {question});
     }
   );
 
   qaRequestInFlight = false;
-  if (btn) {btn.disabled = false; btn.textContent = 'ASK \u2192';}
+  if (btn) {btn.disabled = false; btn.textContent = 'ASK \\u2192';}
   setEl('sys-mode', autoEnabled ? 'SENSOR AUTO' : 'SENSOR MANUAL');
 }
 
@@ -1806,14 +1636,14 @@ function renderHistory() {
                    : e.type==='SENSOR'    ? 'badge-sensor'
                    : 'badge-normal';
     const badgeLabel = e.type==='QA' ? 'Q&A' : e.level;
-    return `
-      <div class="history-entry" onclick="loadHistory(${i})">
+    return \`
+      <div class="history-entry" onclick="loadHistory(\${i})">
         <div class="history-entry-top">
-          <span class="history-entry-time">${e.time}</span>
-          <span class="history-entry-badge ${badgeCls}">${badgeLabel}</span>
+          <span class="history-entry-time">\${e.time}</span>
+          <span class="history-entry-badge \${badgeCls}">\${badgeLabel}</span>
         </div>
-        <div class="history-entry-text">${e.text}</div>
-      </div>`;
+        <div class="history-entry-text">\${e.text}</div>
+      </div>\`;
   }).join('');
 }
 
@@ -1824,10 +1654,10 @@ function loadHistory(idx) {
     const body = document.getElementById('qa-analysis-body');
     const conf = document.getElementById('qa-analysis-confidence');
     if (body) body.textContent = e.text;
-    if (conf) {conf.textContent = `Queried: ${e.time}`; conf.style.display='block';}
+    if (conf) {conf.textContent = \`Queried: \${e.time}\`; conf.style.display='block';}
     const qd = document.getElementById('qa-question-display');
     if (qd && e.payload) {
-      try {const p = JSON.parse(e.payload); if(p.question){qd.textContent='\u201c'+p.question+'\u201d'; qd.classList.add('visible');}} catch(x){}
+      try {const p = JSON.parse(e.payload); if(p.question){qd.textContent='\\u201c'+p.question+'\\u201d'; qd.classList.add('visible');}} catch(x){}
     }
   } else {
     const body  = document.getElementById('analysis-body');
@@ -1836,9 +1666,9 @@ function loadHistory(idx) {
     if (body) body.textContent = e.text;
     if (badge) {
       badge.textContent = e.level;
-      badge.className = `analysis-alert-badge ${e.level==='ADVISORY'?'advisory':e.level==='CAUTION'?'caution':e.level==='ERROR'?'':'normal'}`;
+      badge.className = \`analysis-alert-badge \${e.level==='ADVISORY'?'advisory':e.level==='CAUTION'?'caution':e.level==='ERROR'?'':'normal'}\`;
     }
-    if (conf) {conf.textContent = `Queried: ${e.time}`; conf.style.display='block';}
+    if (conf) {conf.textContent = \`Queried: \${e.time}\`; conf.style.display='block';}
   }
 }
 
@@ -1855,7 +1685,7 @@ function togglePayload() {
   const pj = document.getElementById('payload-json');
   const tg = document.getElementById('payload-toggle');
   if (pj) pj.style.display = payloadVisible ? 'block' : 'none';
-  if (tg) tg.textContent = (payloadVisible ? '\u25bc HIDE' : '\u25b6 SHOW') + ' LAST PAYLOAD';
+  if (tg) tg.textContent = (payloadVisible ? '\\u25bc HIDE' : '\\u25b6 SHOW') + ' LAST PAYLOAD';
 }
 
 // ── FLAG ISSUE WIDGET (added 2026-07-06) ─────────────────────
@@ -1888,7 +1718,7 @@ function openFlagModal(source) {
     const q = (document.getElementById('qa-question-display')?.textContent || '').trim();
     const a = (document.getElementById('qa-analysis-body')?.textContent || '').trim();
     if (q || a) {
-      ctxPreview.textContent = (q ? 'Q: ' + q + '\n\n' : '') + (a ? 'A: ' + a : '');
+      ctxPreview.textContent = (q ? 'Q: ' + q + '\\n\\n' : '') + (a ? 'A: ' + a : '');
       ctxWrap.style.display = 'block';
     } else {
       ctxWrap.style.display = 'none';
@@ -1930,7 +1760,7 @@ async function submitFlagIssue() {
 
   let question = '', answer = '';
   if (flagModalSource === 'qa') {
-    question = (document.getElementById('qa-question-display')?.textContent || '').replace(/^[\u201c\u201d"]|[\u201c\u201d"]$/g,'').trim();
+    question = (document.getElementById('qa-question-display')?.textContent || '').replace(/^[\\u201c\\u201d"]|[\\u201c\\u201d"]$/g,'').trim();
     answer = (document.getElementById('qa-analysis-body')?.textContent || '').trim();
   } else if (flagModalSource === 'sensor') {
     answer = (document.getElementById('analysis-body')?.textContent || '').trim();
@@ -1954,18 +1784,18 @@ async function submitFlagIssue() {
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (!res.ok) throw new Error(data.error || \`HTTP \${res.status}\`);
 
     // Remember vessel/operator for next time (optional, saved locally only)
     if (vesselName) localStorage.setItem('beauFlagVessel', vesselName); else localStorage.removeItem('beauFlagVessel');
     if (operatorName) localStorage.setItem('beauFlagOperator', operatorName); else localStorage.removeItem('beauFlagOperator');
 
-    if (statusMsg) { statusMsg.textContent = '\u2713 Thanks \u2014 your feedback has been sent to the team.'; statusMsg.className = 'flag-status-msg success'; }
+    if (statusMsg) { statusMsg.textContent = '\\u2713 Thanks \\u2014 your feedback has been sent to the team.'; statusMsg.className = 'flag-status-msg success'; }
     setTimeout(closeFlagModal, 1600);
   } catch (e) {
     if (statusMsg) { statusMsg.textContent = 'Failed to send: ' + e.message + '. Please try again.'; statusMsg.className = 'flag-status-msg error'; }
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'SUBMIT \u2192'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'SUBMIT \\u2192'; }
   }
 }
 
@@ -1977,7 +1807,7 @@ function decToDMS(dec, isLat) {
   const abs = Math.abs(dec);
   const deg = Math.floor(abs);
   const decMin = ((abs - deg) * 60).toFixed(3);
-  return `${deg}°${String(decMin).padStart(6,'0')}'${dir}`;
+  return \`\${deg}°\${String(decMin).padStart(6,'0')}'\${dir}\`;
 }
 
 // ── PI LIVE FEED ─────────────────────────────────────────────────────────
@@ -1987,18 +1817,9 @@ async function fetchPiFeed() {
     const res = await fetch(PI_FEED_URL, {
       headers: { 'x-api-key': BEAU_API_KEY }
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(\`HTTP \${res.status}\`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
-    // Fable5 M2 (2026-08-01): reset backoff on success
-    if (typeof piFeedFailCount !== 'undefined' && (piFeedFailCount > 0 || piFeedBackoffMs !== PI_FEED_BASE_MS)) {
-      piFeedFailCount = 0;
-      piFeedBackoffMs = PI_FEED_BASE_MS;
-      if (piFeedEnabled && piFeedInterval) {
-        clearInterval(piFeedInterval);
-        piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-      }
-    }
 
     // Populate sensor fields
     const set = (id, val) => {
@@ -2082,12 +1903,12 @@ async function fetchPiFeed() {
     const staleWarning = d.stale_warning || null;
     if (stale) {
       const ageMin = Math.round(dataAge / 60);
-      statusEl.textContent = '\uD83D\uDD34 SENSOR OFFLINE — last reading ' + ageMin + ' min ago';
+      statusEl.textContent = '\\uD83D\\uDD34 SENSOR OFFLINE — last reading ' + ageMin + ' min ago';
       statusEl.style.color = 'var(--red, #ef4444)';
       statusEl.style.fontWeight = 'bold';
     } else {
       const ageS = dataAge < 60 ? Math.round(dataAge) + 's ago' : Math.round(dataAge / 60) + ' min ago';
-      statusEl.textContent = '\uD83D\uDFE2 Live · updated ' + ageS + ' · ' + new Date().toLocaleTimeString();
+      statusEl.textContent = '\\uD83D\\uDFE2 Live · updated ' + ageS + ' · ' + new Date().toLocaleTimeString();
       statusEl.style.color = 'var(--green)';
       statusEl.style.fontWeight = 'normal';
     }
@@ -2103,16 +1924,7 @@ async function fetchPiFeed() {
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
-    // Fable5 M2 fail-backoff (2026-08-01)
-    piFeedFailCount = (piFeedFailCount || 0) + 1;
-    const nextMs = Math.min(PI_FEED_MAX_MS || 15000, (PI_FEED_BASE_MS || 5000) * Math.pow(2, Math.min(piFeedFailCount - 1, 2)));
-    if (nextMs !== piFeedBackoffMs && piFeedEnabled) {
-      piFeedBackoffMs = nextMs;
-      if (piFeedInterval) clearInterval(piFeedInterval);
-      piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
-    }
-
-    statusEl.textContent = '\uD83D\uDD34 ' + e.message;
+    statusEl.textContent = '\\uD83D\\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
   }
 }
@@ -2129,12 +1941,12 @@ async function fetchPiFeed() {
 
 function fleetStatusDot(status) {
   const cls = status === 'online' ? 'online' : status === 'stale' ? 'stale' : 'offline';
-  return `<span class="fleet-status-dot ${cls}"></span>`;
+  return \`<span class="fleet-status-dot \${cls}"></span>\`;
 }
 
 function fleetMetricBlock(label, value, unit) {
   const v = (value === null || value === undefined) ? '--' : value;
-  return `<div><div class="fleet-metric-label">${label}</div><div class="fleet-metric-value">${v}${v !== '--' ? ' ' + unit : ''}</div></div>`;
+  return \`<div><div class="fleet-metric-label">\${label}</div><div class="fleet-metric-value">\${v}\${v !== '--' ? ' ' + unit : ''}</div></div>\`;
 }
 
 function fleetTimeAgo(iso) {
@@ -2142,10 +1954,10 @@ function fleetTimeAgo(iso) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.round(diffMs / 60000);
   if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 60) return \`\${mins} min ago\`;
   const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs} hr ago`;
-  return `${Math.round(hrs / 24)} day(s) ago`;
+  if (hrs < 24) return \`\${hrs} hr ago\`;
+  return \`\${Math.round(hrs / 24)} day(s) ago\`;
 }
 
 const FLEET_RELAY_URL = 'https://beau.beaufort-ai.com/api/fleet-relay';
@@ -2160,7 +1972,7 @@ async function fetchVesselData(vessel) {
   // Scales to any number of pilot vessels with zero new public exposure
   // per Pi -- no per-Pi tunnel/funnel to install, maintain, or secure.
   try {
-    const res = await fetch(`${FLEET_RELAY_URL}/${encodeURIComponent(vessel.id)}`, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
+    const res = await fetch(\`\${FLEET_RELAY_URL}/\${encodeURIComponent(vessel.id)}\`, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
     const d = await res.json();
     if (!res.ok || d.status === 'offline') throw new Error(d.error || ('bad status ' + res.status));
     // Field mapping fixed 2026-07-24: initial guesses (d.pressure, d.wind_speed,
@@ -2188,7 +2000,7 @@ async function fetchVesselData(vessel) {
 function fleetSkeletonCards(n) {
   let out = '';
   for (let i = 0; i < n; i++) {
-    out += `<div class="fleet-card">
+    out += \`<div class="fleet-card">
       <div class="fleet-card-top"><div style="width:100%">
         <div class="fleet-skeleton" style="width:70%;margin-bottom:6px"></div>
         <div class="fleet-skeleton" style="width:45%;height:9px"></div>
@@ -2197,7 +2009,7 @@ function fleetSkeletonCards(n) {
         <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
         <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
       </div>
-    </div>`;
+    </div>\`;
   }
   return out;
 }
@@ -2228,7 +2040,7 @@ async function renderFleetGrid() {
   // Fetch each vessel's live telemetry in parallel.
   const results = await Promise.all(vessels.map(v => fetchVesselData(v)));
   const onlineCount = results.filter(r => r.status === 'online').length;
-  if (gridMeta) gridMeta.textContent = `${onlineCount}/${vessels.length} online`;
+  if (gridMeta) gridMeta.textContent = \`\${onlineCount}/\${vessels.length} online\`;
 
   // Cache each vessel's raw relay data (not just the trimmed 4-metric
   // summary) so the detail modal (below) can show a fuller readout
@@ -2243,23 +2055,23 @@ async function renderFleetGrid() {
     // card wrongly showed Chouest's data. Now opens an inline per-vessel
     // detail modal fed by that vessel's own relay data instead.
     const clickable = data.status === 'online';
-    return `
-      <div class="fleet-card status-${data.status}${clickable ? ' is-clickable' : ''}" ${clickable ? `onclick="openFleetVesselDetail('${v.id}')"` : ''}>
+    return \`
+      <div class="fleet-card status-\${data.status}\${clickable ? ' is-clickable' : ''}" \${clickable ? \`onclick="openFleetVesselDetail('\${v.id}')"\` : ''}>
         <div class="fleet-card-top">
           <div>
-            <div class="fleet-card-name">${v.name}</div>
-            <div class="fleet-card-sub">${v.role || ''}</div>
+            <div class="fleet-card-name">\${v.name}</div>
+            <div class="fleet-card-sub">\${v.role || ''}</div>
           </div>
-          ${fleetStatusDot(data.status)}
+          \${fleetStatusDot(data.status)}
         </div>
         <div class="fleet-card-metrics">
-          ${fleetMetricBlock('PRESSURE', data.pressure, 'hPa')}
-          ${fleetMetricBlock('WIND', data.wind, 'kt')}
-          ${fleetMetricBlock('HEADING', data.heading, '°')}
-          ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
+          \${fleetMetricBlock('PRESSURE', data.pressure, 'hPa')}
+          \${fleetMetricBlock('WIND', data.wind, 'kt')}
+          \${fleetMetricBlock('HEADING', data.heading, '°')}
+          \${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
         </div>
-        <div class="fleet-card-footer"><span>${data.lastSeen}</span>${clickable ? '<span>&rarr; Details</span>' : ''}</div>
-      </div>`;
+        <div class="fleet-card-footer"><span>\${data.lastSeen}</span>\${clickable ? '<span>&rarr; Details</span>' : ''}</div>
+      </div>\`;
   }).join('');
 
   grid.innerHTML = cards;
@@ -2278,7 +2090,7 @@ function closeFleetVesselDetail() {
 
 function fleetDetailRow(label, value) {
   if (value === null || value === undefined || value === '') return '';
-  return `<div class="fleet-detail-row"><span class="fleet-detail-label">${label}</span><span class="fleet-detail-value">${value}</span></div>`;
+  return \`<div class="fleet-detail-row"><span class="fleet-detail-label">\${label}</span><span class="fleet-detail-value">\${value}</span></div>\`;
 }
 
 function openFleetVesselDetail(vesselId) {
@@ -2291,21 +2103,21 @@ function openFleetVesselDetail(vesselId) {
   if (raw.barometer) {
     rows += fleetDetailRow('Pressure', raw.barometer.pressure_mb != null ? raw.barometer.pressure_mb + ' hPa' : null);
     rows += fleetDetailRow('Humidity', raw.barometer.humidity_pct != null ? raw.barometer.humidity_pct + ' %RH' : null);
-    rows += fleetDetailRow('Air Temp', raw.barometer.temp_f != null ? raw.barometer.temp_f + ' \u00b0F' : null);
+    rows += fleetDetailRow('Air Temp', raw.barometer.temp_f != null ? raw.barometer.temp_f + ' \\u00b0F' : null);
   }
   if (raw.bme680) {
     rows += fleetDetailRow('Pressure', raw.bme680.pressure_mb != null ? raw.bme680.pressure_mb + ' hPa' : null);
     rows += fleetDetailRow('Humidity', raw.bme680.humidity_pct != null ? raw.bme680.humidity_pct + ' %RH' : null);
-    rows += fleetDetailRow('Temp', raw.bme680.temperature_f != null ? raw.bme680.temperature_f + ' \u00b0F' : null);
+    rows += fleetDetailRow('Temp', raw.bme680.temperature_f != null ? raw.bme680.temperature_f + ' \\u00b0F' : null);
   }
   if (raw.wind) {
     rows += fleetDetailRow('Wind Speed', raw.wind.speed_kts != null ? raw.wind.speed_kts + ' kt' : null);
-    rows += fleetDetailRow('Wind Direction', raw.wind.direction_deg != null ? raw.wind.direction_deg + '\u00b0' : null);
+    rows += fleetDetailRow('Wind Direction', raw.wind.direction_deg != null ? raw.wind.direction_deg + '\\u00b0' : null);
   }
   if (raw.accel) {
-    rows += fleetDetailRow('Heading', raw.accel.heading_deg != null ? raw.accel.heading_deg + '\u00b0' : null);
-    rows += fleetDetailRow('Roll', raw.accel.roll != null ? raw.accel.roll + '\u00b0' : null);
-    rows += fleetDetailRow('Pitch', raw.accel.pitch != null ? raw.accel.pitch + '\u00b0' : null);
+    rows += fleetDetailRow('Heading', raw.accel.heading_deg != null ? raw.accel.heading_deg + '\\u00b0' : null);
+    rows += fleetDetailRow('Roll', raw.accel.roll != null ? raw.accel.roll + '\\u00b0' : null);
+    rows += fleetDetailRow('Pitch', raw.accel.pitch != null ? raw.accel.pitch + '\\u00b0' : null);
   }
   if (raw.gps) {
     rows += fleetDetailRow('Position', (raw.gps.lat != null && raw.gps.lon != null) ? raw.gps.lat.toFixed(4) + ', ' + raw.gps.lon.toFixed(4) : null);
@@ -2317,18 +2129,18 @@ function openFleetVesselDetail(vesselId) {
   modal.id = 'fleet-vessel-modal';
   modal.className = 'fleet-modal-overlay';
   modal.onclick = (e) => { if (e.target === modal) closeFleetVesselDetail(); };
-  modal.innerHTML = `
+  modal.innerHTML = \`
     <div class="fleet-modal">
       <div class="fleet-modal-header">
         <div>
-          <div class="fleet-card-name">${vessel.name}</div>
-          <div class="fleet-card-sub">${vessel.role || ''}</div>
+          <div class="fleet-card-name">\${vessel.name}</div>
+          <div class="fleet-card-sub">\${vessel.role || ''}</div>
         </div>
         <button class="fleet-modal-close" onclick="closeFleetVesselDetail()">&times;</button>
       </div>
-      <div class="fleet-modal-body">${rows}</div>
-      <div class="fleet-card-footer"><span>${data.lastSeen}</span><span>${data.status.toUpperCase()}</span></div>
-    </div>`;
+      <div class="fleet-modal-body">\${rows}</div>
+      <div class="fleet-card-footer"><span>\${data.lastSeen}</span><span>\${data.status.toUpperCase()}</span></div>
+    </div>\`;
   document.body.appendChild(modal);
 }
 
@@ -2353,7 +2165,7 @@ function fleetShowToast(advisory) {
   sevEl.textContent = sev.toUpperCase();
   titleEl.textContent = advisory.title || 'Fleet advisory';
   textEl.textContent = advisory.body || '';
-  iconEl.textContent = sev === 'critical' ? '\u{1F6A8}' : sev === 'warning' ? '\u26A0\uFE0F' : '\u2139\uFE0F';
+  iconEl.textContent = sev === 'critical' ? '\\u{1F6A8}' : sev === 'warning' ? '\\u26A0\\uFE0F' : '\\u2139\\uFE0F';
 
   requestAnimationFrame(() => toast.classList.add('show'));
 
@@ -2463,17 +2275,17 @@ async function renderFleetAdvisories(isPoll) {
   // worker endpoint (already existed, just had no UI hooked to it before
   // — the only way to retire early was a manual curl call).
   const isRmcUnlocked = !!rmcGetKey();
-  list.innerHTML = advisories.map(a => `
+  list.innerHTML = advisories.map(a => \`
     <div class="advisory-item">
-      <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
+      <span class="advisory-severity \${a.severity}">\${a.severity.toUpperCase()}</span>
       <div class="advisory-body">
-        <b>${a.title}</b> — ${a.body}
-        <div class="advisory-meta">Issued by ${a.issued_by} · ${fleetTimeAgo(a.created_at)}</div>
+        <b>\${a.title}</b> — \${a.body}
+        <div class="advisory-meta">Issued by \${a.issued_by} · \${fleetTimeAgo(a.created_at)}</div>
       </div>
-      ${isRmcUnlocked ? `<button type="button" class="advisory-clear-btn" onclick="clearAdvisory('${a.id}')">Clear</button>` : ''}
-    </div>`).join('');
+      \${isRmcUnlocked ? \`<button type="button" class="advisory-clear-btn" onclick="clearAdvisory('\${a.id}')">Clear</button>\` : ''}
+    </div>\`).join('');
 
-  if (meta) meta.textContent = `${advisories.length} active`;
+  if (meta) meta.textContent = \`\${advisories.length} active\`;
   if (meta) meta.style.color = advisories.some(a => a.severity === 'critical') ? 'var(--red)' : '';
 }
 
@@ -2486,7 +2298,7 @@ function fleetFormatLatLon(lat, lon) {
   if (lat === null || lat === undefined || isNaN(lat) || lon === null || lon === undefined || isNaN(lon)) return null;
   const ns = lat >= 0 ? 'N' : 'S';
   const ew = lon >= 0 ? 'E' : 'W';
-  return `${Math.abs(lat).toFixed(4)}${ns} ${Math.abs(lon).toFixed(4)}${ew}`;
+  return \`\${Math.abs(lat).toFixed(4)}\${ns} \${Math.abs(lon).toFixed(4)}\${ew}\`;
 }
 
 // Auto-fills the hazard report's position field from the vessel's own live
@@ -2527,7 +2339,7 @@ function syncReportPositionFromGPS(forceOverwrite) {
     posEl.value = formatted;
     reportPositionIsAutoSynced = true;
   }
-  if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \u2014 edit freely, or tap SYNC to refresh.';
+  if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \\u2014 edit freely, or tap SYNC to refresh.';
 }
 
 async function populateReportVesselDropdown() {
@@ -2537,7 +2349,7 @@ async function populateReportVesselDropdown() {
     const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
     const d = await res.json();
     const vessels = d.vessels || [];
-    sel.innerHTML = vessels.map(v => `<option value="${v.id}">${v.name}</option>`).join('')
+    sel.innerHTML = vessels.map(v => \`<option value="\${v.id}">\${v.name}</option>\`).join('')
       || '<option value="">No vessels registered</option>';
   } catch (e) {
     sel.innerHTML = '<option value="">Unable to load vessels</option>';
@@ -2581,8 +2393,8 @@ function insertRelativeBearingPhrase() {
   const motion = motionEl.value;
   const driftDirNames = { N: 'north', NE: 'northeast', E: 'east', SE: 'southeast', S: 'south', SW: 'southwest', W: 'west', NW: 'northwest' };
   const phrase = motion === 'drifting'
-    ? `Approx ${dist}nm ${dir} of our position, drifting to the ${driftDirNames[driftDirEl.value] || driftDirEl.value}.`
-    : `Approx ${dist}nm ${dir} of our position.`;
+    ? \`Approx \${dist}nm \${dir} of our position, drifting to the \${driftDirNames[driftDirEl.value] || driftDirEl.value}.\`
+    : \`Approx \${dist}nm \${dir} of our position.\`;
 
   const existing = descEl.value.trim();
   descEl.value = existing ? existing + ' ' + phrase : phrase;
@@ -2652,7 +2464,7 @@ async function rmcUnlock() {
   if (!key) return;
 
   const lockStatus = document.getElementById('rmc-lock-status');
-  if (lockStatus) lockStatus.textContent = 'Checking key\u2026';
+  if (lockStatus) lockStatus.textContent = 'Checking key\\u2026';
 
   // Verify the key against the real Worker BEFORE showing "UNLOCKED" —
   // previously this flipped to unlocked unconditionally on any non-empty
@@ -2669,7 +2481,7 @@ async function rmcUnlock() {
     });
     valid = res.status !== 401;
   } catch (e) {
-    if (lockStatus) lockStatus.textContent = 'Could not reach fleet server \u2014 try again.';
+    if (lockStatus) lockStatus.textContent = 'Could not reach fleet server \\u2014 try again.';
     return;
   }
 
@@ -2689,7 +2501,7 @@ async function rmcShowUnlocked() {
   document.getElementById('rmc-unlocked-view').style.display = 'block';
   const lockIcon = document.getElementById('rmc-lock-icon');
   const lockStatus = document.getElementById('rmc-lock-status');
-  if (lockIcon) lockIcon.textContent = '\u{1F513}';
+  if (lockIcon) lockIcon.textContent = '\\u{1F513}';
   if (lockStatus) lockStatus.innerHTML = '<span class="fleet-rmc-unlocked-badge">UNLOCKED</span>';
   await loadRmcReportsInbox();
 }
@@ -2698,14 +2510,14 @@ async function rmcShowUnlocked() {
 // (was already built, just had no dashboard UI wired to it — curl-only
 // until now). Confirms first since this can't be undone from the UI.
 async function clearAdvisory(id) {
-  if (!confirm('Clear this advisory now? It will immediately disappear from every vessel\'s dashboard.')) return;
+  if (!confirm('Clear this advisory now? It will immediately disappear from every vessel\\'s dashboard.')) return;
   try {
     const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories/' + id + '/clear', {
       method: 'POST',
       headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
     });
     if (res.status === 401) {
-      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      alert('Admin key rejected \\u2014 unlock again with the correct key.');
       sessionStorage.removeItem('fleet_admin_key');
       document.getElementById('rmc-locked-view').style.display = 'grid';
       document.getElementById('rmc-unlocked-view').style.display = 'none';
@@ -2792,19 +2604,19 @@ async function loadRmcReportsInbox() {
     // 'new' reports offer Acknowledge, 'acknowledged' offer Resolve,
     // 'resolved' is terminal (no further action needed) — not a strict
     // state machine, just the natural next step from wherever it's at.
-    list.innerHTML = reports.map(r => `
+    list.innerHTML = reports.map(r => \`
       <div class="report-inbox-item">
         <div class="report-inbox-body">
-          <b>${r.hazard_type}</b> — ${r.vessel_name}${r.position ? ' · ' + r.position : ''}
-          <div>${r.description}</div>
-          <div class="report-inbox-meta">${fleetTimeAgo(r.reported_at)}</div>
+          <b>\${r.hazard_type}</b> — \${r.vessel_name}\${r.position ? ' · ' + r.position : ''}
+          <div>\${r.description}</div>
+          <div class="report-inbox-meta">\${fleetTimeAgo(r.reported_at)}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
-          <span class="report-status-pill ${r.status}">${r.status}</span>
-          ${r.status === 'new' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','acknowledged')">Acknowledge</button>` : ''}
-          ${r.status === 'acknowledged' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','resolved')">Resolve</button>` : ''}
+          <span class="report-status-pill \${r.status}">\${r.status}</span>
+          \${r.status === 'new' ? \`<button type="button" class="report-status-btn" onclick="updateReportStatus('\${r.id}','acknowledged')">Acknowledge</button>\` : ''}
+          \${r.status === 'acknowledged' ? \`<button type="button" class="report-status-btn" onclick="updateReportStatus('\${r.id}','resolved')">Resolve</button>\` : ''}
         </div>
-      </div>`).join('');
+      </div>\`).join('');
   } catch (e) {
     list.innerHTML = '<div class="advisory-empty">Unable to load reports — ' + e.message + '</div>';
   }
@@ -2818,7 +2630,7 @@ async function updateReportStatus(id, newStatus) {
       body: JSON.stringify({ status: newStatus }),
     });
     if (res.status === 401) {
-      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      alert('Admin key rejected \\u2014 unlock again with the correct key.');
       sessionStorage.removeItem('fleet_admin_key');
       document.getElementById('rmc-locked-view').style.display = 'grid';
       document.getElementById('rmc-unlocked-view').style.display = 'none';
@@ -2902,7 +2714,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 5000);
+      piFeedInterval = setInterval(fetchPiFeed, 2000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -2942,7 +2754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (piFeedToggleEl && piFeedToggleEl.checked) {
     piFeedEnabled = true;
     fetchPiFeed();
-    piFeedInterval = setInterval(fetchPiFeed, 5000);
+    piFeedInterval = setInterval(fetchPiFeed, 2000);
   }
 
   // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
@@ -2983,7 +2795,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
-  setInterval(() => { if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
   // Run once on load after a short delay
   setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
@@ -3042,201 +2854,11 @@ async function fetchForecast() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.status === 'success') {
-      renderForecast(data);
-      renderTideMoon(data);
-    }
+    if (data.status === 'success') renderForecast(data);
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
     document.getElementById('forecast-meta').textContent = 'Forecast offline';
-  }
-}
-
-// ── Tide + moon phase (added 2026-08-05, Cap request) ──────────────────────
-// Rides the same /api/beau/forecast payload as the wind/wave forecast strip
-// (backend now includes "tide" + "moon" fields, see beau_server.py get_tide_data()
-// / get_moon_phase()) — one fetch, no separate network round-trip needed.
-const MOON_EMOJI = {
-  'New Moon': '\u{1F311}', 'Waxing Crescent': '\u{1F312}', 'First Quarter': '\u{1F313}',
-  'Waxing Gibbous': '\u{1F314}', 'Full Moon': '\u{1F315}', 'Waning Gibbous': '\u{1F316}',
-  'Last Quarter': '\u{1F317}', 'Waning Crescent': '\u{1F318}'
-};
-
-function renderTideMoon(data) {
-  const container = document.getElementById('tide-moon-container');
-  const metaEl = document.getElementById('tide-moon-meta');
-  if (!container) return;
-
-  const tide = data.tide;
-  const moon = data.moon;
-
-  let html = '';
-
-  // Moon phase card
-  if (moon) {
-    const emoji = MOON_EMOJI[moon.phase_name] || '\u{1F311}';
-    html += `
-      <div class="forecast-card" style="min-width:140px">
-        <div class="fc-time">MOON PHASE</div>
-        <div class="fc-wind" style="font-size:28px">${emoji}</div>
-        <div class="fc-dir">${moon.phase_name}</div>
-        <div class="fc-press">${moon.illumination_pct}% illum.</div>
-      </div>`;
-  }
-
-  // Tide station + forecast card
-  if (tide && tide.forecast && tide.forecast.extremes && tide.forecast.extremes.length) {
-    const extremes = tide.forecast.extremes.slice(0, 6); // next few highs/lows
-    const stationName = tide.forecast.station_name || (tide.stations[0] && tide.stations[0].name) || 'Nearest station';
-    html += `<div class="forecast-card" style="min-width:260px;align-items:flex-start;text-align:left">
-        <div class="fc-time">TIDE — ${stationName}</div>`;
-    extremes.forEach(ex => {
-      const t = new Date(ex.dt * 1000).toLocaleString('en-US', {weekday:'short', hour:'2-digit', minute:'2-digit'});
-      const typeLabel = (ex.type || '').toUpperCase();
-      const color = typeLabel === 'HIGH' ? '#38bdf8' : '#f59e0b';
-      html += `<div style="font-size:12px;color:${color};padding:2px 0">${typeLabel} ${ex.height.toFixed(2)}m — ${t}</div>`;
-    });
-    html += `</div>`;
-
-    // Nearby stations list (closest 5)
-    if (tide.stations && tide.stations.length) {
-      html += `<div class="forecast-card" style="min-width:220px;align-items:flex-start;text-align:left">
-        <div class="fc-time">NEAREST STATIONS</div>`;
-      tide.stations.forEach(st => {
-        html += `<div style="font-size:11px;color:var(--muted);padding:1px 0">${st.name} — ${st.distance_km}km</div>`;
-      });
-      html += `</div>`;
-    }
-  } else if (!tide) {
-    html += '<div class="forecast-loading" style="color:var(--amber)">Tide data unavailable</div>';
-  }
-
-  container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
-  if (metaEl) {
-    metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
-  }
-
-  // Tide height curve (added 2026-08-05, Cap request) — draws the raw
-  // 30-min-interval height samples WorldTides already returns alongside
-  // extremes, so no extra API call. Same canvas-drawing approach as the
-  // sensor-history sparkline (time-proportional x-axis, gap-aware).
-  if (tide && tide.forecast && tide.forecast.heights && tide.forecast.heights.length > 1) {
-    drawTideCurve(tide.forecast.heights, tide.forecast.extremes || []);
-  }
-}
-
-function drawTideCurve(heights, extremes) {
-  const canvas = document.getElementById('tide-curve-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width  = canvas.offsetWidth  || 400;
-  canvas.height = canvas.offsetHeight || 110;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-
-  const marginLeft = 34, marginRight = 10, marginTop = 8, marginBottom = 16;
-  const plotW = W - marginLeft - marginRight;
-  const plotH = H - marginTop - marginBottom;
-  const plotX = marginLeft, plotY = marginTop;
-
-  const heightVals = heights.map(h => h.height);
-  const tMs = heights.map(h => h.dt * 1000);
-  const tMin = tMs[0], tMax = tMs[tMs.length - 1];
-  const tRange = tMax > tMin ? (tMax - tMin) : 1;
-
-  const min = Math.min(...heightVals), max = Math.max(...heightVals);
-  const pad = (max - min) * 0.12 || 0.1;
-  const yMin = min - pad, yMax = max + pad, yRange = (yMax - yMin) || 1;
-
-  function xFor(ms) { return plotX + ((ms - tMin) / tRange) * plotW; }
-  function yFor(v)  { return plotY + plotH - ((v - yMin) / yRange) * plotH; }
-
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 1;
-  const GRID_ROWS = 3, GRID_COLS = 6;
-  for (let g = 0; g <= GRID_ROWS; g++) {
-    const y = plotY + (g / GRID_ROWS) * plotH;
-    ctx.beginPath(); ctx.moveTo(plotX, y); ctx.lineTo(plotX + plotW, y); ctx.stroke();
-  }
-  for (let g = 0; g <= GRID_COLS; g++) {
-    const x = plotX + (g / GRID_COLS) * plotW;
-    ctx.beginPath(); ctx.moveTo(x, plotY); ctx.lineTo(x, plotY + plotH); ctx.stroke();
-  }
-
-  // Zero-height reference line (chart datum), dashed
-  if (yMin < 0 && yMax > 0) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.setLineDash([3, 3]);
-    const y0 = yFor(0);
-    ctx.beginPath(); ctx.moveTo(plotX, y0); ctx.lineTo(plotX + plotW, y0); ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // Tide curve line + fill
-  ctx.beginPath();
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 1.75;
-  heights.forEach((h, i) => {
-    const x = xFor(h.dt * 1000), y = yFor(h.height);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.lineTo(xFor(tMax), plotY + plotH);
-  ctx.lineTo(xFor(tMin), plotY + plotH);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(56,189,248,0.10)';
-  ctx.fill();
-
-  // High/low markers from extremes (dots + labels)
-  ctx.font = '9px var(--font-mono, monospace)';
-  extremes.forEach(ex => {
-    const ms = ex.dt * 1000;
-    if (ms < tMin || ms > tMax) return;
-    const x = xFor(ms), y = yFor(ex.height);
-    const isHigh = (ex.type || '').toLowerCase() === 'high';
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = isHigh ? '#38bdf8' : '#f59e0b';
-    ctx.fill();
-    ctx.fillStyle = isHigh ? '#7dd3fc' : '#fbbf24';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = isHigh ? 'bottom' : 'top';
-    ctx.fillText(ex.height.toFixed(1) + 'm', x, isHigh ? y - 5 : y + 5);
-  });
-
-  // "Now" marker
-  const nowMs = Date.now();
-  if (nowMs >= tMin && nowMs <= tMax) {
-    const xNow = xFor(nowMs);
-    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(xNow, plotY); ctx.lineTo(xNow, plotY + plotH); ctx.stroke();
-  }
-
-  // Left axis: height scale (m)
-  ctx.font = '9px var(--font-mono, monospace)';
-  ctx.fillStyle = '#38bdf8';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  for (let g = 0; g <= GRID_ROWS; g++) {
-    const y = plotY + (g / GRID_ROWS) * plotH;
-    const val = yMax - (g / GRID_ROWS) * yRange;
-    ctx.fillText(val.toFixed(1) + 'm', plotX - 4, y);
-  }
-
-  // Bottom axis: day/time labels
-  ctx.fillStyle = 'var(--muted, #888)';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  for (let g = 0; g <= GRID_COLS; g++) {
-    const frac = g / GRID_COLS;
-    const ms = tMin + frac * tRange;
-    const x = plotX + frac * plotW;
-    const d = new Date(ms);
-    const label = d.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
-    ctx.fillText(label, x, plotY + plotH + 3);
   }
 }
 
@@ -3252,7 +2874,7 @@ function renderForecast(data) {
   // of being a hardcoded name that silently goes stale.
   const titleEl = document.getElementById('forecast-strip-title');
   if (titleEl && data.forecast_source) {
-    titleEl.textContent = '\u2B21 ' + data.forecast_source.toUpperCase() + ' 48-HOUR FORECAST';
+    titleEl.textContent = '\\u2B21 ' + data.forecast_source.toUpperCase() + ' 48-HOUR FORECAST';
   }
 
   // Header meta
@@ -3267,24 +2889,24 @@ function renderForecast(data) {
 
   // Forecast cards
   let html = '<div class="forecast-cards">';
-  fc.forEach((f, idx) => {
+  fc.forEach(f => {
     const col      = windColor(f.wind_kts);
     const arrow    = windArrow(f.wind_dir_deg);
     const cardinal = windCardinal(f.wind_dir_deg);
     const label    = beaufortLabel(f.wind_kts);
-    const waveStr  = f.wave_height_m != null ? `${f.wave_height_m.toFixed(1)}m ${f.wave_period_s != null ? f.wave_period_s.toFixed(0)+'s' : ''}` : '—';
-    const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
-    const timeLabel = f.valid_time || `+${f.lead_hours}H`;
-    html += `
-      <div class="forecast-card ${idx === 0 ? 'current' : ''}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
-        <div class="fc-time">${timeLabel}</div>
-        <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
-        <span class="fc-arrow">${arrow}</span>
-        <div class="fc-dir">${cardinal}</div>
-        <div class="fc-press">${f.pressure_mb.toFixed(0)}mb</div>
-        <div class="fc-wave">&#x1F30A; ${waveStr}</div>
-        <div class="fc-temp">${tempStr}</div>
-      </div>`;
+    const waveStr  = f.wave_height_m != null ? \`\${f.wave_height_m.toFixed(1)}m \${f.wave_period_s != null ? f.wave_period_s.toFixed(0)+'s' : ''}\` : '—';
+    const tempStr  = f.temp_f != null ? \`\${f.temp_f.toFixed(0)}°F\` : (f.temp_c != null ? \`\${f.temp_c.toFixed(0)}°C\` : '');
+    const timeLabel = f.valid_time || \`+\${f.lead_hours}H\`;
+    html += \`
+      <div class="forecast-card" title="\${label} — FROM \${cardinal} (\${f.wind_dir_deg.toFixed(0)}°) | Hs \${waveStr}">
+        <div class="fc-time">\${timeLabel}</div>
+        <div class="fc-wind \${col}">\${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
+        <span class="fc-arrow">\${arrow}</span>
+        <div class="fc-dir">\${cardinal}</div>
+        <div class="fc-press">\${f.pressure_mb.toFixed(0)}mb</div>
+        <div class="fc-wave">&#x1F30A; \${waveStr}</div>
+        <div class="fc-temp">\${tempStr}</div>
+      </div>\`;
   });
   html += '</div>';
   document.getElementById('forecast-cards-container').innerHTML = html;
@@ -3302,7 +2924,7 @@ const SPARKLINE_WINDOW_HOURS = 24;
 
 async function fetchSensorHistoryGraph() {
   try {
-    const res = await fetch(`${SENSOR_HISTORY_URL}?hours=${SPARKLINE_WINDOW_HOURS}`);
+    const res = await fetch(\`\${SENSOR_HISTORY_URL}?hours=\${SPARKLINE_WINDOW_HOURS}\`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const readings = data.readings || [];
@@ -3325,13 +2947,13 @@ async function fetchSensorHistoryGraph() {
     const pressTrendEl = document.getElementById('press-trend-label');
     if (pressTrendEl && pressValues.length >= 2) {
       const pDelta = pressValues[pressValues.length - 1] - pressValues[0];
-      pressTrendEl.textContent = (pDelta >= 0 ? '+' : '') + pDelta.toFixed(1) + ` mb/${SPARKLINE_WINDOW_HOURS}h`;
+      pressTrendEl.textContent = (pDelta >= 0 ? '+' : '') + pDelta.toFixed(1) + \` mb/\${SPARKLINE_WINDOW_HOURS}h\`;
       pressTrendEl.style.color = pDelta < -3 ? 'var(--red)' : pDelta > 3 ? 'var(--amber)' : 'var(--green)';
     }
     const windTrendEl = document.getElementById('wind-trend-label');
     if (windTrendEl && windValues.length >= 2) {
       const wDelta = windValues[windValues.length - 1] - windValues[0];
-      windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + ` kt/${SPARKLINE_WINDOW_HOURS}h`;
+      windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + \` kt/\${SPARKLINE_WINDOW_HOURS}h\`;
       windTrendEl.style.color = wDelta > 5 ? 'var(--red)' : wDelta < -5 ? 'var(--green)' : 'var(--muted)';
     }
   } catch (e) {
@@ -3674,7 +3296,7 @@ function updateHeadingBox() {
     badgeEl.textContent = '--';
     return;
   }
-  valEl.textContent = Math.round(_wrHeading) + '\u00b0';
+  valEl.textContent = Math.round(_wrHeading) + '\\u00b0';
   badgeEl.textContent = _wrHeadingCalLabel;
   const calColors = {
     0: ['rgba(239,68,68,.15)', 'var(--red)', 'rgba(239,68,68,.3)'],
@@ -3738,9 +3360,9 @@ const aisMap = L.map('ais-map', {
 function noaaChartExportUrl(bounds, sizePx) {
     const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
     const params = new URLSearchParams({
-        bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`,
+        bbox: \`\${sw.lng},\${sw.lat},\${ne.lng},\${ne.lat}\`,
         bboxSR: '4326',
-        size: `${sizePx.x},${sizePx.y}`,
+        size: \`\${sizePx.x},\${sizePx.y}\`,
         dpi: '96',
         format: 'png32',
         f: 'image'
@@ -3856,7 +3478,7 @@ async function weatherMapLoadFronts() {
                 if (p.popupconte) layer.bindPopup(p.popupconte);
             }
         }).addTo(weatherMap);
-        if (statusEl) statusEl.textContent = `${(geojson.features || []).length} front features — updated ${new Date().toLocaleTimeString()}`;
+        if (statusEl) statusEl.textContent = \`\${(geojson.features || []).length} front features — updated \${new Date().toLocaleTimeString()}\`;
     } catch (e) {
         if (statusEl) statusEl.textContent = 'Fronts unavailable';
         console.warn('weatherMap fronts fetch failed:', e);
@@ -3901,7 +3523,7 @@ async function aisLoadRadarFrames() {
         return frames.map(f => ({
             time: f.time,
             // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
-            layer: L.tileLayer(`${host}${f.path}/512/{z}/{x}/{y}/2/1_1.png`, {
+            layer: L.tileLayer(\`\${host}\${f.path}/512/{z}/{x}/{y}/2/1_1.png\`, {
                 attribution: '&copy; RainViewer',
                 opacity: 0.55,
                 maxZoom: 18,       // let the map itself zoom in freely for AIS work
@@ -3944,7 +3566,7 @@ function aisRadarStopPlay() {
     // aisRadarPlayTimer now always holds).
     if (aisRadarPlayTimer) { clearTimeout(aisRadarPlayTimer); aisRadarPlayTimer = null; }
     const btn = document.getElementById('ais-radar-play');
-    if (btn) btn.textContent = '\u25B6';
+    if (btn) btn.textContent = '\\u25B6';
 }
 
 // Advances one frame per call, chained via setTimeout rather than a fixed
@@ -3976,7 +3598,7 @@ function aisRadarTogglePlay() {
     if (!aisRadarLayers.length) return;
     if (aisRadarPlaying) { aisRadarStopPlay(); return; }
     aisRadarPlaying = true;
-    document.getElementById('ais-radar-play').textContent = '\u23F8';
+    document.getElementById('ais-radar-play').textContent = '\\u23F8';
     // Restart from the beginning if sitting on the last frame, otherwise
     // resume from wherever the scrubber currently is.
     if (aisRadarFrameIdx >= aisRadarLayers.length - 1) aisRadarShowFrame(0);
@@ -4014,7 +3636,7 @@ function aisToggleLightning() {
     if (lightningEnabled) {
         lightningLayer = aisLightningMakeLayer();
         lightningLayer.addTo(weatherMap);
-        btn.textContent = '\u26A1 Lightning: ON';
+        btn.textContent = '\\u26A1 Lightning: ON';
         btn.classList.add('active');
         legend.style.display = 'flex';
         // Same invalidateSize pattern used elsewhere: showing this legend row
@@ -4036,61 +3658,7 @@ function aisToggleLightning() {
         if (lightningRefreshTimer) { clearInterval(lightningRefreshTimer); lightningRefreshTimer = null; }
         if (lightningLayer && weatherMap.hasLayer(lightningLayer)) weatherMap.removeLayer(lightningLayer);
         lightningLayer = null;
-        btn.textContent = '\u26A1 Lightning: OFF';
-        btn.classList.remove('active');
-        legend.style.display = 'none';
-        setTimeout(() => weatherMap.invalidateSize(), 0);
-    }
-}
-
-// ── GOES-East satellite imagery panel (added 2026-08-11, Cap request) ──────
-// CHANGED same day: originally a Leaflet ImageOverlay draped on the zoomable
-// map. Cap caught two real bugs on first live look: (1) Full Disk imagery is
-// a circular disk, mapped as a rectangle, so the "deep space" corners of that
-// rectangle let the base OSM map bleed through at low/med zoom; (2) zooming
-// in on the vessel's own position just upscales the same ~1808px full-disk
-// JPEG -- no hidden detail underneath, renders as a useless white cloud blob.
-// Both are hard resolution/shape ceilings of the Full Disk product itself,
-// not fixable with zoom caps or CSS. Fix: plain static <img>, not a map
-// layer -- no zoom, no pan, no seam, no false promise of local detail. This
-// honestly matches what Full Disk GeoColor actually is: one current snapshot
-// of the whole GOES-East hemisphere. True zoomed-in local detail needs NOAA
-// mesoscale/regional sector crops + GPS reprojection -- open phase-2 item,
-// not yet built, not yet logged to BEAU_FEATURES.md per Cap's hold request.
-// Source: currently GOES-19 (took over as "GOES-East" from GOES-16 in Apr
-// 2025) -- label says "GOES-East" generically so it stays correct through
-// future satellite rotations.
-const GOES_IMAGE_URL = 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/1808x1808.jpg';
-let goesEnabled = false;
-let goesRefreshTimer = null;
-
-function goesRefreshImage() {
-    const img = document.getElementById('goes-static-img');
-    if (img) img.src = GOES_IMAGE_URL + '?_=' + Date.now(); // cache-bust for latest frame
-    const ts = document.getElementById('ais-goes-timestamp');
-    if (ts) ts.textContent = 'Last refreshed ' + now();
-}
-
-function aisToggleGoes() {
-    const btn = document.getElementById('ais-goes-toggle');
-    const legend = document.getElementById('ais-goes-legend');
-    const panel = document.getElementById('goes-static-panel');
-    goesEnabled = !goesEnabled;
-
-    if (goesEnabled) {
-        goesRefreshImage();
-        panel.style.display = 'block';
-        btn.textContent = '\u{1F6F0}\uFE0F Satellite: ON';
-        btn.classList.add('active');
-        legend.style.display = 'flex';
-        setTimeout(() => weatherMap.invalidateSize(), 0);
-        // GOES-East full disk updates on a ~10 min cadence -- refresh to match
-        if (goesRefreshTimer) clearInterval(goesRefreshTimer);
-        goesRefreshTimer = setInterval(() => { if (goesEnabled) goesRefreshImage(); }, 10 * 60 * 1000);
-    } else {
-        if (goesRefreshTimer) { clearInterval(goesRefreshTimer); goesRefreshTimer = null; }
-        panel.style.display = 'none';
-        btn.textContent = '\u{1F6F0}\uFE0F Satellite: OFF';
+        btn.textContent = '\\u26A1 Lightning: OFF';
         btn.classList.remove('active');
         legend.style.display = 'none';
         setTimeout(() => weatherMap.invalidateSize(), 0);
@@ -4103,7 +3671,7 @@ async function aisToggleRadar() {
     aisRadarEnabled = !aisRadarEnabled;
 
     if (aisRadarEnabled) {
-        btn.textContent = '\u{1F327}\uFE0F Radar: Loading...';
+        btn.textContent = '\\u{1F327}\\uFE0F Radar: Loading...';
         const frames = await aisLoadRadarFrames();
         if (frames.length) {
             aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
@@ -4111,7 +3679,7 @@ async function aisToggleRadar() {
             document.getElementById('ais-radar-scrubber').max = frames.length - 1;
             aisRadarShowFrame(frames.length - 1); // start on latest frame
             controls.style.display = 'flex';
-            btn.textContent = '\u{1F327}\uFE0F Radar: ON';
+            btn.textContent = '\\u{1F327}\\uFE0F Radar: ON';
             btn.classList.add('active');
             // Auto-replay (added 2026-07-12, Cap's request): start the loop
             // automatically as soon as radar is turned on, instead of making
@@ -4136,8 +3704,8 @@ async function aisToggleRadar() {
             }, 10 * 60 * 1000);
         } else {
             aisRadarEnabled = false;
-            btn.textContent = '\u{1F327}\uFE0F Radar: unavailable';
-            setTimeout(() => { btn.textContent = '\u{1F327}\uFE0F Radar: OFF'; }, 3000);
+            btn.textContent = '\\u{1F327}\\uFE0F Radar: unavailable';
+            setTimeout(() => { btn.textContent = '\\u{1F327}\\uFE0F Radar: OFF'; }, 3000);
         }
     } else {
         aisRadarStopPlay();
@@ -4145,7 +3713,7 @@ async function aisToggleRadar() {
         aisRadarLayers = [];
         if (aisRadarRefreshTimer) { clearInterval(aisRadarRefreshTimer); aisRadarRefreshTimer = null; }
         controls.style.display = 'none';
-        btn.textContent = '\u{1F327}\uFE0F Radar: OFF';
+        btn.textContent = '\\u{1F327}\\uFE0F Radar: OFF';
         btn.classList.remove('active');
     }
 }
@@ -4162,7 +3730,7 @@ let aisOwnVesselMarker = null;
 function aisVesselIcon(color) {
     return L.divIcon({
         className: '',
-        html: `<div style="width:10px;height:10px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>`,
+        html: \`<div style="width:10px;height:10px;background:\${color};border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.6);"></div>\`,
         iconSize: [10, 10], iconAnchor: [5, 5]
     });
 }
@@ -4170,7 +3738,7 @@ function aisVesselIcon(color) {
 function aisOwnVesselIcon() {
     return L.divIcon({
         className: '',
-        html: `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px #3b82f6;"></div>`,
+        html: \`<div style="width:16px;height:16px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px #3b82f6;"></div>\`,
         iconSize: [16, 16], iconAnchor: [8, 8]
     });
 }
@@ -4202,7 +3770,7 @@ function aisUpdateVesselList(fleet) {
         }
     }
 
-    countEl.textContent = `${vessels.length} vessel${vessels.length !== 1 ? 's' : ''} in zone`;
+    countEl.textContent = \`\${vessels.length} vessel\${vessels.length !== 1 ? 's' : ''} in zone\`;
 
     if (vessels.length === 0) {
         listEl.innerHTML = '<div class="ais-empty">Awaiting AIS traffic in zone...</div>';
@@ -4219,13 +3787,13 @@ function aisUpdateVesselList(fleet) {
     });
     listEl.innerHTML = sorted.map(v => {
         const sog = (v.sog !== null && v.sog !== undefined) ? v.sog.toFixed(1) + ' kt' : '--';
-        const cog = (v.cog !== null && v.cog !== undefined) ? Math.round(v.cog) + '\u00b0' : '--';
-        const hdg = (v.heading !== null && v.heading !== undefined && v.heading !== 511) ? Math.round(v.heading) + '\u00b0' : '--';
+        const cog = (v.cog !== null && v.cog !== undefined) ? Math.round(v.cog) + '\\u00b0' : '--';
+        const hdg = (v.heading !== null && v.heading !== undefined && v.heading !== 511) ? Math.round(v.heading) + '\\u00b0' : '--';
         const range = (v.range_nm !== null && v.range_nm !== undefined) ? v.range_nm.toFixed(1) + 'nm' : '--';
         const name = (v.name || 'UNKNOWN VESSEL').trim();
         const moving = (v.sog || 0) > 1.0;
-        const dot = moving ? '\u{1F7E2}' : '\u26D3';
-        return `<div class="ais-vessel-row"><span class="ais-vessel-name">${dot} ${name}</span><span class="ais-vessel-meta">${range} · COG ${cog} · SOG ${sog} · HDG ${hdg}</span></div>`;
+        const dot = moving ? '\\u{1F7E2}' : '\\u26D3';
+        return \`<div class="ais-vessel-row"><span class="ais-vessel-name">\${dot} \${name}</span><span class="ais-vessel-meta">\${range} · COG \${cog} · SOG \${sog} · HDG \${hdg}</span></div>\`;
     }).join('');
 }
 
@@ -4235,7 +3803,7 @@ function aisUpdateChart(data) {
 
     const vessels = data.fleet.vessels || [];
     document.getElementById('ais-status').textContent =
-        `${data.fleet.active_vessels || 0} vessels tracked | Last update: ${new Date().toLocaleTimeString()}`;
+        \`\${data.fleet.active_vessels || 0} vessels tracked | Last update: \${new Date().toLocaleTimeString()}\`;
 
     const seenMmsis = new Set();
     vessels.forEach(v => {
@@ -4247,7 +3815,7 @@ function aisUpdateChart(data) {
         let color = '#22c55e';           // green = underway
         if (sog < 0.5) color = '#f59e0b'; // amber = stopped/anchored
 
-        const popup = `<b>${v.name || 'Unknown vessel'}</b><br>MMSI: ${mmsi}<br>SOG: ${sog ? sog.toFixed(1) : '--'} kts<br>COG: ${v.cog ? Math.round(v.cog) : '--'}\u00b0`;
+        const popup = \`<b>\${v.name || 'Unknown vessel'}</b><br>MMSI: \${mmsi}<br>SOG: \${sog ? sog.toFixed(1) : '--'} kts<br>COG: \${v.cog ? Math.round(v.cog) : '--'}\\u00b0\`;
 
         if (aisVesselMarkers[mmsi]) {
             aisVesselMarkers[mmsi].setLatLng([v.lat, v.lon]);
@@ -4303,12 +3871,12 @@ function aisDrawZoneCircle(lat, lon, radiusNm) {
             const rNm = aisZoneCircle.getRadius() / 1852;
             aisZoneUserAdjusted = true;
             aisPushZoneUpdate(p.lat, p.lng, rNm);
-            aisUpdateZoneLabel('User adjusted \u2014 double-tap circle to reset');
+            aisUpdateZoneLabel('User adjusted \\u2014 double-tap circle to reset');
         });
     }
 
     const edgeIcon = L.divIcon({
-        html: '<div style="width:26px;height:26px;background:#3b82f6;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;font-weight:700;cursor:ew-resize;box-shadow:0 0 6px rgba(0,0,0,.5);">\u2194</div>',
+        html: '<div style="width:26px;height:26px;background:#3b82f6;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;font-weight:700;cursor:ew-resize;box-shadow:0 0 6px rgba(0,0,0,.5);">\\u2194</div>',
         iconSize: [26, 26], iconAnchor: [13, 13], className: ''
     });
     const edgeLon = lon + (radiusNm / 60) / Math.cos(lat * Math.PI / 180);
@@ -4327,7 +3895,7 @@ function aisDrawZoneCircle(lat, lon, radiusNm) {
             const rNm = aisMap.distance(center, edge) / 1852;
             aisZoneUserAdjusted = true;
             aisPushZoneUpdate(center.lat, center.lng, rNm);
-            aisUpdateZoneLabel(`User adjusted: ${rNm.toFixed(0)}nm radius \u2014 double-tap circle to reset`);
+            aisUpdateZoneLabel(\`User adjusted: \${rNm.toFixed(0)}nm radius \\u2014 double-tap circle to reset\`);
         });
     }
 }
@@ -4381,10 +3949,10 @@ function aisSetFollowButtonUI() {
     const btn = document.getElementById('ais-follow-toggle');
     if (!btn) return;
     if (aisFollowVessel) {
-        btn.textContent = '\u{1F4CD} Follow: ON';
+        btn.textContent = '\\u{1F4CD} Follow: ON';
         btn.classList.add('active');
     } else {
-        btn.textContent = '\u{1F4CD} Follow: OFF (tap to resume)';
+        btn.textContent = '\\u{1F4CD} Follow: OFF (tap to resume)';
         btn.classList.remove('active');
     }
 }
@@ -4472,7 +4040,7 @@ function aisUpdateInference(inf) {
 
 // --- CPA + Beau alert indicator (2026-07-30) ---
 const AIS_CPA_SETTINGS_URL = (typeof AIS_API_URL === 'string')
-  ? AIS_API_URL.replace(/\/api\/ais\/?$/, '/api/ais_cpa_settings')
+  ? AIS_API_URL.replace(/\\/api\\/ais\\/?$/, '/api/ais_cpa_settings')
   : 'https://beau.beaufort-ai.com/api/ais_cpa_settings';
 let aisCpaSettingsLoaded = false;
 let aisLastAlertKey = null;
@@ -4545,7 +4113,7 @@ function aisUpdateCpaUi(inf) {
     else if (sev === 'watch') row.classList.add('cpa-watch');
   });
   const signals = (inf && inf.signals) || [];
-  const close = signals.filter(s => s && s.type === 'close_pass' && !(s.message && s.message.toUpperCase().includes('KIRT')));
+  const close = signals.filter(s => s && s.type === 'close_pass');
   const topClose = close[0] || null;
   const topSev = (inf && inf.summary && inf.summary.top_severity) || (topClose && topClose.severity) || null;
   aisSetTabBadge(close.length || ((inf && inf.summary && inf.summary.cpa_alert_count) || 0), topSev);
@@ -4614,28 +4182,6 @@ setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
 </script>
   <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
-  <script>
-    function toggleTheme() {
-        const body = document.body;
-        const btn = document.getElementById('themeBtn');
-        if (body.classList.contains('light-theme')) {
-            body.classList.remove('light-theme');
-            btn.innerHTML = '☀ Light Mode';
-            localStorage.setItem('beauTheme', 'dark');
-        } else {
-            body.classList.add('light-theme');
-            btn.innerHTML = '🌙 Dark Mode';
-            localStorage.setItem('beauTheme', 'light');
-        }
-        if (typeof drawSparkline === 'function' && typeof windSpeedHistory !== 'undefined' && windSpeedHistory && windSpeedHistory.length > 0) {
-            drawSparkline();
-        }
-    }
-    if (localStorage.getItem('beauTheme') === 'light') {
-        document.body.classList.add('light-theme');
-        const btn = document.getElementById('themeBtn');
-        if (btn) btn.innerHTML = '🌙 Dark Mode';
-    }
-  </script>
 </body>
 </html>
+`;
