@@ -78,11 +78,94 @@
     .dash-tab-btn .tab-badge.show{display:inline-block}
     .dash-tab-panel{display:none;flex-direction:column;gap:20px}
     .dash-tab-panel.active{display:flex}
+    /* FLEET tab — uses the same design tokens as the rest of the
+       dashboard (--surface/--border/--blue/etc.), not one-off colors. */
+    .fleet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+    .fleet-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:border-color .2s,transform .15s}
+    .fleet-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--muted);opacity:.5;transition:background .2s,opacity .2s}
+    .fleet-card.status-online::before{background:var(--green);opacity:.7}
+    .fleet-card.status-stale::before{background:var(--amber);opacity:.7}
+    .fleet-card.status-offline::before{background:var(--muted);opacity:.4}
+    .fleet-card:hover{transform:translateY(-1px);border-color:#2a3544}
+    .fleet-card.is-clickable:hover::before{opacity:1}
+    .fleet-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+    .fleet-card-name{font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--text)}
+    .fleet-card-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:3px}
+    .fleet-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+    .fleet-status-dot.online{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.55)}
+    .fleet-status-dot.stale{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.4)}
+    .fleet-status-dot.offline{background:var(--muted)}
+    .fleet-card-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:var(--font-mono);padding-top:2px}
+    .fleet-metric-label{font-size:9px;color:var(--muted);letter-spacing:.1em}
+    .fleet-metric-value{font-size:16px;color:var(--text);font-weight:500;margin-top:2px}
+    .fleet-card-footer{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em;border-top:1px solid var(--border);padding-top:9px;display:flex;justify-content:space-between}
+    .fleet-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .fleet-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px}
+    .fleet-modal-header{display:flex;justify-content:space-between;align-items:flex-start}
+    .fleet-modal-close{background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
+    .fleet-modal-close:hover{color:var(--text)}
+    .fleet-modal-body{display:flex;flex-direction:column;gap:8px;font-family:var(--font-mono);font-size:12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 0}
+    .fleet-detail-row{display:flex;justify-content:space-between}
+    .fleet-detail-label{color:var(--muted);letter-spacing:.04em}
+    .fleet-detail-value{color:var(--text);font-weight:700}
+
+    .fleet-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .fleet-section-title{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;padding:10px 16px 8px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.03);display:flex;justify-content:space-between;align-items:center}
+    .fleet-section-title .fleet-section-icon{color:var(--blue);margin-right:6px}
+    .fleet-section-body{padding:14px 16px}
+
+    .advisory-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+    .advisory-clear-btn{background:none;border:1px solid #55606e;border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:4px 9px;cursor:pointer;white-space:nowrap;height:fit-content;align-self:center;transition:border-color .15s,color .15s}
+    .advisory-clear-btn:hover{border-color:var(--red);color:var(--red)}
+    .advisory-item:last-child{border-bottom:none}
+    .advisory-severity{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:10px;height:fit-content;white-space:nowrap;flex-shrink:0}
+    .advisory-severity.critical{background:rgba(239,68,68,.15);color:var(--red)}
+    .advisory-severity.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+    .advisory-severity.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .advisory-body{flex:1;font-size:12px;color:var(--text-dim);line-height:1.55}
+    .advisory-body b{color:var(--text);font-weight:600}
+    .advisory-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:.03em}
+    .advisory-empty{font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:10px 2px;text-align:center}
+
+    .fleet-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+    .fleet-input{background:var(--bg);border:1px solid #55606e;border-radius:6px;padding:9px 11px;color:var(--text);font-family:var(--font-body);font-size:13px;width:100%;box-sizing:border-box;transition:border-color .2s}
+    .fleet-input:focus{outline:none;border-color:var(--blue)}
+    .fleet-input::placeholder{color:var(--text-dim)}
+    .fleet-textarea{min-height:64px;resize:vertical;font-family:var(--font-body);margin-bottom:10px;line-height:1.5}
+    .fleet-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:opacity .15s,transform .1s}
+    .fleet-btn:hover{opacity:.88}
+    .fleet-btn:active{transform:translateY(1px)}
+    .fleet-btn:disabled{opacity:.45;cursor:not-allowed}
+    .fleet-status-msg{font-family:var(--font-mono);font-size:11px;margin-top:9px;min-height:14px;letter-spacing:.02em}
+    .fleet-status-msg.ok{color:var(--green)}
+    .fleet-status-msg.err{color:var(--red)}
+
+    .fleet-rmc-subsection-title{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);text-transform:uppercase}
+    .fleet-rmc-lock-icon{display:inline-block;margin-right:5px;opacity:.7}
+    .fleet-rmc-unlocked-badge{font-family:var(--font-mono);font-size:9px;color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 8px;border-radius:10px;letter-spacing:.06em}
+
+    .report-inbox-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .report-inbox-item:last-child{border-bottom:none}
+    .report-inbox-body{color:var(--text-dim);line-height:1.55}
+    .report-inbox-body b{color:var(--text);font-weight:600}
+    .report-inbox-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.03em}
+    .report-status-pill{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.12);color:var(--blue);white-space:nowrap;height:fit-content;text-transform:uppercase}
+    .report-status-pill.acknowledged{background:rgba(245,158,11,.12);color:#f59e0b}
+    .report-status-pill.resolved{background:rgba(34,197,94,.12);color:#22c55e}
+    .report-status-btn{background:none;border:1px solid #55606e;border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:8px;letter-spacing:.03em;padding:3px 8px;cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s}
+    .report-status-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+    .fleet-skeleton{height:14px;border-radius:4px;background:linear-gradient(90deg,var(--border) 0%,var(--border2) 50%,var(--border) 100%);background-size:200% 100%;animation:fleet-shimmer 1.4s ease-in-out infinite}
+    @keyframes fleet-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
     .sensor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
     .sensor-card:hover{transform:translateY(-1px);border-color:#2a3544}
     .sensor-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--blue);opacity:.4}
     .sensor-card.wind::before{background:var(--green);opacity:.6}.sensor-card.pressure::before{background:var(--amber);opacity:.6}.sensor-card.motion::before{background:#8b5cf6;opacity:.6}.sensor-card.position::before{background:var(--blue);opacity:.6}
+    .sensor-card.caution{background:rgba(249,115,22,.12) !important; border-color:rgba(249,115,22,.45) !important;}
+    .sensor-card.caution::before{background:#f97316 !important; opacity:1 !important;}
+    .sensor-card.alert{background:rgba(239,68,68,.14) !important; border-color:rgba(239,68,68,.50) !important;}
+    .sensor-card.alert::before{background:#ef4444 !important; opacity:1 !important;}
     .sc-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
     .sc-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a2332;border:1px solid #2a3544;border-radius:6px;padding:6px 10px;font-size:10px;color:#94a3b8;white-space:normal;text-align:center;z-index:100;pointer-events:none;max-width:220px}
     .sensor-card:hover .sc-tooltip{display:block}
@@ -187,8 +270,6 @@
     .forecast-card:hover{background:rgba(255,255,255,.03)}
     .forecast-card.current{background:rgba(59,130,246,0.15); border-top:2px solid var(--blue); position:relative;}
     .forecast-card.current::after{content:"CURRENT";position:absolute;top:2px;right:4px;font-size:8px;color:var(--blue);letter-spacing:1px;}
-    .forecast-card.current{background:rgba(59,130,246,0.15); border-top:2px solid var(--blue); position:relative;}
-    .forecast-card.current::after{content:"CURRENT";position:absolute;top:2px;right:4px;font-size:8px;color:var(--blue);letter-spacing:1px;}
     .fc-time{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:8px;font-weight:600}
     .fc-wind{font-family:var(--font-mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
     .fc-wind-unit{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
@@ -200,7 +281,7 @@
     .fc-green{color:var(--green)}.fc-amber{color:var(--amber)}.fc-red{color:var(--red)}
     .forecast-sparkline{padding:6px 16px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
     .sparkline-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);white-space:nowrap}
-    .sparkline-canvas{flex:1;height:56px}
+    .sparkline-canvas{flex:1;height:110px}
     /* Wind Rose */
     .wind-rose-wrap{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px;flex-wrap:wrap}
     .wind-rose-readouts{display:flex;flex-direction:column;gap:10px}
@@ -219,12 +300,63 @@
     .ais-radar-toggle{background:none;border:1px solid var(--border);border-radius:8px;padding:3px 10px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
     .ais-radar-toggle:hover{border-color:var(--blue);color:var(--blue)}
     .ais-radar-toggle.active{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)}
-    #ais-map{height:420px;width:100%;background:#0a0f14}
+    /* Radar playback controls (added 2026-07-08) */
+    .ais-radar-controls{display:none;align-items:center;gap:10px;padding:6px 16px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.02)}
+    .ais-lightning-legend{display:none;align-items:center;gap:12px;padding:5px 16px;border-bottom:1px solid var(--border);background:rgba(239,68,68,.03);font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+    .ais-lightning-legend .legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:middle}
+    .ais-lightning-legend .legend-dot.dim{opacity:.35}
+    .ais-lightning-legend .legend-dot.mid{opacity:.65}
+    .ais-radar-play{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;width:26px;height:26px;cursor:pointer;transition:border-color .2s,color .2s}
+    .ais-radar-play:hover{border-color:var(--blue);color:var(--blue)}
+    .ais-radar-scrubber{flex:1;accent-color:var(--blue);cursor:pointer}
+    .ais-radar-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:56px;text-align:right}
+    /* BUMPED (2026-07-12, Cap's request "make both maps bigger, taller if
+       not wider"): scales with viewport height so it's genuinely bigger on
+       a real bridge monitor, capped so it doesn't run off-screen on a
+       normal laptop, floored so small/mobile screens still get something
+       usable. Was a flat 420px before. */
+    #ais-map{height:min(72vh,820px);min-height:460px;width:100%;background:#0a0f14}
+    @media(max-width:600px){#ais-map{height:min(60vh,520px);min-height:340px}}
     .ais-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;border-top:1px solid var(--border)}
     .ais-zone-label{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
     .ais-reset-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:border-color .2s,color .2s}
     .ais-reset-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+    /* ── Weather map (added 2026-07-12, Cap's request) ──
+       Own dedicated tab, separate from the AIS/chart map tab -- radar+fronts
+       wants a synoptic/regional zoom, AIS/chart wants tactical vessel-scale
+       zoom, so Cap opted for fully separate tabs rather than a shared view. */
+    /* Same height bump as #ais-map above, same reasoning. */
+    #weather-map{height:min(72vh,820px);min-height:460px;width:100%;background:#0a0f14}
+    @media(max-width:600px){#weather-map{height:min(60vh,520px);min-height:340px}}
+    .weather-map-legend{display:flex;flex-wrap:wrap;gap:12px;padding:6px 16px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+    .weather-map-legend .front-swatch{display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle}
     .ais-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.ais-infer-banner{display:none;margin:0;padding:10px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;line-height:1.35}
+.ais-infer-banner.show{display:block}
+.ais-infer-banner.info{background:rgba(59,130,246,.08);color:#93c5fd;border-bottom-color:rgba(59,130,246,.25)}
+.ais-infer-banner.watch{background:rgba(245,158,11,.10);color:#fbbf24;border-bottom-color:rgba(245,158,11,.28)}
+.ais-infer-banner.warning{background:rgba(239,68,68,.10);color:#fca5a5;border-bottom-color:rgba(239,68,68,.30)}
+.ais-infer-banner .ais-infer-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:4px}
+.ais-infer-banner .ais-infer-line{color:inherit}
+.ais-infer-banner .ais-infer-meta{margin-top:4px;font-size:10px;opacity:.8}
+.beau-alert-pill{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:rgba(148,163,184,.08)}
+.beau-alert-pill.clear{color:#86efac;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
+.beau-alert-pill.watch{color:#fbbf24;border-color:rgba(245,158,11,.40);background:rgba(245,158,11,.12)}
+.beau-alert-pill.warning,.beau-alert-pill.caution{color:#fdba74;border-color:rgba(249,115,22,.45);background:rgba(249,115,22,.12)}
+.beau-alert-pill.alert,.beau-alert-pill.alarm{color:#fca5a5;border-color:rgba(239,68,68,.50);background:rgba(239,68,68,.14)}
+.ais-cpa-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.ais-cpa-bar label{display:flex;align-items:center;gap:6px}
+.ais-cpa-bar input[type=number]{width:70px;background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
+.ais-cpa-bar select{background:#0b1220;border:1px solid var(--border);border-radius:6px;color:#e2e8f0;padding:3px 6px;font-family:var(--font-mono);font-size:11px}
+.ais-cpa-bar button{background:none;border:1px solid var(--border);border-radius:6px;color:var(--blue);padding:3px 10px;font-family:var(--font-mono);font-size:10px;cursor:pointer}
+.ais-cpa-bar button:hover{border-color:var(--blue)}
+.ais-cpa-meta{opacity:.85}
+.ais-vessel-row.cpa-watch{background:rgba(245,158,11,.08)}
+.ais-vessel-row.cpa-warning{background:rgba(249,115,22,.10)}
+.ais-vessel-row.cpa-alarm{background:rgba(239,68,68,.12)}
+.dash-tab-btn .tab-badge.alert{background:rgba(239,68,68,.20);color:#fca5a5}
+.dash-tab-btn .tab-badge.watch{background:rgba(245,158,11,.18);color:#fbbf24}
     .ais-vessel-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) var(--border);border-top:1px solid var(--border)}
     .ais-vessel-list::-webkit-scrollbar{width:4px}.ais-vessel-list::-webkit-scrollbar-track{background:var(--border)}.ais-vessel-list::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
     .ais-vessel-row{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border2);font-family:var(--font-mono);font-size:11px}
@@ -239,6 +371,32 @@
     .leaflet-control-attribution a{color:var(--text-dim) !important}
     .leaflet-control-zoom a{background:var(--surface) !important;color:var(--text) !important;border-color:var(--border) !important}
     .leaflet-control-zoom a:hover{background:var(--border) !important}
+
+    /* ── Fleet Advisory alert toast (added 2026-07-10) ──────────────────
+       Global on-screen alert for a newly-published fleet advisory, so
+       a vessel doesn't have to be sitting on the FLEET tab to notice one.
+       Fixed top-center, stacks are avoided by replacing content in place
+       (one toast at a time) rather than piling up multiple banners. */
+    .fleet-toast{position:fixed;top:110px;left:50%;transform:translateX(-50%) translateY(-12px);z-index:900;
+      width:min(560px,92vw);background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--blue);
+      border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+      opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+    .fleet-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .fleet-toast.info{border-left-color:var(--blue)}
+    .fleet-toast.warning{border-left-color:var(--amber)}
+    .fleet-toast.critical{border-left-color:var(--red);box-shadow:0 12px 32px rgba(239,68,68,.25)}
+    .fleet-toast-icon{font-size:20px;line-height:1;flex-shrink:0;margin-top:1px}
+    .fleet-toast-body{flex:1;min-width:0}
+    .fleet-toast-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:8px;cursor:pointer}
+    .fleet-toast-sev{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:9px}
+    .fleet-toast-sev.info{background:rgba(59,130,246,.15);color:var(--blue)}
+    .fleet-toast-sev.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+    .fleet-toast-sev.critical{background:rgba(239,68,68,.15);color:var(--red)}
+    .fleet-toast-text{font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:5px;cursor:pointer}
+    .fleet-toast-dismiss{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0}
+    .fleet-toast-dismiss:hover{color:var(--text)}
+    .fleet-toast-hint{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:6px}
+    @media(max-width:600px){.fleet-toast{top:auto;bottom:16px}}
   
     /* ── LIGHT THEME ── */
     body.light-theme { background: #f0f4f8; color: #1a2a3a; }
@@ -307,6 +465,25 @@
   &#x1F527; Live systems (sensors, forecast, AIS) are temporarily offline &mdash; we run active R&amp;D and benchmark experiments directly on this platform. Check back shortly, or read more about what we're building below.
 </div>
 
+<!-- Fleet Advisory alert toast (added 2026-07-10): pops up on-screen the
+     moment a new fleet advisory is detected by the FLEET tab's background
+     poll (see renderFleetAdvisories/fleetShowToast in the script below),
+     regardless of which tab the operator currently has open. Click the
+     toast to jump straight to the FLEET tab; dismiss with the X or it
+     auto-hides after a delay (longer for higher severity). -->
+<div class="fleet-toast" id="fleet-toast">
+  <span class="fleet-toast-icon" id="fleet-toast-icon">&#9888;&#65039;</span>
+  <div class="fleet-toast-body">
+    <div class="fleet-toast-title" id="fleet-toast-title-row" onclick="fleetToastGoToTab()">
+      <span class="fleet-toast-sev" id="fleet-toast-sev">INFO</span>
+      <span id="fleet-toast-title">Fleet advisory</span>
+    </div>
+    <div class="fleet-toast-text" id="fleet-toast-text" onclick="fleetToastGoToTab()"></div>
+    <div class="fleet-toast-hint">Click to view in FLEET tab</div>
+  </div>
+  <button class="fleet-toast-dismiss" onclick="fleetDismissToast()" title="Dismiss">&times;</button>
+</div>
+
 <div class="dash-header">
   <div class="dash-header-inner">
     <div>
@@ -314,7 +491,9 @@
       <p class="dash-subtitle">Vessel Sensor Integration &middot; AI Maritime Analysis &middot; Real-Time &middot; Dual Mode</p>
     </div>
     <div class="dash-status">
-      <div class="status-row"><span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
+      <div class="status-row">
+          <span class="beau-alert-pill clear" id="beau-alert-pill" title="Beau alert status">BEAU: CLEAR</span>
+<span id="status-dot">&#9679;</span><span id="status-text">Ready</span></div>
       <div class="last-updated" id="last-updated">&mdash;</div>
     </div>
   </div>
@@ -325,13 +504,16 @@
 
     <div class="sys-panel">
       <div class="sys-panel-title">SYSTEM STATUS</div>
-      <div class="sys-row"><span class="sys-label">BEAU ENGINE</span><span class="sys-value green-text">&#9679; ACTIVE</span></div>
-      <div class="sys-row"><span class="sys-label">ENDPOINT</span><span class="sys-value" style="font-size:10px">beau.beaufort-ai.com</span></div>
+      <div class="sys-row"><span class="sys-label">SENSORS</span><span class="sys-value" id="stat-sensors">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">HISTORY</span><span class="sys-value" id="stat-history">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">BEAU</span><span class="sys-value" id="stat-beau">&#9679; CHECKING</span></div>
+      <div class="sys-row"><span class="sys-label">AIS</span><span class="sys-value" id="stat-ais">&#9679; CHECKING</span></div>
       <div class="sys-row"><span class="sys-label">ACTIVE MODE</span><span class="sys-value blue-text" id="sys-mode">SENSOR AUTO</span></div>
       <div class="sys-row"><span class="sys-label">INFERENCE TIME</span><span class="sys-value" id="inference-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">LAST QUERY</span><span class="sys-value" id="last-query-time">&mdash;</span></div>
       <div class="sys-row"><span class="sys-label">ALERT STATUS</span><span class="sys-value green-text" id="alert-status">NOMINAL</span></div>
       <div class="sys-row"><span class="sys-label">TOTAL QUERIES</span><span class="sys-value" id="query-count">0</span></div>
+      <div class="sys-row"><span class="sys-label">STATUS CHECK</span><span class="sys-value" id="stat-checked" style="font-size:10px">&mdash;</span></div>
     </div>
 
     <div class="auto-toggle-row">
@@ -393,9 +575,12 @@
 
     <div class="dash-tabs">
       <button class="dash-tab-btn active" data-tab="conditions" onclick="dashSwitchTab('conditions')">&#9673; CONDITIONS</button>
+      <button class="dash-tab-btn" data-tab="weather-map" onclick="dashSwitchTab('weather-map')">&#9673; WEATHER MAP</button>
       <button class="dash-tab-btn" data-tab="ais" onclick="dashSwitchTab('ais')">&#9673; AIS <span class="tab-badge" id="tab-badge-ais"></span></button>
       <button class="dash-tab-btn" data-tab="beau" onclick="dashSwitchTab('beau')">&#9673; BEAU ANALYSIS</button>
       <button class="dash-tab-btn" data-tab="history" onclick="dashSwitchTab('history')">&#9673; HISTORY <span class="tab-badge" id="tab-badge-history"></span></button>
+      <button class="dash-tab-btn" data-tab="library" onclick="dashSwitchTab('library')">&#9673; SHIP'S LIBRARY</button>
+      <button class="dash-tab-btn" data-tab="fleet" onclick="dashSwitchTab('fleet')">&#9673; FLEET <span class="tab-badge" id="tab-badge-fleet"></span></button>
     </div>
 
     <!-- TAB: CONDITIONS -->
@@ -403,97 +588,13 @@
 
     <div class="sensor-grid" id="sensor-grid"></div>
 
-    <!-- WIND COMPASS ROSE -->
-    <div class="wind-rose-wrap" style="flex-direction:column">
-      <div class="wr-box" id="heading-box" style="min-width:180px;position:relative">
-        <div class="wr-label">BNO085 HEADING <span id="heading-cal-badge" style="font-size:8px;padding:1px 5px;border-radius:8px;letter-spacing:.05em;background:rgba(58,69,85,.2);color:var(--muted);border:1px solid rgba(58,69,85,.3)">--</span></div>
-        <div class="wr-value" id="heading-value" style="font-size:30px">--</div>
-        <div class="wr-unit" id="heading-unit">DEG MAG &middot; magnetometer-fused</div>
-      </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
-      <div class="wind-rose-readouts">
-        <div class="wr-box">
-          <div class="wr-label">TWS</div>
-          <div class="wr-value" id="wr-tws">--</div>
-          <div class="wr-unit">KT</div>
-        </div>
-        <div class="wr-box">
-          <div class="wr-label">AWS</div>
-          <div class="wr-value" id="wr-aws">--</div>
-          <div class="wr-unit">KT</div>
-        </div>
-      </div>
-      <canvas id="wind-rose" width="280" height="280"></canvas>
-      <div class="wind-rose-readouts">
-        <div class="wr-box">
-          <div class="wr-label">AWA</div>
-          <div class="wr-value" id="wr-awa">--</div>
-          <div class="wr-unit">DEG</div>
-        </div>
-        <div class="wr-box">
-          <div class="wr-label">TWD</div>
-          <div class="wr-value" id="wr-twd">--</div>
-          <div class="wr-unit">DEG</div>
-        </div>
-      </div>
-      </div>
-    </div>
-
-    <!-- GRAPHCAST 48H FORECAST STRIP -->
-    <div class="forecast-strip" id="forecast-strip">
-      <div class="forecast-strip-header">
-        <span class="forecast-strip-title">&#x2B21; GRAPHCAST 48-HOUR FORECAST</span>
-        <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
-      </div>
-      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast from GraphCast...</div></div>
-      <div class="forecast-sparkline" style="flex-direction:column;align-items:stretch;gap:4px;padding:8px 16px 12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
-          <span class="sparkline-label" style="color:#3b82f6">&#9646; PRESSURE</span>
-          <span class="sparkline-label" id="press-trend-label" style="color:var(--muted)"></span>
-          <span style="flex:1"></span>
-          <span class="sparkline-label" style="color:#f59e0b">&#9646; WIND SPEED</span>
-          <span class="sparkline-label" id="wind-trend-label" style="color:var(--muted)"></span>
-        </div>
-        <canvas class="sparkline-canvas" id="pressure-sparkline" style="width:100%"></canvas>
-      </div>
-    </div>
-
-    </div>
-    <!-- /TAB: CONDITIONS -->
-
-    <!-- TAB: AIS -->
-    <div class="dash-tab-panel" id="tab-ais">
-
-    <!-- AIS FLEET MAP -->
-    <div class="ais-box" id="ais-box">
-      <div class="ais-header">
-        <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
-        <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
-        <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
-      </div>
-      <div id="ais-map"></div>
-      <div class="ais-footer">
-        <span class="ais-zone-label" id="ais-zone-label">Drag circle to reposition &bull; drag edge handle to resize &bull; watching vessels inside the zone</span>
-        <button class="ais-reset-btn" onclick="aisResetZone()">&#8630; Reset Zone</button>
-      </div>
-      <div class="ais-legend">
-        <span>&#128994; Underway</span>
-        <span>&#128993; Slow / stopped</span>
-        <span>&#9875; Moored / anchored</span>
-        <span id="ais-vessel-count-label">0 vessels in zone</span>
-      </div>
-      <div class="ais-vessel-list" id="ais-vessel-list">
-        <div class="ais-empty">Awaiting AIS traffic in zone...</div>
-      </div>
-    </div>
-
-    </div>
-    <!-- /TAB: AIS -->
-
-    <!-- TAB: BEAU ANALYSIS -->
-    <div class="dash-tab-panel" id="tab-beau">
-
-    <!-- MODE 1: SENSOR ANALYSIS (blue) -->
+    <!-- MODE 1: SENSOR ANALYSIS (blue) -- moved here from Beau Analysis tab
+         2026-07-11 (Cap's request, prompted by the same-day pressure-
+         mismatch bug): sits right next to the raw sensor grid it
+         interprets so a Beau-vs-raw-reading discrepancy is visible at a
+         glance instead of needing to flip tabs to compare. Q&A (Mode 2)
+         stays on the Beau Analysis tab -- it's on-demand knowledge lookup,
+         not tied to watching a specific live number. -->
     <div class="analysis-box" id="analysis-box">
       <div class="analysis-header">
         <span class="analysis-label">
@@ -515,6 +616,203 @@
       </div>
       <div class="flag-issue-footer"><button class="flag-issue-btn" onclick="openFlagModal('sensor')">&#x1F6A9; FLAG ISSUE</button></div>
     </div>
+
+    <!-- WIND COMPASS ROSE -->
+    <div class="wind-rose-wrap" style="flex-direction:column">
+      <div class="wr-box" id="heading-box" style="min-width:180px;position:relative">
+        <div class="wr-label">BNO085 HEADING <span id="heading-cal-badge" style="font-size:8px;padding:1px 5px;border-radius:8px;letter-spacing:.05em;background:rgba(58,69,85,.2);color:var(--muted);border:1px solid rgba(58,69,85,.3)">--</span></div>
+        <div class="wr-value" id="heading-value" style="font-size:30px">--</div>
+        <div class="wr-unit" id="heading-unit">DEG MAG &middot; magnetometer-fused</div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+      <div class="wind-rose-readouts">
+        <div class="wr-box">
+          <div class="wr-label">TWS</div>
+          <div class="wr-value" id="wr-tws" style="color:#38bdf8">--</div>
+          <div class="wr-unit">KT</div>
+        </div>
+        <div class="wr-box">
+          <div class="wr-label">TWD</div>
+          <div class="wr-value" id="wr-twd" style="color:#38bdf8">--</div>
+          <div class="wr-unit">DEG</div>
+        </div>
+      </div>
+      <canvas id="wind-rose" width="280" height="280"></canvas>
+      <div class="wind-rose-readouts">
+        <div class="wr-box">
+          <div class="wr-label">AWS</div>
+          <div class="wr-value" id="wr-aws" style="color:#f59e0b">--</div>
+          <div class="wr-unit">KT</div>
+        </div>
+        <div class="wr-box">
+          <div class="wr-label">AWA</div>
+          <div class="wr-value" id="wr-awa" style="color:#f59e0b">--</div>
+          <div class="wr-unit">DEG</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- GRAPHCAST 48H FORECAST STRIP -->
+    <div class="forecast-strip" id="forecast-strip">
+      <div class="forecast-strip-header">
+        <span class="forecast-strip-title" id="forecast-strip-title">&#x2B21; 48-HOUR FORECAST</span>
+        <span class="forecast-strip-meta" id="forecast-meta">Loading...</span>
+      </div>
+      <div id="forecast-cards-container"><div class="forecast-loading">Fetching forecast...</div></div>
+      <div class="forecast-sparkline" style="flex-direction:column;align-items:stretch;gap:4px;padding:8px 16px 12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+          <span class="sparkline-label" style="color:#3b82f6">&#9646; PRESSURE</span>
+          <span class="sparkline-label" id="press-trend-label" style="color:var(--muted)"></span>
+          <span style="flex:1"></span>
+          <span class="sparkline-label" style="color:#f59e0b">&#9646; WIND SPEED</span>
+          <span class="sparkline-label" id="wind-trend-label" style="color:var(--muted)"></span>
+        </div>
+        <canvas class="sparkline-canvas" id="pressure-sparkline" style="width:100%"></canvas>
+      </div>
+    </div>
+
+    <!-- TIDE + MOON PHASE (added 2026-08-05, Cap request) -->
+    <div class="forecast-strip" id="tide-moon-strip">
+      <div class="forecast-strip-header">
+        <span class="forecast-strip-title">&#x2B21; TIDE &amp; MOON PHASE</span>
+        <span class="forecast-strip-meta" id="tide-moon-meta">Loading...</span>
+      </div>
+      <div id="tide-moon-container" style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 12px">
+        <div class="forecast-loading">Fetching tide/moon data...</div>
+      </div>
+      <div style="padding:0 16px 12px">
+        <canvas class="sparkline-canvas" id="tide-curve-canvas" style="width:100%;height:110px"></canvas>
+      </div>
+    </div>
+
+    </div>
+    <!-- /TAB: CONDITIONS -->
+
+    <!-- TAB: AIS -->
+    <!-- TAB: WEATHER MAP (split into its own dedicated tab 2026-07-12 per
+         Cap's clarification -- he meant separate tabs, not a side-by-side
+         row within the same AIS tab. Radar+fronts, synoptic/regional zoom. -->
+    <div class="dash-tab-panel" id="tab-weather-map">
+
+    <div class="ais-box" id="weather-box">
+      <div class="ais-header">
+        <span class="ais-title">&#9925; WEATHER MAP</span>
+        <!-- Radar/Lightning toggles moved here from the AIS tab (2026-07-12,
+             Cap caught they'd been left on the wrong map after the tab
+             split) -- these are weather layers, they belong on the weather
+             map, not the vessel/chart map. -->
+        <button class="ais-radar-toggle" id="ais-radar-toggle" onclick="aisToggleRadar()" title="Toggle live weather radar overlay (RainViewer)">&#x1F327;&#xFE0F; Radar: OFF</button>
+        <button class="ais-radar-toggle" id="ais-lightning-toggle" onclick="aisToggleLightning()" title="Toggle real-time lightning strikes overlay (Xweather/GLD360)">&#x26A1; Lightning: OFF</button>
+        <button class="ais-radar-toggle" id="ais-goes-toggle" onclick="aisToggleGoes()" title="Toggle GOES-East full-disk satellite imagery (GeoColor, NOAA/NESDIS)">&#x1F6F0;&#xFE0F; Satellite: OFF</button>
+        <span class="ais-meta" id="weather-map-status">Loading fronts...</span>
+      </div>
+      <!-- Radar playback bar -- shown only while radar overlay is toggled ON. -->
+      <div class="ais-radar-controls" id="ais-radar-controls">
+        <button class="ais-radar-play" id="ais-radar-play" onclick="aisRadarTogglePlay()" title="Play/pause storm movement loop">&#9654;</button>
+        <input type="range" class="ais-radar-scrubber" id="ais-radar-scrubber" min="0" max="0" value="0" oninput="aisRadarScrub(this.value)">
+        <span class="ais-radar-time" id="ais-radar-time">--:--</span>
+      </div>
+      <!-- Lightning legend -- shown only while the ⚡ toggle is ON. -->
+      <div class="ais-lightning-legend" id="ais-lightning-legend">
+        <span>&#9679; Lightning strikes (Xweather/GLD360, last 5 min):</span>
+        <span><span class="legend-dot"></span>Most recent</span>
+        <span><span class="legend-dot mid"></span>Recent</span>
+        <span><span class="legend-dot dim"></span>Older (fading out)</span>
+        <span style="color:var(--text-dim)">&bull; Ask Beau for exact distance/age</span>
+      </div>
+      <!-- GOES-East satellite panel -- shown only while the Satellite toggle is ON.
+           Added 2026-08-11 (Cap request), CHANGED same day: originally built as a
+           Leaflet ImageOverlay draped on the zoomable map, but Cap caught two real
+           bugs on first look: (1) the full-disk image is a circle, mapped as a
+           rectangle, so zoomed-out views showed the base OSM map bleeding through
+           the "deep space" corners; (2) zooming in on the vessel's own position just
+           blows up the same ~1808px full-disk JPEG -- there's no hidden detail
+           underneath, so it renders as an undifferentiated white cloud blob with
+           zero useful information. Both are hard resolution/shape ceilings of the
+           Full Disk product, not fixable with CSS or zoom caps. Downgraded to a
+           plain static (non-zoomable, non-pannable) image panel instead -- this is
+           an honest match for what Full Disk GeoColor can actually provide: a
+           single current snapshot of the whole GOES-East hemisphere, not a
+           zoomable local view. GOES-19 is the current GOES-East bird (took over
+           from GOES-16 in Apr 2025); label deliberately says "GOES-East" not a
+           hardcoded satellite number so it stays correct through future rotations.
+           Real zoomed-in local detail requires NOAA mesoscale/regional sector
+           crops + GPS-based reprojection -- logged as an open phase-2 item, not
+           yet built, not yet added to BEAU_FEATURES.md per Cap's hold request. -->
+      <div class="ais-lightning-legend" id="ais-goes-legend">
+        <span>&#x1F6F0;&#xFE0F; GOES-East Full Disk &middot; GeoColor (NOAA/NESDIS/STAR)</span>
+        <span id="ais-goes-timestamp" style="color:var(--text-dim)">Loading...</span>
+        <span style="color:var(--text-dim)">&bull; True color day / IR at night &bull; updates ~10 min &bull; static snapshot, not zoomable</span>
+      </div>
+      <div id="goes-static-panel" style="display:none;text-align:center;padding:10px 16px;background:#05070c">
+        <img id="goes-static-img" src="" alt="GOES-East Full Disk GeoColor" style="max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border)">
+      </div>
+      <div id="weather-map"></div>
+      <div class="weather-map-legend" id="weather-map-legend">
+        <span><span class="front-swatch" style="background:#2563eb"></span>Cold Front</span>
+        <span><span class="front-swatch" style="background:#dc2626"></span>Warm Front</span>
+        <span><span class="front-swatch" style="background:#7c3aed"></span>Occluded Front</span>
+        <span><span class="front-swatch" style="background:repeating-linear-gradient(90deg,#dc2626 0 4px,#2563eb 4px 8px)"></span>Stationary Front</span>
+        <span style="color:var(--text-dim)">&bull; NWS WPC, updated per forecast cycle</span>
+      </div>
+    </div>
+
+    </div>
+    <!-- /TAB: WEATHER MAP -->
+
+    <!-- TAB: AIS -->
+    <div class="dash-tab-panel" id="tab-ais">
+
+    <!-- AIS FLEET MAP -->
+    <div class="ais-box" id="ais-box">
+      <div class="ais-header">
+        <span class="ais-title">&#x2693; LIVE AIS FLEET</span>
+        <button class="ais-radar-toggle active" id="ais-follow-toggle" onclick="aisToggleFollow()" title="Auto-recenter map on vessel position while underway. Pauses automatically if you pan/zoom manually -- click to resume.">&#x1F4CD; Follow: ON</button>
+        <span class="ais-meta" id="ais-status">Loading vessel positions...</span>
+      </div>
+      <div class="ais-infer-banner" id="ais-infer-banner">
+        <div class="ais-infer-title">Fleet Behavioral Inference (P-2406)</div>
+        <div class="ais-infer-line" id="ais-infer-line">Waiting for fleet signal...</div>
+        <div class="ais-infer-meta" id="ais-infer-meta"></div>
+      </div>
+      <div class="ais-cpa-bar" id="ais-cpa-bar">
+        <label>Safe CPA (nm)
+          <input type="number" id="ais-safe-cpa" min="0.05" max="5" step="0.05" value="1.0" title="Preferred Safe CPA. PORT relaxes it; DP/UNDERWAY use full value.">
+        </label>
+        <label>Mode
+          <select id="ais-cpa-mode" title="AUTO chooses Underway/DP/Port. Manual override anytime.">
+            <option value="auto">AUTO</option>
+            <option value="underway">UNDERWAY</option>
+            <option value="dp">DP</option>
+            <option value="port">PORT</option>
+          </select>
+        </label>
+        <button type="button" id="ais-cpa-save" onclick="aisSaveCpaSettings()">Save</button>
+        <span class="ais-cpa-meta" id="ais-cpa-meta">CPA engine loading...</span>
+      </div>
+
+      <div id="ais-map"></div>
+      <div class="ais-footer">
+        <span class="ais-zone-label" id="ais-zone-label">Drag circle to reposition &bull; drag edge handle to resize &bull; watching vessels inside the zone</span>
+        <button class="ais-reset-btn" onclick="aisResetZone()">&#8630; Reset Zone</button>
+      </div>
+      <div class="ais-legend">
+        <span>&#128994; Underway</span>
+        <span>&#128993; Slow / stopped</span>
+        <span>&#9875; Moored / anchored</span>
+        <span id="ais-vessel-count-label">0 vessels in zone</span>
+      </div>
+      <div class="ais-vessel-list" id="ais-vessel-list">
+        <div class="ais-empty">Awaiting AIS traffic in zone...</div>
+      </div>
+    </div>
+
+    </div>
+    <!-- /TAB: AIS -->
+
+    <!-- TAB: BEAU ANALYSIS -->
+    <div class="dash-tab-panel" id="tab-beau">
 
     <!-- Q&A INPUT (moved 2026-07-04 per Cap: input card sits above its response card) -->
     <div class="qa-panel standalone">
@@ -563,6 +861,139 @@
 
     </div>
     <!-- /TAB: HISTORY -->
+
+    <!-- TAB: SHIP'S LIBRARY (added 2026-07-08) -->
+    <!-- Embedded via iframe pointing at the existing standalone library.html
+         rather than duplicating its content here. Single source of truth --
+         if the publication list/links are updated on the marketing site,
+         this tab picks up the change automatically with zero extra edits,
+         and there's no risk of the two copies drifting out of sync. -->
+    <div class="dash-tab-panel" id="tab-library">
+      <div style="background:#0d1829;border:1px solid #1e3a5f;border-radius:12px;overflow:hidden;height:calc(100vh - 220px);min-height:500px">
+        <iframe src="library.html" title="Ship's Library" style="width:100%;height:100%;border:none;display:block" loading="lazy"></iframe>
+      </div>
+    </div>
+    <!-- /TAB: SHIP'S LIBRARY -->
+
+    <!-- TAB: FLEET (pilot build — branch feature/fleet-dashboard) -->
+    <div class="dash-tab-panel" id="tab-fleet">
+      <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:11px;color:var(--amber);font-family:var(--font-mono);letter-spacing:.03em;line-height:1.6">
+        &#9888; PILOT BUILD &mdash; real backend (Cloudflare KV), but only KIRT CHOUEST is registered so far. Vessels 2–5 appear automatically once their Pi hardware is provisioned. RMC tools below use a temporary admin-key gate, not real logins (Phase 2 access control not yet built).
+      </div>
+
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9635;</span>FLEET OVERVIEW</span>
+          <span id="fleet-grid-meta"></span>
+        </div>
+        <div class="fleet-section-body">
+          <div class="fleet-grid" id="fleet-grid"></div>
+        </div>
+      </div>
+
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9673;</span>ACTIVE FLEET ADVISORIES</span>
+          <span id="advisory-meta">Loading&hellip;</span>
+        </div>
+        <div class="fleet-section-body" id="fleet-advisory-list"></div>
+      </div>
+
+      <!-- Vessel → RMC hazard report form. Open to any vessel, no admin
+           key required — by design, matches the roadmap's report-in path. -->
+      <div class="fleet-section" style="margin-bottom:16px">
+        <div class="fleet-section-title">
+          <span><span class="fleet-section-icon">&#9670;</span>REPORT A HAZARD TO RMC</span>
+          <span id="report-form-meta"></span>
+        </div>
+        <div class="fleet-section-body">
+          <div class="fleet-form-grid">
+            <select id="report-vessel" class="fleet-input"></select>
+            <select id="report-hazard-type" class="fleet-input">
+              <option value="">Select hazard type…</option>
+              <option>Unlit rig / structure</option>
+              <option>Buoy off station</option>
+              <option>Drifting debris / trash</option>
+              <option>Adrift vessel</option>
+              <option>Weather hazard</option>
+              <option>Other</option>
+            </select>
+            <div style="position:relative">
+              <input id="report-position" class="fleet-input" type="text" placeholder="Position (optional, e.g. 28.5N 89.2W)" style="padding-right:66px" oninput="reportPositionIsAutoSynced=false">
+              <button type="button" id="report-position-sync-btn" onclick="syncReportPositionFromGPS(true)" title="Re-sync to current vessel GPS position" style="position:absolute;right:5px;top:5px;bottom:5px;background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:0 8px;cursor:pointer">&#128205; SYNC</button>
+            </div>
+          </div>
+          <div id="report-position-hint" style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em"></div>
+          <textarea id="report-description" class="fleet-input fleet-textarea" placeholder="Describe the hazard (required) — e.g. distance/direction from us, drift direction" maxlength="2000"></textarea>
+          <!-- Quick-insert relative-bearing helper (added 2026-07-10): reporting
+               a hazard's position relative to your own vessel ("2nm SE of us")
+               is more useful to another vessel plotting it than raw lat/lon
+               alone. This lets the operator type a distance + pick a
+               direction and insert readable phrasing into the description
+               without doing bearing math by hand. Optional — never required,
+               never overwrites anything already typed. -->
+          <div style="display:flex;gap:8px;align-items:center;margin:-2px 0 10px;flex-wrap:wrap">
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.04em">QUICK INSERT:</span>
+            <input id="report-rel-distance" type="number" min="0" step="0.1" placeholder="nm" style="width:64px;background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+            <select id="report-rel-direction" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE" selected>SE</option>
+              <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW">NW</option>
+            </select>
+            <select id="report-rel-motion" onchange="onRelMotionChange()" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+              <option value="stationary">stationary</option>
+              <option value="drifting">drifting</option>
+            </select>
+            <span id="report-rel-drift-wrap" style="display:none;align-items:center;gap:8px">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">to the</span>
+              <select id="report-rel-drift-direction" style="background:var(--bg);border:1px solid #55606e;border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--font-mono);font-size:11px">
+                <option value="N">N</option><option value="NE">NE</option><option value="E">E</option><option value="SE">SE</option>
+                <option value="S">S</option><option value="SW">SW</option><option value="W">W</option><option value="NW" selected>NW</option>
+              </select>
+            </span>
+            <button type="button" class="fleet-btn" style="padding:6px 12px;font-size:10px" onclick="insertRelativeBearingPhrase()">Insert</button>
+          </div>
+          <button class="fleet-btn" id="btn-submit-report" onclick="submitHazardReport()">Submit Report to RMC</button>
+        </div>
+      </div>
+
+      <!-- RMC-only tools: advisory composer + report inbox. Gated by a
+           shared admin key entered client-side (stopgap, not real auth
+           — see Phase 2 in the fleet roadmap). Key is cached in
+           sessionStorage only (cleared when the browser tab closes),
+           never written to localStorage or any persistent store. -->
+      <div class="fleet-section" id="rmc-gate-section">
+        <div class="fleet-section-title">
+          <span><span class="fleet-rmc-lock-icon" id="rmc-lock-icon">&#128274;</span>RMC TOOLS</span>
+          <span id="rmc-lock-status">Admin key required</span>
+        </div>
+        <div class="fleet-section-body">
+        <div id="rmc-locked-view" class="fleet-form-grid">
+          <input id="rmc-key-input" class="fleet-input" type="password" placeholder="RMC admin key" onkeydown="if(event.key==='Enter')rmcUnlock()">
+          <button class="fleet-btn" onclick="rmcUnlock()">Unlock</button>
+        </div>
+        <div id="rmc-unlocked-view" style="display:none">
+          <div class="fleet-rmc-subsection-title">Compose Fleet Advisory</div>
+          <div class="fleet-form-grid">
+            <select id="adv-severity" class="fleet-input">
+              <option value="info">Info</option>
+              <option value="warning" selected>Warning</option>
+              <option value="critical">Critical</option>
+            </select>
+            <input id="adv-title" class="fleet-input" type="text" placeholder="Short title (required)">
+            <input id="adv-expires" class="fleet-input" type="number" min="1" max="30" value="7" placeholder="Expires in (days)">
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin:-4px 0 8px;letter-spacing:.02em">Advisory auto-expires and drops off every vessel's dashboard after this many days (1–30) — doesn't need to be manually cleared unless it's resolved sooner.</div>
+          <textarea id="adv-body" class="fleet-input fleet-textarea" placeholder="Advisory details (required)" maxlength="2000"></textarea>
+          <button class="fleet-btn" id="btn-publish-advisory" onclick="publishAdvisory()">Publish to Fleet</button>
+          <div id="adv-publish-status" class="fleet-status-msg"></div>
+
+          <div class="fleet-rmc-subsection-title" style="margin-top:20px">Incoming Hazard Reports</div>
+          <div id="rmc-reports-list"><div class="advisory-empty">Loading…</div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+    <!-- /TAB: FLEET -->
 
   </main>
 </div>
@@ -619,6 +1050,7 @@
 </div>
 
 <script src="/leaflet/leaflet.js"></script>
+<script src="/leaflet/esri-leaflet.js"></script>
 <script>
 // ============================================================
 // BEAU DASHBOARD v2.0 — Dual Mode Engine
@@ -635,34 +1067,84 @@
 // independently of the sensor/forecast/AIS polling loops so it works even
 // if those are erroring out.
 let maintenanceBannerVisible = false;
+function setLiveStat(id, ok, warn, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'sys-value ' + (ok ? 'green-text' : (warn ? 'amber-text' : 'red-text'));
+  el.innerHTML = '● ' + text;
+}
+
+async function probeJson(url, timeoutMs) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+// Cap harden 2026-07-31: real multi-service status strip (no more fake ACTIVE)
 async function checkLiveSystemsStatus() {
   const banner = document.getElementById('maintenance-banner');
-  if (!banner) return;
+  let beauOk = false;
+
   try {
-    const res = await fetch('https://beau.beaufort-ai.com/api/beau/health', { signal: AbortSignal.timeout(6000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const d = await res.json();
-    const healthy = d.status === 'ready';
-    if (healthy && maintenanceBannerVisible) {
+    const d = await probeJson('https://beau.beaufort-ai.com/api/beau/health', 6000);
+    beauOk = d && d.status === 'ready';
+    if (beauOk) setLiveStat('stat-beau', true, false, 'READY');
+    else setLiveStat('stat-beau', false, true, (d && d.status) ? String(d.status).toUpperCase() : 'DEGRADED');
+  } catch (e) {
+    setLiveStat('stat-beau', false, false, 'DOWN');
+  }
+
+  try {
+    const d = await probeJson('https://beau.beaufort-ai.com/api/sensors', 6000);
+    const age = Number(d && d.data_age_sec);
+    const stale = !!(d && (d.stale || (Number.isFinite(age) && age > 60)));
+    const hasBaro = !!(d && d.barometer && d.barometer.pressure_mb != null);
+    if (hasBaro && !stale) setLiveStat('stat-sensors', true, false, 'LIVE');
+    else if (hasBaro && stale) setLiveStat('stat-sensors', false, true, 'STALE');
+    else setLiveStat('stat-sensors', false, false, 'OFFLINE');
+  } catch (e) {
+    setLiveStat('stat-sensors', false, false, 'DOWN');
+  }
+
+  try {
+    const d = await probeJson('https://beau.beaufort-ai.com/api/sensor-history/window?hours=6', 8000);
+    const n = (d && Array.isArray(d.readings)) ? d.readings.length : 0;
+    if (n > 0) setLiveStat('stat-history', true, false, n + ' PTS');
+    else setLiveStat('stat-history', false, true, 'EMPTY');
+  } catch (e) {
+    setLiveStat('stat-history', false, false, 'DOWN');
+  }
+
+  try {
+    const d = await probeJson('https://beau.beaufort-ai.com/api/ais', 6000);
+    const fleet = (d && d.fleet) || {};
+    const n = Number(fleet.active_vessels || (Array.isArray(fleet.vessels) ? fleet.vessels.length : 0) || 0);
+    const zoneOk = !!(d && d.zone && d.zone.center_lat != null);
+    if (zoneOk || n > 0) setLiveStat('stat-ais', true, false, n + ' VES');
+    else setLiveStat('stat-ais', false, true, 'NO DATA');
+  } catch (e) {
+    setLiveStat('stat-ais', false, false, 'DOWN');
+  }
+
+  const checked = document.getElementById('stat-checked');
+  if (checked) checked.textContent = new Date().toLocaleTimeString();
+
+  if (banner) {
+    if (beauOk && maintenanceBannerVisible) {
       banner.style.display = 'none';
       maintenanceBannerVisible = false;
-    } else if (!healthy && !maintenanceBannerVisible) {
-      banner.style.display = 'block';
-      maintenanceBannerVisible = true;
-    }
-  } catch (e) {
-    // Unreachable entirely (server stopped, network error, timeout) — same
-    // treatment as an unhealthy response.
-    if (!maintenanceBannerVisible) {
+    } else if (!beauOk && !maintenanceBannerVisible) {
       banner.style.display = 'block';
       maintenanceBannerVisible = true;
     }
   }
 }
 
+
 const BEAU_API_URL = 'https://beau.beaufort-ai.com/api/beau/stream';
 const PI_FEED_URL  = 'https://beau.beaufort-ai.com/api/sensors';
 const FEEDBACK_API_URL = 'https://beau-feedback.capt-barrett.workers.dev/';
+const FLEET_API_BASE = 'https://beau-fleet.capt-barrett.workers.dev';
 const BEAU_API_KEY = '265e6176135eaaeba83a44e9bd5e062849b9a9bc30949b7e244f26f4d11f7410';
 const AUTO_DEBOUNCE_MS = 1500; // ms after last change before auto-triggering
 
@@ -679,6 +1161,11 @@ let autoEnabled = true;
 
 // PI LIVE FEED STATE
 let piFeedEnabled = false;
+let piFeedFailCount = 0;
+let piFeedBackoffMs = 5000;
+const PI_FEED_BASE_MS = 5000;
+const PI_FEED_MAX_MS = 15000;
+
 let lastForecastLat = null;  // last vessel position the GraphCast forecast was fetched for
 let lastForecastLon = null;  // (see fetchPiFeed position-change trigger + fetchForecast fallback)
 let piFeedInterval = null;
@@ -686,7 +1173,7 @@ let piFeedInterval = null;
 // ANALYSIS CACHE — only re-run Beau when conditions change meaningfully
 let lastAnalysisResult = null; // {text, alertLevel, wind_speed, pressure, cachedAt}
 const ANALYSIS_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — force refresh
-const WIND_CHANGE_THRESHOLD = 3;   // kts
+const WIND_CHANGE_THRESHOLD = 5;   // kts (raised 3->5 2026-07-31: ultrasonic noise was thrashing auto-analysis)
 const PRESSURE_CHANGE_THRESHOLD = 1; // mb
 
 function shouldReanalyze(payload) {
@@ -786,27 +1273,42 @@ function renderSensorGrid(p) {
     <div class="sc-unit">${(p.latitude && p.longitude) ? '' : 'no GPS fix'}</div>
   </div>`;
 
-  // VESSEL MOTION card
+  // SOG card (renamed from VESSEL MOTION 2026-07-11, Cap's request)
   const motionCard = `<div class="sensor-card position">
-    <div class="sc-label">VESSEL MOTION</div>
+    <div class="sc-label">SOG</div>
     <div class="sc-value">${p.speed_over_ground > 0 ? p.speed_over_ground.toFixed(1) : '--'}</div>
     <div class="sc-unit">${p.speed_over_ground > 0 ? 'kt SOG &middot; COG ' + p.course_over_ground + '&deg;' : 'at rest'}</div>
   </div>`;
 
   // WEATHERDOT group (gold) — pressure, humidity, air temp, dew point
+  // Map categories to CSS classes
+  const getSeverityClass = (cat) => {
+    if (!cat) return '';
+    const c = cat.toLowerCase();
+    if (c.includes('extreme') || c.includes('high') || c.includes('danger')) return 'alert';
+    if (c.includes('caution') || c.includes('moderate') || c.includes('elevated')) return 'caution';
+    return '';
+  };
+
+  const fogCls = getSeverityClass(p.fog_category);
+  const heatCls = getSeverityClass(p.heat_index_category);
+
   const weatherCards = [
     {label:'PRESSURE', value:p.pressure > 0 ? p.pressure.toFixed(1) : '--',
-     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline'},
+     unit:p.pressure > 0 ? `hPa${p.pressure < 1005 ? ' ↓' : p.pressure > 1018 ? ' ↑' : ''}` : 'sensor offline',
+     extraCls: p.pressure > 0 ? (p.pressure < 995 ? 'alert' : (p.pressure < 1005 ? 'caution' : '')) : ''},
     {label:'HUMIDITY',  value:p.humidity > 0 ? p.humidity.toFixed(0) : '--',
-     unit:p.humidity > 0 ? '% RH' : 'sensor offline'},
+     unit:p.humidity > 0 ? '% RH' : 'sensor offline', extraCls: ''},
     {label:'AIR TEMP',  value:p.air_temp > 0 ? p.air_temp.toFixed(1) : '--',
      unit:p.air_temp > 0 ? '°F' : 'sensor offline',
-     tip:'Barometer sensor temperature.'},
+     tip: p.heat_index_category && p.heat_index_category !== 'Normal' ? `Heat Index: ${p.heat_index_category}` : 'Barometer sensor temperature.',
+     extraCls: heatCls},
     {label:'DEW POINT', value:dewPt,
      unit:(p.air_temp>0 && p.humidity>0) ? '°F' : 'sensor offline',
-     tip:'When air temp ≈ dew point → fog risk.'},
+     tip: p.fog_category && p.fog_category !== 'Normal' ? `Fog Risk: ${p.fog_category}` : 'When air temp ≈ dew point → fog risk.',
+     extraCls: fogCls},
   ].map(c =>
-    `<div class="sensor-card pressure">${tooltipHtml(c.tip)}
+    `<div class="sensor-card pressure ${c.extraCls}">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
@@ -814,17 +1316,24 @@ function renderSensorGrid(p) {
   ).join('');
 
   // IMU group (purple) — roll, pitch, yaw, magnitude
+  const getImuClass = (val, threshold) => (val != null && Math.abs(val) > threshold) ? 'alert' : '';
+  const getMagClass = (val) => (val > 2.5) ? 'alert' : (val > 1.8) ? 'caution' : '';
+
   const imuCards = [
     {label:'ROLL',      value:p.roll != null && p.roll !== 0 ? `${p.roll>0?'+':''}${p.roll.toFixed(1)}°` : '--',
-     unit:'lateral tilt', tip:'Positive = starboard down.'},
+     unit:'lateral tilt', tip:'Positive = starboard down.',
+     extraCls: getImuClass(p.roll, 15)},
     {label:'PITCH',     value:p.pitch != null && p.pitch !== 0 ? `${p.pitch>0?'+':''}${p.pitch.toFixed(1)}°` : '--',
-     unit:'fore-aft tilt', tip:'Positive = bow up.'},
+     unit:'fore-aft tilt', tip:'Positive = bow up.',
+     extraCls: getImuClass(p.pitch, 10)},
     {label:'YAW',       value:p.yaw != null ? `${p.yaw>0?'+':''}${p.yaw.toFixed(1)}°` : '--',
-     unit:'rotation', tip:'Positive = turning right.'},
+     unit:'rotation', tip:'Positive = turning right.',
+     extraCls: ''},
     {label:'MAGNITUDE', value:p.magnitude > 0 ? p.magnitude.toFixed(2) : '--',
-     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.'},
+     unit:'g  total accel', tip:'1.0g = calm. 2.0g = moderate. 3.0g+ = heavy weather.',
+     extraCls: getMagClass(p.magnitude)},
   ].map(c =>
-    `<div class="sensor-card motion">${tooltipHtml(c.tip)}
+    `<div class="sensor-card motion ${c.extraCls}">${tooltipHtml(c.tip)}
       <div class="sc-label">${c.label}</div>
       <div class="sc-value">${c.value}</div>
       <div class="sc-unit">${c.unit}</div>
@@ -837,8 +1346,21 @@ function renderSensorGrid(p) {
 // ── STREAMING FETCH HELPER ───────────────────────────────────
 // Returns tokens via onToken(str) callback; calls onDone(finalData) when complete
 async function streamBeauRequest(body, onToken, onDone, onError) {
+  // Cap 2026-07-31: 90s was too short. Live STREAM Q often 70-100s+ before
+  // first useful tokens (context build + 70B). Abort was mislabeled as
+  // "model loading" even when llama3.3:70b was already hot. Use a long
+  // overall budget + idle timeout that resets on each chunk.
+  // Fable5 C1 (2026-08-01): special-case 429 busy with retry_after + no generic throw.
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s client timeout
+  const OVERALL_MS = 240000; // 4 min hard ceiling
+  const IDLE_MS = 120000;    // abort only if no bytes for 2 min after start
+  let idleTimer = null;
+  const overallTimer = setTimeout(() => controller.abort(), OVERALL_MS);
+  const bumpIdle = () => {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => controller.abort(), IDLE_MS);
+  };
+  bumpIdle();
   try {
     const res = await fetch(BEAU_API_URL, {
       method: 'POST',
@@ -850,7 +1372,17 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       body: JSON.stringify(body),
       signal: controller.signal,
     });
-    clearTimeout(timeoutId);
+    bumpIdle();
+
+    if (res.status === 429) {
+      const j = await res.json().catch(() => ({}));
+      const wait = (j.retry_after_sec || 15) * 1000;
+      const err = new Error(j.message || 'Beau is busy');
+      err.busy = true;
+      err.retryMs = wait;
+      onError(err);
+      return;
+    }
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
@@ -869,6 +1401,7 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
       while (true) {
         const {done, value} = await reader.read();
         if (done) break;
+        bumpIdle();
         buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split('\n');
         buffer = lines.pop(); // keep incomplete last line
@@ -878,11 +1411,27 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
           if (!raw || raw === '[DONE]') continue;
           try {
             const parsed = JSON.parse(raw);
+            // Server busy SSE (lock deferred to Ollama path)
+            if (parsed.error === 'busy') {
+              const wait = (parsed.retry_after_sec || 15) * 1000;
+              const err = new Error(parsed.message || 'Beau is busy');
+              err.busy = true;
+              err.retryMs = wait;
+              onError(err);
+              return;
+            }
+            // Skip empty preparing keepalives in UI
+            if (parsed.status === 'preparing' && !parsed.token) continue;
             if (parsed.token) {
               onToken(parsed.token);
             }
             if (parsed.done) {
               finalData = parsed;
+            }
+            if (parsed.error && parsed.error !== 'busy') {
+              const err = new Error(parsed.message || parsed.error);
+              onError(err);
+              return;
             }
           } catch(e) {
             // raw text token fallback
@@ -895,6 +1444,14 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     } else {
       // NON-STREAMING FALLBACK: parse JSON response (cache hits, Q&A)
       const data = await res.json();
+      if (data && data.error === 'busy') {
+        const wait = (data.retry_after_sec || 15) * 1000;
+        const err = new Error(data.message || 'Beau is busy');
+        err.busy = true;
+        err.retryMs = wait;
+        onError(err);
+        return;
+      }
       const prediction = data.prediction || data;
       // Extract text — prefer response field (cached sensor hits), then answer, then description
       const text = prediction.response || prediction.answer || prediction.alert_description || prediction.text || '';
@@ -910,12 +1467,17 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
     }
   } catch(err) {
     onError(err);
+  } finally {
+    if (idleTimer) clearTimeout(idleTimer);
+    clearTimeout(overallTimer);
   }
 }
 
 // ── MODE 1: SENSOR ANALYSIS ──────────────────────────────────
 async function runSensorAnalysis() {
   if (sensorRequestInFlight) return;
+  // Cap 2026-07-31: don't steal the 70B while Cap is mid Q&A
+  if (qaRequestInFlight) return;
 
   const payload = buildPayload();
   lastPayload = payload;
@@ -1022,15 +1584,33 @@ async function runSensorAnalysis() {
         cachedAt: Date.now()
       };
     },
-    (err) => {
+        (err) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      const isTimeout = err.name === 'AbortError' || err.message.includes('524') || err.message.includes('timeout');
+      // Fable5 C1 (2026-08-01): busy is not a hard failure - show queue + one auto-retry.
+      if (err && err.busy) {
+        const waitMs = err.retryMs || 15000;
+        const waitSec = Math.round(waitMs / 1000);
+        const msg = `Beau busy — retrying in ${waitSec}s`;
+        if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
+        if (box) box.classList.remove('streaming');
+        setStatus('#f59e0b', `Busy 🏅 retry ${waitSec}s`);
+        addHistory('SENSOR', 'BUSY', msg, null, payload);
+        if (autoEnabled && !window.__beauBusyRetryTimer) {
+          const jitter = waitMs * (0.8 + Math.random() * 0.4);
+          window.__beauBusyRetryTimer = setTimeout(() => {
+            window.__beauBusyRetryTimer = null;
+            if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis();
+          }, jitter);
+        }
+        return;
+      }
+      const isTimeout = err.name === 'AbortError' || (err.message||'').includes('524') || (err.message||'').toLowerCase().includes('timeout');
       const msg = isTimeout
-        ? 'Beau is waking up — model loading. Try again in 30 seconds.'
+        ? 'Beau timed out waiting for a response (slow inference or proxy cutoff). Try once more — if it keeps failing, the 70B path is overloaded.'
         : `Error: ${err.message}`;
       if (body) body.innerHTML = `<span style="color:var(--amber)">${msg}</span>`;
       if (box) box.classList.remove('streaming');
-      setStatus('#f59e0b', `Timeout \u00b7 ${elapsed}s`);
+      setStatus('#f59e0b', `Timeout · ${elapsed}s`);
       addHistory('SENSOR', 'ERROR', msg, null, payload);
     }
   );
@@ -1142,7 +1722,7 @@ function onSensorFieldChange(inputEl) {
 // background regardless of which tab is visible, so nothing goes
 // stale when switching back.
 let dashActiveTab = 'conditions';
-const dashTabBadgeCounts = { ais: 0, history: 0 };
+const dashTabBadgeCounts = { ais: 0, history: 0, fleet: 0 };
 
 function dashSwitchTab(tabName) {
   dashActiveTab = tabName;
@@ -1167,6 +1747,21 @@ function dashSwitchTab(tabName) {
   // further down the script and may not exist yet on the very first call.
   if (tabName === 'ais' && typeof aisMap !== 'undefined' && aisMap) {
     setTimeout(() => aisMap.invalidateSize(), 0);
+    // BUGFIX (2026-07-12): the NOAA chart overlay can end up requesting a
+    // zero-size export image if it was added/re-centered while the map
+    // container was still display:none (0x0) -- e.g. the AIS zone poll
+    // calling aisMap.setView() before this tab was ever opened.
+    // invalidateSize() alone does not make the overlay re-issue its export
+    // request, so force an explicit redraw here too.
+    if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
+      setTimeout(() => noaaChartLayer.redraw(), 50);
+    }
+  }
+  // Weather map now lives in its own dedicated tab (split from the AIS tab
+  // 2026-07-12 per Cap's clarification), same display:none sizing issue
+  // applies -- Leaflet needs a re-measure once the tab is actually visible.
+  if (tabName === 'weather-map' && typeof weatherMap !== 'undefined' && weatherMap) {
+    setTimeout(() => weatherMap.invalidateSize(), 0);
   }
 }
 
@@ -1395,6 +1990,15 @@ async function fetchPiFeed() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const d = await res.json();
     if (d.error) throw new Error(d.error);
+    // Fable5 M2 (2026-08-01): reset backoff on success
+    if (typeof piFeedFailCount !== 'undefined' && (piFeedFailCount > 0 || piFeedBackoffMs !== PI_FEED_BASE_MS)) {
+      piFeedFailCount = 0;
+      piFeedBackoffMs = PI_FEED_BASE_MS;
+      if (piFeedEnabled && piFeedInterval) {
+        clearInterval(piFeedInterval);
+        piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
+      }
+    }
 
     // Populate sensor fields
     const set = (id, val) => {
@@ -1499,9 +2103,765 @@ async function fetchPiFeed() {
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
 
   } catch(e) {
+    // Fable5 M2 fail-backoff (2026-08-01)
+    piFeedFailCount = (piFeedFailCount || 0) + 1;
+    const nextMs = Math.min(PI_FEED_MAX_MS || 15000, (PI_FEED_BASE_MS || 5000) * Math.pow(2, Math.min(piFeedFailCount - 1, 2)));
+    if (nextMs !== piFeedBackoffMs && piFeedEnabled) {
+      piFeedBackoffMs = nextMs;
+      if (piFeedInterval) clearInterval(piFeedInterval);
+      piFeedInterval = setInterval(fetchPiFeed, piFeedBackoffMs);
+    }
+
     statusEl.textContent = '\uD83D\uDD34 ' + e.message;
     statusEl.style.color = 'var(--red, #ef4444)';
   }
+}
+
+// ── FLEET TAB (pilot build, branch feature/fleet-dashboard) ──────
+// Real backend as of this pass: vessel registry + advisories are read
+// from the deployed beau-fleet Worker (Cloudflare KV-backed), not
+// hardcoded mock arrays. Only Kirt Chouest exists as a real vessel
+// today (registered in KV) — vessels 2-5 will appear automatically
+// once their Pis are provisioned and registered, no dashboard code
+// changes needed at that point. Advisories are real, persisted, and
+// created via the RMC-side API (not yet a UI — curl/admin-key only
+// until Phase 2 access control exists).
+
+function fleetStatusDot(status) {
+  const cls = status === 'online' ? 'online' : status === 'stale' ? 'stale' : 'offline';
+  return `<span class="fleet-status-dot ${cls}"></span>`;
+}
+
+function fleetMetricBlock(label, value, unit) {
+  const v = (value === null || value === undefined) ? '--' : value;
+  return `<div><div class="fleet-metric-label">${label}</div><div class="fleet-metric-value">${v}${v !== '--' ? ' ' + unit : ''}</div></div>`;
+}
+
+function fleetTimeAgo(iso) {
+  if (!iso) return 'Unknown';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  return `${Math.round(hrs / 24)} day(s) ago`;
+}
+
+const FLEET_RELAY_URL = 'https://beau.beaufort-ai.com/api/fleet-relay';
+
+async function fetchVesselData(vessel) {
+  // 2026-07-24: fetch via Spark's server-side relay (/api/fleet-relay/<id>)
+  // instead of vessel.tunnel_url directly. Pilot Pis (Kirt-239 and 5 more
+  // coming) only have private Tailscale IPs -- a public browser can't route
+  // to those at all, and even if it could, an HTTPS page fetching a raw
+  // HTTP tunnel_url gets blocked by mixed-content rules. Spark is already
+  // on the tailnet, so it does the actual fetch and this just calls Spark.
+  // Scales to any number of pilot vessels with zero new public exposure
+  // per Pi -- no per-Pi tunnel/funnel to install, maintain, or secure.
+  try {
+    const res = await fetch(`${FLEET_RELAY_URL}/${encodeURIComponent(vessel.id)}`, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
+    const d = await res.json();
+    if (!res.ok || d.status === 'offline') throw new Error(d.error || ('bad status ' + res.status));
+    // Field mapping fixed 2026-07-24: initial guesses (d.pressure, d.wind_speed,
+    // d.true_wind_speed, d.heading) didn't match either vessel's real JSON shape.
+    // Kirt Chouest (full rig): barometer.pressure_mb, wind.speed_kts,
+    // wind.direction_deg, accel.heading_deg. Kirt-239 (BME680-only pilot unit,
+    // no wind/heading hardware yet): bme680.pressure_mb, no wind/heading fields
+    // at all -- those correctly stay '--' until NMEA0183 integration lands.
+    const pressure = d.barometer?.pressure_mb ?? d.bme680?.pressure_mb ?? null;
+    const wind = d.wind?.speed_kts ?? null;
+    const heading = d.accel?.heading_deg ?? d.wind?.direction_deg ?? null;
+    return {
+      status: 'online',
+      pressure,
+      wind,
+      heading,
+      lastSeen: 'Live',
+      raw: d, // full relay payload, used by the per-vessel detail modal
+    };
+  } catch (e) {
+    return { status: 'offline', pressure: null, wind: null, heading: null, lastSeen: 'Unreachable', raw: null };
+  }
+}
+
+function fleetSkeletonCards(n) {
+  let out = '';
+  for (let i = 0; i < n; i++) {
+    out += `<div class="fleet-card">
+      <div class="fleet-card-top"><div style="width:100%">
+        <div class="fleet-skeleton" style="width:70%;margin-bottom:6px"></div>
+        <div class="fleet-skeleton" style="width:45%;height:9px"></div>
+      </div></div>
+      <div class="fleet-card-metrics">
+        <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
+        <div class="fleet-skeleton" style="height:18px"></div><div class="fleet-skeleton" style="height:18px"></div>
+      </div>
+    </div>`;
+  }
+  return out;
+}
+
+async function renderFleetGrid() {
+  const grid = document.getElementById('fleet-grid');
+  const gridMeta = document.getElementById('fleet-grid-meta');
+  if (!grid) return;
+  grid.innerHTML = fleetSkeletonCards(1);
+
+  let vessels = [];
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    vessels = d.vessels || [];
+  } catch (e) {
+    grid.innerHTML = '<div class="advisory-empty">&#9888; Fleet API unreachable — ' + e.message + '</div>';
+    if (gridMeta) gridMeta.textContent = '';
+    return;
+  }
+
+  if (!vessels.length) {
+    grid.innerHTML = '<div class="advisory-empty">No vessels registered yet.</div>';
+    if (gridMeta) gridMeta.textContent = '';
+    return;
+  }
+
+  // Fetch each vessel's live telemetry in parallel.
+  const results = await Promise.all(vessels.map(v => fetchVesselData(v)));
+  const onlineCount = results.filter(r => r.status === 'online').length;
+  if (gridMeta) gridMeta.textContent = `${onlineCount}/${vessels.length} online`;
+
+  // Cache each vessel's raw relay data (not just the trimmed 4-metric
+  // summary) so the detail modal (below) can show a fuller readout
+  // per-vessel without a second fetch round-trip.
+  window._fleetVesselCache = vessels.map((v, i) => ({ vessel: v, data: results[i] }));
+
+  const cards = vessels.map((v, i) => {
+    const data = results[i];
+    // 2026-07-24: every ONLINE vessel is now clickable (not just Kirt
+    // Chouest). Tapping used to hardcode dashSwitchTab('conditions'),
+    // which only ever shows Chouest's own feed -- so tapping Kirt-239's
+    // card wrongly showed Chouest's data. Now opens an inline per-vessel
+    // detail modal fed by that vessel's own relay data instead.
+    const clickable = data.status === 'online';
+    return `
+      <div class="fleet-card status-${data.status}${clickable ? ' is-clickable' : ''}" ${clickable ? `onclick="openFleetVesselDetail('${v.id}')"` : ''}>
+        <div class="fleet-card-top">
+          <div>
+            <div class="fleet-card-name">${v.name}</div>
+            <div class="fleet-card-sub">${v.role || ''}</div>
+          </div>
+          ${fleetStatusDot(data.status)}
+        </div>
+        <div class="fleet-card-metrics">
+          ${fleetMetricBlock('PRESSURE', data.pressure, 'hPa')}
+          ${fleetMetricBlock('WIND', data.wind, 'kt')}
+          ${fleetMetricBlock('HEADING', data.heading, '°')}
+          ${fleetMetricBlock('STATUS', data.status.toUpperCase(), '')}
+        </div>
+        <div class="fleet-card-footer"><span>${data.lastSeen}</span>${clickable ? '<span>&rarr; Details</span>' : ''}</div>
+      </div>`;
+  }).join('');
+
+  grid.innerHTML = cards;
+}
+
+// ── Per-vessel detail modal (added 2026-07-24) ──────────────────────
+// Fixes: tapping any fleet card used to jump to the CONDITIONS tab,
+// which is hardwired to Kirt Chouest's own live feed -- so every vessel's
+// card showed the same (Chouest) data. This renders the TAPPED vessel's
+// own sensor readout inline on the FLEET tab instead, using the cached
+// relay response already fetched for the grid (no extra round-trip).
+function closeFleetVesselDetail() {
+  const el = document.getElementById('fleet-vessel-modal');
+  if (el) el.remove();
+}
+
+function fleetDetailRow(label, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `<div class="fleet-detail-row"><span class="fleet-detail-label">${label}</span><span class="fleet-detail-value">${value}</span></div>`;
+}
+
+function openFleetVesselDetail(vesselId) {
+  const entry = (window._fleetVesselCache || []).find(e => e.vessel.id === vesselId);
+  if (!entry) return;
+  const { vessel, data } = entry;
+  const raw = data.raw || {};
+
+  let rows = '';
+  if (raw.barometer) {
+    rows += fleetDetailRow('Pressure', raw.barometer.pressure_mb != null ? raw.barometer.pressure_mb + ' hPa' : null);
+    rows += fleetDetailRow('Humidity', raw.barometer.humidity_pct != null ? raw.barometer.humidity_pct + ' %RH' : null);
+    rows += fleetDetailRow('Air Temp', raw.barometer.temp_f != null ? raw.barometer.temp_f + ' \u00b0F' : null);
+  }
+  if (raw.bme680) {
+    rows += fleetDetailRow('Pressure', raw.bme680.pressure_mb != null ? raw.bme680.pressure_mb + ' hPa' : null);
+    rows += fleetDetailRow('Humidity', raw.bme680.humidity_pct != null ? raw.bme680.humidity_pct + ' %RH' : null);
+    rows += fleetDetailRow('Temp', raw.bme680.temperature_f != null ? raw.bme680.temperature_f + ' \u00b0F' : null);
+  }
+  if (raw.wind) {
+    rows += fleetDetailRow('Wind Speed', raw.wind.speed_kts != null ? raw.wind.speed_kts + ' kt' : null);
+    rows += fleetDetailRow('Wind Direction', raw.wind.direction_deg != null ? raw.wind.direction_deg + '\u00b0' : null);
+  }
+  if (raw.accel) {
+    rows += fleetDetailRow('Heading', raw.accel.heading_deg != null ? raw.accel.heading_deg + '\u00b0' : null);
+    rows += fleetDetailRow('Roll', raw.accel.roll != null ? raw.accel.roll + '\u00b0' : null);
+    rows += fleetDetailRow('Pitch', raw.accel.pitch != null ? raw.accel.pitch + '\u00b0' : null);
+  }
+  if (raw.gps) {
+    rows += fleetDetailRow('Position', (raw.gps.lat != null && raw.gps.lon != null) ? raw.gps.lat.toFixed(4) + ', ' + raw.gps.lon.toFixed(4) : null);
+    rows += fleetDetailRow('Speed', raw.gps.speed_kts != null ? raw.gps.speed_kts + ' kt' : null);
+  }
+  if (!rows) rows = '<div class="advisory-empty">No detailed sensor fields available for this vessel yet.</div>';
+
+  const modal = document.createElement('div');
+  modal.id = 'fleet-vessel-modal';
+  modal.className = 'fleet-modal-overlay';
+  modal.onclick = (e) => { if (e.target === modal) closeFleetVesselDetail(); };
+  modal.innerHTML = `
+    <div class="fleet-modal">
+      <div class="fleet-modal-header">
+        <div>
+          <div class="fleet-card-name">${vessel.name}</div>
+          <div class="fleet-card-sub">${vessel.role || ''}</div>
+        </div>
+        <button class="fleet-modal-close" onclick="closeFleetVesselDetail()">&times;</button>
+      </div>
+      <div class="fleet-modal-body">${rows}</div>
+      <div class="fleet-card-footer"><span>${data.lastSeen}</span><span>${data.status.toUpperCase()}</span></div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+// ── Fleet Advisory alert: on-screen toast + audible beep ────────────
+// Both fire the moment a NEW advisory is detected by the poll below,
+// regardless of which tab is currently open — this is the direct
+// on-dashboard alternative to email, so a vessel doesn't have to be
+// sitting on the FLEET tab (or checking email) to notice a hazard.
+let fleetToastTimer = null;
+
+function fleetShowToast(advisory) {
+  const toast = document.getElementById('fleet-toast');
+  if (!toast) return;
+  const sevEl = document.getElementById('fleet-toast-sev');
+  const titleEl = document.getElementById('fleet-toast-title');
+  const textEl = document.getElementById('fleet-toast-text');
+  const iconEl = document.getElementById('fleet-toast-icon');
+  const sev = advisory.severity || 'info';
+
+  toast.className = 'fleet-toast ' + sev;
+  sevEl.className = 'fleet-toast-sev ' + sev;
+  sevEl.textContent = sev.toUpperCase();
+  titleEl.textContent = advisory.title || 'Fleet advisory';
+  textEl.textContent = advisory.body || '';
+  iconEl.textContent = sev === 'critical' ? '\u{1F6A8}' : sev === 'warning' ? '\u26A0\uFE0F' : '\u2139\uFE0F';
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  // Auto-hide timing scales with severity — critical stays up longer,
+  // since it's the one most likely to need a moment to actually read.
+  if (fleetToastTimer) clearTimeout(fleetToastTimer);
+  const autoHideMs = sev === 'critical' ? 20000 : sev === 'warning' ? 14000 : 9000;
+  fleetToastTimer = setTimeout(fleetDismissToast, autoHideMs);
+}
+
+function fleetDismissToast() {
+  const toast = document.getElementById('fleet-toast');
+  if (toast) toast.classList.remove('show');
+  if (fleetToastTimer) { clearTimeout(fleetToastTimer); fleetToastTimer = null; }
+}
+
+function fleetToastGoToTab() {
+  fleetDismissToast();
+  dashSwitchTab('fleet');
+}
+
+// Synthesized via WebAudio (no external audio file/asset needed, so
+// there's nothing to fail to load). Distinct patterns by severity:
+// critical = 3 sharp beeps, warning = 2, info = 1 soft tone. Browsers
+// block audio before any user interaction on the page (autoplay policy)
+// — this is a real, known limitation, not a bug: if the operator hasn't
+// clicked/tapped anywhere on the dashboard yet this page load, the sound
+// will silently fail to play while the toast still shows visually.
+function fleetPlayAlertSound(severity) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const beepCount = severity === 'critical' ? 3 : severity === 'warning' ? 2 : 1;
+    const freq = severity === 'critical' ? 880 : severity === 'warning' ? 660 : 520;
+    for (let i = 0; i < beepCount; i++) {
+      const startAt = ctx.currentTime + i * 0.32;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startAt);
+      osc.stop(startAt + 0.25);
+    }
+    setTimeout(() => ctx.close(), (beepCount * 320) + 400);
+  } catch (e) {
+    // Non-fatal — audio is a nice-to-have on top of the visual toast,
+    // never let a sound failure break the alert itself.
+  }
+}
+
+// Tracks advisory IDs already seen so we only badge the tab for NEW
+// or newly-reappeared advisories, not every poll refresh. null means
+// "not initialized yet" — the very first load seeds the set silently
+// (no badge for advisories that already existed before page load).
+let fleetSeenAdvisoryIds = null;
+
+async function renderFleetAdvisories(isPoll) {
+  const list = document.getElementById('fleet-advisory-list');
+  const meta = document.getElementById('advisory-meta');
+  if (!list) return;
+  if (!isPoll) list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+
+  let advisories = [];
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    advisories = d.advisories || [];
+  } catch (e) {
+    if (!isPoll) list.innerHTML = '<div class="advisory-empty">Advisory API unreachable — ' + e.message + '</div>';
+    return;
+  }
+
+  // Badge the FLEET tab + pop the on-screen toast + play an audible alert
+  // if any active advisory is new since last check. Skipped on the very
+  // first render (fleetSeenAdvisoryIds === null) so pre-existing advisories
+  // don't falsely look "new" on page load.
+  const currentIds = new Set(advisories.map(a => a.id));
+  if (fleetSeenAdvisoryIds !== null) {
+    const newOnes = advisories.filter(a => !fleetSeenAdvisoryIds.has(a.id));
+    if (newOnes.length) {
+      dashBumpTabBadge('fleet');
+      // If several arrived in one poll window, surface the most severe.
+      const sevRank = { critical: 3, warning: 2, info: 1 };
+      const toShow = newOnes.reduce((a, b) => (sevRank[b.severity] || 0) > (sevRank[a.severity] || 0) ? b : a);
+      fleetShowToast(toShow);
+      fleetPlayAlertSound(toShow.severity);
+    }
+  }
+  fleetSeenAdvisoryIds = currentIds;
+
+  if (!advisories.length) {
+    list.innerHTML = '<div class="advisory-empty">&#10003; No active advisories — fleet is clear.</div>';
+    if (meta) meta.textContent = 'None active';
+    return;
+  }
+
+  // Clear button only renders for whoever's unlocked as RMC (has a
+  // cached admin key this tab) — this advisory list is shown fleet-wide
+  // to every vessel, and a random vessel operator shouldn't be able to
+  // retire RMC's advisories. Added 2026-07-10 alongside the matching
+  // worker endpoint (already existed, just had no UI hooked to it before
+  // — the only way to retire early was a manual curl call).
+  const isRmcUnlocked = !!rmcGetKey();
+  list.innerHTML = advisories.map(a => `
+    <div class="advisory-item">
+      <span class="advisory-severity ${a.severity}">${a.severity.toUpperCase()}</span>
+      <div class="advisory-body">
+        <b>${a.title}</b> — ${a.body}
+        <div class="advisory-meta">Issued by ${a.issued_by} · ${fleetTimeAgo(a.created_at)}</div>
+      </div>
+      ${isRmcUnlocked ? `<button type="button" class="advisory-clear-btn" onclick="clearAdvisory('${a.id}')">Clear</button>` : ''}
+    </div>`).join('');
+
+  if (meta) meta.textContent = `${advisories.length} active`;
+  if (meta) meta.style.color = advisories.some(a => a.severity === 'critical') ? 'var(--red)' : '';
+}
+
+// ── Vessel hazard report form (vessel → RMC) ─────────────────
+
+// Converts a decimal-degree lat/lon into a compact DD.DDDD N/S DDD.DDDD E/W
+// string — readable at a glance, matches the format already used elsewhere
+// on this dashboard (e.g. the ais vessel list) rather than inventing a new one.
+function fleetFormatLatLon(lat, lon) {
+  if (lat === null || lat === undefined || isNaN(lat) || lon === null || lon === undefined || isNaN(lon)) return null;
+  const ns = lat >= 0 ? 'N' : 'S';
+  const ew = lon >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(4)}${ns} ${Math.abs(lon).toFixed(4)}${ew}`;
+}
+
+// Auto-fills the hazard report's position field from the vessel's own live
+// GPS (already polled into #f-latitude/#f-longitude every 2s by fetchPiFeed,
+// see BEAUFORT AI north-star notes above). Runs once when the FLEET tab
+// opens and again any time the operator hits the manual SYNC button —
+// never overwrites something the operator already typed by hand unless
+// they explicitly asked for a re-sync (forceOverwrite=true).
+// Tracks whether the CURRENT value in #report-position came from auto-sync
+// (true) vs. the operator manually typing/editing it (false). Lets the
+// background refresh (below) keep the field live-updating over long
+// stretches on the tab without ever clobbering a manual edit — see
+// CHANGE (2026-07-10) note below for why this exists.
+let reportPositionIsAutoSynced = true;
+
+function syncReportPositionFromGPS(forceOverwrite) {
+  const posEl = document.getElementById('report-position');
+  const hintEl = document.getElementById('report-position-hint');
+  if (!posEl) return;
+  const latEl = document.getElementById('f-latitude');
+  const lonEl = document.getElementById('f-longitude');
+  const lat = latEl ? parseFloat(latEl.value) : NaN;
+  const lon = lonEl ? parseFloat(lonEl.value) : NaN;
+  const formatted = fleetFormatLatLon(lat, lon);
+
+  if (!formatted) {
+    if (hintEl) hintEl.textContent = 'No live GPS fix yet — enter position manually.';
+    return;
+  }
+
+  // Auto-fill if: the field is empty, this is an explicit re-sync (button
+  // click / post-submit), OR the value currently showing is itself just an
+  // old auto-synced reading (not something the operator typed) — that last
+  // case is what makes the field keep tracking a moving vessel across a
+  // long session instead of freezing at whatever position was showing when
+  // the tab was first opened or last submitted.
+  if (forceOverwrite || !posEl.value.trim() || reportPositionIsAutoSynced) {
+    posEl.value = formatted;
+    reportPositionIsAutoSynced = true;
+  }
+  if (hintEl) hintEl.textContent = 'Auto-synced to vessel GPS \u2014 edit freely, or tap SYNC to refresh.';
+}
+
+async function populateReportVesselDropdown() {
+  const sel = document.getElementById('report-vessel');
+  if (!sel) return;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/vessels', { signal: AbortSignal.timeout(6000) });
+    const d = await res.json();
+    const vessels = d.vessels || [];
+    sel.innerHTML = vessels.map(v => `<option value="${v.id}">${v.name}</option>`).join('')
+      || '<option value="">No vessels registered</option>';
+  } catch (e) {
+    sel.innerHTML = '<option value="">Unable to load vessels</option>';
+  }
+}
+
+// Shows/hides the drift-direction picker depending on stationary vs
+// drifting — no point asking which way something is drifting if it
+// isn't moving.
+function onRelMotionChange() {
+  const motionEl = document.getElementById('report-rel-motion');
+  const wrap = document.getElementById('report-rel-drift-wrap');
+  wrap.style.display = motionEl.value === 'drifting' ? 'inline-flex' : 'none';
+}
+
+// Inserts readable relative-position phrasing ("3nm S of our position,
+// drifting to the north") into the description field — this is what
+// actually helps another vessel plotting the hazard, since raw lat/lon
+// of the hazard itself usually isn't known/measured, but its position
+// and drift direction relative to one's own vessel usually is. Appends
+// rather than replaces, so it composes with whatever's already typed.
+//
+// CHANGED (2026-07-10, Cap's request): previously drifting always said
+// "drifting toward us" — assumed the hazard was closing on the
+// reporting vessel, which isn't always true and gave no actual
+// direction of travel. Now takes an explicit drift-direction cardinal
+// (independent of the hazard's bearing FROM the vessel) so it reads
+// like "Approx 3nm S of our position, drifting to the north."
+function insertRelativeBearingPhrase() {
+  const distEl = document.getElementById('report-rel-distance');
+  const dirEl = document.getElementById('report-rel-direction');
+  const motionEl = document.getElementById('report-rel-motion');
+  const driftDirEl = document.getElementById('report-rel-drift-direction');
+  const descEl = document.getElementById('report-description');
+  const dist = parseFloat(distEl.value);
+  if (!dist || dist <= 0) {
+    distEl.focus();
+    return;
+  }
+  const dir = dirEl.value;
+  const motion = motionEl.value;
+  const driftDirNames = { N: 'north', NE: 'northeast', E: 'east', SE: 'southeast', S: 'south', SW: 'southwest', W: 'west', NW: 'northwest' };
+  const phrase = motion === 'drifting'
+    ? `Approx ${dist}nm ${dir} of our position, drifting to the ${driftDirNames[driftDirEl.value] || driftDirEl.value}.`
+    : `Approx ${dist}nm ${dir} of our position.`;
+
+  const existing = descEl.value.trim();
+  descEl.value = existing ? existing + ' ' + phrase : phrase;
+  distEl.value = '';
+  descEl.focus();
+}
+
+async function submitHazardReport() {
+  const btn = document.getElementById('btn-submit-report');
+  const meta = document.getElementById('report-form-meta');
+  const vesselSel = document.getElementById('report-vessel');
+  const vesselId = vesselSel.value;
+  const vesselName = vesselSel.options[vesselSel.selectedIndex]?.text || vesselId;
+  const hazardType = document.getElementById('report-hazard-type').value;
+  const description = document.getElementById('report-description').value.trim();
+  const position = document.getElementById('report-position').value.trim();
+
+  if (!hazardType) { meta.textContent = 'Select a hazard type.'; meta.style.color = '#ef4444'; return; }
+  if (!description) { meta.textContent = 'Description is required.'; meta.style.color = '#ef4444'; return; }
+
+  btn.disabled = true;
+  meta.textContent = 'Submitting…';
+  meta.style.color = '';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vessel_id: vesselId, vessel_name: vesselName, hazard_type: hazardType, description, position }),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'Submission failed');
+    meta.textContent = 'Report submitted — RMC notified.';
+    meta.style.color = '#22c55e';
+    document.getElementById('report-hazard-type').value = '';
+    document.getElementById('report-description').value = '';
+    // BUGFIX (2026-07-10, Cap): position used to be blanked out here
+    // along with the other per-report fields, but position is vessel
+    // state, not a one-off report input — clearing it forced re-typing
+    // or re-syncing GPS by hand before every single report. Instead,
+    // re-sync it from live GPS (same non-destructive helper used on tab
+    // open), so it just reflects the vessel's current position again
+    // rather than going blank.
+    syncReportPositionFromGPS(true);
+  } catch (e) {
+    meta.textContent = 'Error: ' + e.message;
+    meta.style.color = '#ef4444';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── RMC tools: admin-key gate (interim — Phase 2 replaces this) ───
+// Key lives only in sessionStorage (cleared on tab close), never sent
+// anywhere except as the X-Fleet-Admin-Key header to our own Worker
+// over HTTPS. This is explicitly NOT real access control — anyone
+// who has the key can use it, same as the curl-based workflow used
+// during backend testing. Replace with Cloudflare Access (Phase 2)
+// before handing this URL to RMC/ECO for real use.
+function rmcGetKey() {
+  return sessionStorage.getItem('fleet_admin_key') || '';
+}
+
+async function rmcUnlock() {
+  const input = document.getElementById('rmc-key-input');
+  const key = input.value.trim();
+  if (!key) return;
+
+  const lockStatus = document.getElementById('rmc-lock-status');
+  if (lockStatus) lockStatus.textContent = 'Checking key\u2026';
+
+  // Verify the key against the real Worker BEFORE showing "UNLOCKED" —
+  // previously this flipped to unlocked unconditionally on any non-empty
+  // input, then silently found out later (in a separate, easy-to-miss
+  // "Admin key rejected" message buried in the reports list) that the
+  // key was actually wrong. That let the UI show a confident green
+  // "UNLOCKED" badge while every real action behind it was still
+  // failing — confusing and wrong. Now it verifies first.
+  let valid = false;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': key },
+      signal: AbortSignal.timeout(6000),
+    });
+    valid = res.status !== 401;
+  } catch (e) {
+    if (lockStatus) lockStatus.textContent = 'Could not reach fleet server \u2014 try again.';
+    return;
+  }
+
+  if (!valid) {
+    if (lockStatus) lockStatus.textContent = 'Admin key rejected.';
+    input.value = '';
+    input.focus();
+    return;
+  }
+
+  sessionStorage.setItem('fleet_admin_key', key);
+  await rmcShowUnlocked();
+}
+
+async function rmcShowUnlocked() {
+  document.getElementById('rmc-locked-view').style.display = 'none';
+  document.getElementById('rmc-unlocked-view').style.display = 'block';
+  const lockIcon = document.getElementById('rmc-lock-icon');
+  const lockStatus = document.getElementById('rmc-lock-status');
+  if (lockIcon) lockIcon.textContent = '\u{1F513}';
+  if (lockStatus) lockStatus.innerHTML = '<span class="fleet-rmc-unlocked-badge">UNLOCKED</span>';
+  await loadRmcReportsInbox();
+}
+
+// Retires an advisory early via the worker's existing /clear endpoint
+// (was already built, just had no dashboard UI wired to it — curl-only
+// until now). Confirms first since this can't be undone from the UI.
+async function clearAdvisory(id) {
+  if (!confirm('Clear this advisory now? It will immediately disappear from every vessel\'s dashboard.')) return;
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories/' + id + '/clear', {
+      method: 'POST',
+      headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
+    });
+    if (res.status === 401) {
+      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Clear failed');
+    }
+    renderFleetAdvisories();
+  } catch (e) {
+    alert('Error clearing advisory: ' + e.message);
+  }
+}
+
+async function publishAdvisory() {
+  const btn = document.getElementById('btn-publish-advisory');
+  const statusEl = document.getElementById('adv-publish-status');
+  const severity = document.getElementById('adv-severity').value;
+  const title = document.getElementById('adv-title').value.trim();
+  const body = document.getElementById('adv-body').value.trim();
+  const expiresDays = Number(document.getElementById('adv-expires').value) || 7;
+
+  if (!title || !body) {
+    statusEl.textContent = 'Title and details are both required.';
+    statusEl.className = 'fleet-status-msg err';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Publishing…';
+  statusEl.className = 'fleet-status-msg';
+
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/advisories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Fleet-Admin-Key': rmcGetKey() },
+      body: JSON.stringify({ severity, title, body, issued_by: 'RMC', expires_days: expiresDays }),
+    });
+    const d = await res.json();
+    if (res.status === 401) {
+      statusEl.textContent = 'Admin key rejected — unlock again with the correct key.';
+      statusEl.className = 'fleet-status-msg err';
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) throw new Error(d.error || 'Publish failed');
+    statusEl.textContent = 'Advisory published to fleet.';
+    statusEl.className = 'fleet-status-msg ok';
+    document.getElementById('adv-title').value = '';
+    document.getElementById('adv-body').value = '';
+    renderFleetAdvisories();
+  } catch (e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    statusEl.className = 'fleet-status-msg err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadRmcReportsInbox() {
+  const list = document.getElementById('rmc-reports-list');
+  list.innerHTML = '<div class="advisory-empty">Loading…</div>';
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports', {
+      headers: { 'X-Fleet-Admin-Key': rmcGetKey() },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.status === 401) {
+      list.innerHTML = '<div class="advisory-empty">Admin key rejected.</div>';
+      return;
+    }
+    const d = await res.json();
+    const reports = d.reports || [];
+    if (!reports.length) {
+      list.innerHTML = '<div class="advisory-empty">No hazard reports yet.</div>';
+      return;
+    }
+    // Added 2026-07-10: reports previously had a status pill that never
+    // changed — no way to tell what RMC had actually looked at vs. what
+    // was still sitting new. Buttons call the new /status endpoint;
+    // 'new' reports offer Acknowledge, 'acknowledged' offer Resolve,
+    // 'resolved' is terminal (no further action needed) — not a strict
+    // state machine, just the natural next step from wherever it's at.
+    list.innerHTML = reports.map(r => `
+      <div class="report-inbox-item">
+        <div class="report-inbox-body">
+          <b>${r.hazard_type}</b> — ${r.vessel_name}${r.position ? ' · ' + r.position : ''}
+          <div>${r.description}</div>
+          <div class="report-inbox-meta">${fleetTimeAgo(r.reported_at)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <span class="report-status-pill ${r.status}">${r.status}</span>
+          ${r.status === 'new' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','acknowledged')">Acknowledge</button>` : ''}
+          ${r.status === 'acknowledged' ? `<button type="button" class="report-status-btn" onclick="updateReportStatus('${r.id}','resolved')">Resolve</button>` : ''}
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="advisory-empty">Unable to load reports — ' + e.message + '</div>';
+  }
+}
+
+async function updateReportStatus(id, newStatus) {
+  try {
+    const res = await fetch(FLEET_API_BASE + '/api/fleet/reports/' + id + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Fleet-Admin-Key': rmcGetKey() },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (res.status === 401) {
+      alert('Admin key rejected \u2014 unlock again with the correct key.');
+      sessionStorage.removeItem('fleet_admin_key');
+      document.getElementById('rmc-locked-view').style.display = 'grid';
+      document.getElementById('rmc-unlocked-view').style.display = 'none';
+      return;
+    }
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Status update failed');
+    }
+    loadRmcReportsInbox();
+  } catch (e) {
+    alert('Error updating report status: ' + e.message);
+  }
+}
+
+let fleetAdvisoryPollTimer = null;
+let reportPositionRefreshTimer = null;
+
+function initFleetTab() {
+  renderFleetGrid();
+  renderFleetAdvisories();
+  populateReportVesselDropdown();
+  syncReportPositionFromGPS(false); // fill only if empty, never clobber a manual edit
+  // If a key is already cached in this tab's session, skip straight to
+  // the unlocked RMC view instead of making them re-type it.
+  if (rmcGetKey()) rmcShowUnlocked();
+
+  // Poll for new advisories even while the operator is on another tab,
+  // so the FLEET tab badge can light up without requiring a manual
+  // visit — advisories are otherwise dashboard-pull only (no push/email
+  // to the browser itself; RMC email notify is separate, worker-side).
+  if (fleetAdvisoryPollTimer) clearInterval(fleetAdvisoryPollTimer);
+  fleetAdvisoryPollTimer = setInterval(() => renderFleetAdvisories(true), 30000);
+
+  // Keep the hazard-report position field tracking the vessel's live GPS
+  // continuously while the tab is open (Cap, 2026-07-10: reported
+  // position went stale between two reports submitted an hour apart on
+  // the same open tab — previously it only refreshed on tab-open,
+  // SYNC click, or right after a submit, so a long idle stretch on the
+  // tab left it frozen at whatever it was when last synced). This never
+  // overwrites a manual edit — see reportPositionIsAutoSynced flag.
+  if (reportPositionRefreshTimer) clearInterval(reportPositionRefreshTimer);
+  reportPositionRefreshTimer = setInterval(() => syncReportPositionFromGPS(false), 15000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1524,12 +2884,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runQAQuery(); }
   });
 
+  // FLEET tab (pilot build) — render once at load, refresh whenever
+  // the tab is switched to so the live Kirt card doesn't go stale.
+  initFleetTab();
+  const fleetTabBtn = document.querySelector('[data-tab="fleet"]');
+  if (fleetTabBtn) fleetTabBtn.addEventListener('click', () => {
+    renderFleetGrid();
+    // Re-sync position on every tab visit, not just page load — if GPS
+    // didn't have a fix yet when the page first loaded, this is the
+    // retry path. Still non-destructive: only fills if the field is
+    // currently empty (forceOverwrite=false).
+    syncReportPositionFromGPS(false);
+  });
+
   // PI LIVE FEED toggle
   document.getElementById('pi-feed-toggle').addEventListener('change', e => {
     if (e.target.checked) {
       piFeedEnabled = true;
       fetchPiFeed();
-      piFeedInterval = setInterval(fetchPiFeed, 2000);
+      piFeedInterval = setInterval(fetchPiFeed, 5000);
     } else {
       piFeedEnabled = false;
       clearInterval(piFeedInterval);
@@ -1569,7 +2942,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (piFeedToggleEl && piFeedToggleEl.checked) {
     piFeedEnabled = true;
     fetchPiFeed();
-    piFeedInterval = setInterval(fetchPiFeed, 2000);
+    piFeedInterval = setInterval(fetchPiFeed, 5000);
   }
 
   // BUGFIX (2026-07-04, follow-up): do NOT fire fetchForecast() at page load
@@ -1585,7 +2958,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Only fetch the fallback immediately when live feed is off (manual mode).
   if (!(piFeedToggleEl && piFeedToggleEl.checked)) {
     fetchForecast();
+  } else {
+    // BUGFIX (2026-07-08): when live feed is on but the Pi has no GPS fix yet
+    // (indoors, cold start, hardware not wired up), fetchPiFeed()'s
+    // position-change trigger never fires (realLat/realLon stay null), so
+    // fetchForecast() was silently NEVER called and the forecast panel sat
+    // on "Loading..." forever with no fallback. Give the live-GPS path a
+    // fixed grace window, then fall back to the hardcoded position (better
+    // than an indefinitely blank panel) if no real fix has arrived by then.
+    setTimeout(() => {
+      if (lastForecastLat === null) fetchForecast();
+    }, 15000);
   }
+
+  // Real sensor-history sparkline (pressure/wind from vessel sensors, not
+  // forecast) — independent of GPS/forecast timing, poll on its own cadence.
+  fetchSensorHistoryGraph();
+  setInterval(fetchSensorHistoryGraph, 5 * 60 * 1000); // every 5 min (matches Pi sample rate)
   setInterval(fetchForecast, 6 * 60 * 60 * 1000); // safety-net refresh every 6h
 
   // Maintenance banner: check immediately on load, then every 30s so it
@@ -1594,7 +2983,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(checkLiveSystemsStatus, 30 * 1000);
 
   // Auto-analysis: run Beau every 5 minutes on a fixed timer
-  setInterval(() => { if (autoEnabled && !sensorRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
+  setInterval(() => { if (autoEnabled && !sensorRequestInFlight && !qaRequestInFlight) runSensorAnalysis(); }, 5 * 60 * 1000);
   // Run once on load after a short delay
   setTimeout(() => { if (autoEnabled) runSensorAnalysis(); }, 5000);
 });
@@ -1653,11 +3042,201 @@ async function fetchForecast() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (data.status === 'success') renderForecast(data);
+    if (data.status === 'success') {
+      renderForecast(data);
+      renderTideMoon(data);
+    }
   } catch(e) {
     document.getElementById('forecast-cards-container').innerHTML =
       '<div class="forecast-loading" style="color:var(--amber)">Forecast unavailable — ' + e.message + '</div>';
-    document.getElementById('forecast-meta').textContent = 'GraphCast offline';
+    document.getElementById('forecast-meta').textContent = 'Forecast offline';
+  }
+}
+
+// ── Tide + moon phase (added 2026-08-05, Cap request) ──────────────────────
+// Rides the same /api/beau/forecast payload as the wind/wave forecast strip
+// (backend now includes "tide" + "moon" fields, see beau_server.py get_tide_data()
+// / get_moon_phase()) — one fetch, no separate network round-trip needed.
+const MOON_EMOJI = {
+  'New Moon': '\u{1F311}', 'Waxing Crescent': '\u{1F312}', 'First Quarter': '\u{1F313}',
+  'Waxing Gibbous': '\u{1F314}', 'Full Moon': '\u{1F315}', 'Waning Gibbous': '\u{1F316}',
+  'Last Quarter': '\u{1F317}', 'Waning Crescent': '\u{1F318}'
+};
+
+function renderTideMoon(data) {
+  const container = document.getElementById('tide-moon-container');
+  const metaEl = document.getElementById('tide-moon-meta');
+  if (!container) return;
+
+  const tide = data.tide;
+  const moon = data.moon;
+
+  let html = '';
+
+  // Moon phase card
+  if (moon) {
+    const emoji = MOON_EMOJI[moon.phase_name] || '\u{1F311}';
+    html += `
+      <div class="forecast-card" style="min-width:140px">
+        <div class="fc-time">MOON PHASE</div>
+        <div class="fc-wind" style="font-size:28px">${emoji}</div>
+        <div class="fc-dir">${moon.phase_name}</div>
+        <div class="fc-press">${moon.illumination_pct}% illum.</div>
+      </div>`;
+  }
+
+  // Tide station + forecast card
+  if (tide && tide.forecast && tide.forecast.extremes && tide.forecast.extremes.length) {
+    const extremes = tide.forecast.extremes.slice(0, 6); // next few highs/lows
+    const stationName = tide.forecast.station_name || (tide.stations[0] && tide.stations[0].name) || 'Nearest station';
+    html += `<div class="forecast-card" style="min-width:260px;align-items:flex-start;text-align:left">
+        <div class="fc-time">TIDE — ${stationName}</div>`;
+    extremes.forEach(ex => {
+      const t = new Date(ex.dt * 1000).toLocaleString('en-US', {weekday:'short', hour:'2-digit', minute:'2-digit'});
+      const typeLabel = (ex.type || '').toUpperCase();
+      const color = typeLabel === 'HIGH' ? '#38bdf8' : '#f59e0b';
+      html += `<div style="font-size:12px;color:${color};padding:2px 0">${typeLabel} ${ex.height.toFixed(2)}m — ${t}</div>`;
+    });
+    html += `</div>`;
+
+    // Nearby stations list (closest 5)
+    if (tide.stations && tide.stations.length) {
+      html += `<div class="forecast-card" style="min-width:220px;align-items:flex-start;text-align:left">
+        <div class="fc-time">NEAREST STATIONS</div>`;
+      tide.stations.forEach(st => {
+        html += `<div style="font-size:11px;color:var(--muted);padding:1px 0">${st.name} — ${st.distance_km}km</div>`;
+      });
+      html += `</div>`;
+    }
+  } else if (!tide) {
+    html += '<div class="forecast-loading" style="color:var(--amber)">Tide data unavailable</div>';
+  }
+
+  container.innerHTML = html || '<div class="forecast-loading">No tide/moon data</div>';
+  if (metaEl) {
+    metaEl.textContent = tide && tide.forecast && tide.forecast.copyright ? tide.forecast.copyright : 'WorldTides + astronomical calc';
+  }
+
+  // Tide height curve (added 2026-08-05, Cap request) — draws the raw
+  // 30-min-interval height samples WorldTides already returns alongside
+  // extremes, so no extra API call. Same canvas-drawing approach as the
+  // sensor-history sparkline (time-proportional x-axis, gap-aware).
+  if (tide && tide.forecast && tide.forecast.heights && tide.forecast.heights.length > 1) {
+    drawTideCurve(tide.forecast.heights, tide.forecast.extremes || []);
+  }
+}
+
+function drawTideCurve(heights, extremes) {
+  const canvas = document.getElementById('tide-curve-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth  || 400;
+  canvas.height = canvas.offsetHeight || 110;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+
+  const marginLeft = 34, marginRight = 10, marginTop = 8, marginBottom = 16;
+  const plotW = W - marginLeft - marginRight;
+  const plotH = H - marginTop - marginBottom;
+  const plotX = marginLeft, plotY = marginTop;
+
+  const heightVals = heights.map(h => h.height);
+  const tMs = heights.map(h => h.dt * 1000);
+  const tMin = tMs[0], tMax = tMs[tMs.length - 1];
+  const tRange = tMax > tMin ? (tMax - tMin) : 1;
+
+  const min = Math.min(...heightVals), max = Math.max(...heightVals);
+  const pad = (max - min) * 0.12 || 0.1;
+  const yMin = min - pad, yMax = max + pad, yRange = (yMax - yMin) || 1;
+
+  function xFor(ms) { return plotX + ((ms - tMin) / tRange) * plotW; }
+  function yFor(v)  { return plotY + plotH - ((v - yMin) / yRange) * plotH; }
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  const GRID_ROWS = 3, GRID_COLS = 6;
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    ctx.beginPath(); ctx.moveTo(plotX, y); ctx.lineTo(plotX + plotW, y); ctx.stroke();
+  }
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const x = plotX + (g / GRID_COLS) * plotW;
+    ctx.beginPath(); ctx.moveTo(x, plotY); ctx.lineTo(x, plotY + plotH); ctx.stroke();
+  }
+
+  // Zero-height reference line (chart datum), dashed
+  if (yMin < 0 && yMax > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.setLineDash([3, 3]);
+    const y0 = yFor(0);
+    ctx.beginPath(); ctx.moveTo(plotX, y0); ctx.lineTo(plotX + plotW, y0); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Tide curve line + fill
+  ctx.beginPath();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 1.75;
+  heights.forEach((h, i) => {
+    const x = xFor(h.dt * 1000), y = yFor(h.height);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.lineTo(xFor(tMax), plotY + plotH);
+  ctx.lineTo(xFor(tMin), plotY + plotH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(56,189,248,0.10)';
+  ctx.fill();
+
+  // High/low markers from extremes (dots + labels)
+  ctx.font = '9px var(--font-mono, monospace)';
+  extremes.forEach(ex => {
+    const ms = ex.dt * 1000;
+    if (ms < tMin || ms > tMax) return;
+    const x = xFor(ms), y = yFor(ex.height);
+    const isHigh = (ex.type || '').toLowerCase() === 'high';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = isHigh ? '#38bdf8' : '#f59e0b';
+    ctx.fill();
+    ctx.fillStyle = isHigh ? '#7dd3fc' : '#fbbf24';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = isHigh ? 'bottom' : 'top';
+    ctx.fillText(ex.height.toFixed(1) + 'm', x, isHigh ? y - 5 : y + 5);
+  });
+
+  // "Now" marker
+  const nowMs = Date.now();
+  if (nowMs >= tMin && nowMs <= tMax) {
+    const xNow = xFor(nowMs);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(xNow, plotY); ctx.lineTo(xNow, plotY + plotH); ctx.stroke();
+  }
+
+  // Left axis: height scale (m)
+  ctx.font = '9px var(--font-mono, monospace)';
+  ctx.fillStyle = '#38bdf8';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = yMax - (g / GRID_ROWS) * yRange;
+    ctx.fillText(val.toFixed(1) + 'm', plotX - 4, y);
+  }
+
+  // Bottom axis: day/time labels
+  ctx.fillStyle = 'var(--muted, #888)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const frac = g / GRID_COLS;
+    const ms = tMin + frac * tRange;
+    const x = plotX + frac * plotW;
+    const d = new Date(ms);
+    const label = d.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+    ctx.fillText(label, x, plotY + plotH + 3);
   }
 }
 
@@ -1666,6 +3245,15 @@ function renderForecast(data) {
   const s    = data.summary;
   const meta = document.getElementById('forecast-meta');
   const now  = new Date();
+
+  // Forecast source label (2026-07-11 fix): backend now reports which
+  // model actually produced this forecast (GraphCast vs FourCastNet) so
+  // the strip title stays accurate across future backend switches instead
+  // of being a hardcoded name that silently goes stale.
+  const titleEl = document.getElementById('forecast-strip-title');
+  if (titleEl && data.forecast_source) {
+    titleEl.textContent = '\u2B21 ' + data.forecast_source.toUpperCase() + ' 48-HOUR FORECAST';
+  }
 
   // Header meta
   const trend = s.press_trend_mb;
@@ -1688,7 +3276,7 @@ function renderForecast(data) {
     const tempStr  = f.temp_f != null ? `${f.temp_f.toFixed(0)}°F` : (f.temp_c != null ? `${f.temp_c.toFixed(0)}°C` : '');
     const timeLabel = f.valid_time || `+${f.lead_hours}H`;
     html += `
-      <div class="forecast-card ${idx === 0 ? \'current\' : \'\'}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
+      <div class="forecast-card ${idx === 0 ? 'current' : ''}" title="${label} — FROM ${cardinal} (${f.wind_dir_deg.toFixed(0)}°) | Hs ${waveStr}">
         <div class="fc-time">${timeLabel}</div>
         <div class="fc-wind ${col}">${f.wind_kts.toFixed(0)}<span class="fc-wind-unit"> KT</span></div>
         <span class="fc-arrow">${arrow}</span>
@@ -1701,69 +3289,223 @@ function renderForecast(data) {
   html += '</div>';
   document.getElementById('forecast-cards-container').innerHTML = html;
 
-  // Feed wind speeds into history for sparkline
-  windSpeedHistory.length = 0;
-  fc.forEach((f, idx) => { if (f.wind_kts != null) windSpeedHistory.push(f.wind_kts); });
-
-  // Draw dual sparkline (pressure + wind)
-  drawSparkline(fc.map(f => f.pressure_mb));
-
-  // Pressure trend label
-  const trendEl = document.getElementById('press-trend-label');
-  trendEl.textContent = (trend >= 0 ? '+' : '') + trend.toFixed(1) + ' mb/48h';
-  trendEl.style.color = trend < -3 ? 'var(--red)' : trend > 3 ? 'var(--amber)' : 'var(--green)';
+  // NOTE (2026-07-12): sparkline below is now driven by REAL sensor history
+  // (see fetchSensorHistoryGraph/drawSparkline), not forecast data. The
+  // press_trend_mb summary from the forecast payload is still used for the
+  // amber/green Max/min meta line above the cards, but the graph itself and
+  // its trend labels come from the vessel's own onboard sensor log.
 }
 
-// Wind speed history for sparkline
-const windSpeedHistory = [];
+// ── Real sensor-history sparkline (pressure + wind from vessel sensors) ──
+const SENSOR_HISTORY_URL = 'https://beau.beaufort-ai.com/api/sensor-history/window';
+const SPARKLINE_WINDOW_HOURS = 24;
 
-function drawSparkline(pressValues) {
+async function fetchSensorHistoryGraph() {
+  try {
+    const res = await fetch(`${SENSOR_HISTORY_URL}?hours=${SPARKLINE_WINDOW_HOURS}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const readings = data.readings || [];
+    if (readings.length < 2) return; // not enough real data yet, leave graph as-is
+
+    // NOTE: pressure/wind/timestamp arrays MUST stay index-aligned for the
+    // time-proportional x-axis to work correctly. Previously each value
+    // array was filtered for nulls independently, which could desync a
+    // value's index from its real timestamp if only one field was ever
+    // null on a given reading. Filter once, on the full reading object, so
+    // all three derived arrays share exactly the same indices.
+    const validReadings = readings.filter(r => r.pressure != null && r.wind_speed != null && r.timestamp != null);
+    const pressValues = validReadings.map(r => r.pressure);
+    const windValues  = validReadings.map(r => r.wind_speed);
+    const timestamps  = validReadings.map(r => r.timestamp);
+
+    drawSparkline(pressValues, windValues, timestamps);
+
+    // Real trend labels computed directly from sensor history, not forecast
+    const pressTrendEl = document.getElementById('press-trend-label');
+    if (pressTrendEl && pressValues.length >= 2) {
+      const pDelta = pressValues[pressValues.length - 1] - pressValues[0];
+      pressTrendEl.textContent = (pDelta >= 0 ? '+' : '') + pDelta.toFixed(1) + ` mb/${SPARKLINE_WINDOW_HOURS}h`;
+      pressTrendEl.style.color = pDelta < -3 ? 'var(--red)' : pDelta > 3 ? 'var(--amber)' : 'var(--green)';
+    }
+    const windTrendEl = document.getElementById('wind-trend-label');
+    if (windTrendEl && windValues.length >= 2) {
+      const wDelta = windValues[windValues.length - 1] - windValues[0];
+      windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + ` kt/${SPARKLINE_WINDOW_HOURS}h`;
+      windTrendEl.style.color = wDelta > 5 ? 'var(--red)' : wDelta < -5 ? 'var(--green)' : 'var(--muted)';
+    }
+  } catch (e) {
+    // Real sensor history unavailable — leave sparkline in its last known
+    // state rather than clearing it or silently substituting forecast data.
+  }
+}
+
+function drawSparkline(pressValues, windValues, timestamps) {
   const canvas = document.getElementById('pressure-sparkline');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   canvas.width  = canvas.offsetWidth  || 400;
-  canvas.height = canvas.offsetHeight || 56;
+  canvas.height = canvas.offsetHeight || 110; // bumped from 56 to fit axis labels
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height, pad = 6;
+  const W = canvas.width, H = canvas.height;
 
-  function drawLine(values, color, fillColor) {
-    if (!values || values.length < 2) return;
+  // Margins: left for pressure (mb) scale, right for wind (kt) scale,
+  // bottom for time-of-day scale, small top pad.
+  const marginLeft = 38, marginRight = 34, marginTop = 6, marginBottom = 16;
+  const plotW = W - marginLeft - marginRight;
+  const plotH = H - marginTop - marginBottom;
+  const plotX = marginLeft, plotY = marginTop;
+
+  function scaleFor(values) {
+    if (!values || values.length < 2) return { min: 0, max: 1, range: 1 };
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const range = max - min || 1;
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    values.forEach((v, i) => {
-      const x = pad + (i / (values.length - 1)) * (W - pad * 2);
-      const y = H - pad - ((v - min) / range) * (H - pad * 2);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-    ctx.lineTo(W - pad, H - pad);
-    ctx.lineTo(pad, H - pad);
-    ctx.closePath();
-    ctx.fillStyle = fillColor;
-    ctx.fill();
+    // Pad range slightly so lines don't touch top/bottom edge exactly.
+    const pad = (max - min) * 0.08 || 1;
+    return { min: min - pad, max: max + pad, range: (max - min) + pad * 2 || 1 };
   }
 
-  // Horizontal midline guide
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  const pScale = scaleFor(pressValues);
+  const wScale = scaleFor(windValues);
+
+  // x-position is proportional to ACTUAL ELAPSED TIME, not array index.
+  // Bug found 2026-07-12: index-based spacing made a real ~16h sensor-outage
+  // data gap look like a normal continuous stretch (all points evenly spaced
+  // regardless of the time between them), which is just as misleading as the
+  // original frozen-flatline bug it replaced — just subtler. Time-proportional
+  // spacing makes real gaps actually render as visual gaps.
+  const tMs = (timestamps && timestamps.length >= 2)
+    ? timestamps.map(t => new Date(t).getTime())
+    : null;
+  const tMin = tMs ? tMs[0] : null;
+  const tMax = tMs ? tMs[tMs.length - 1] : null;
+  const tRange = (tMin != null && tMax != null && tMax > tMin) ? (tMax - tMin) : null;
+
+  function xFor(i, n) {
+    if (tMs && tRange) return plotX + ((tMs[i] - tMin) / tRange) * plotW;
+    return plotX + (n <= 1 ? 0 : (i / (n - 1)) * plotW); // fallback: no/bad timestamps
+  }
+  function xForTime(ms) {
+    if (!tRange) return plotX;
+    return plotX + ((ms - tMin) / tRange) * plotW;
+  }
+  function yForPress(v) {
+    return plotY + plotH - ((v - pScale.min) / pScale.range) * plotH;
+  }
+  function yForWind(v) {
+    return plotY + plotH - ((v - wScale.min) / wScale.range) * plotH;
+  }
+
+  // Any gap between consecutive real readings bigger than this is treated as
+  // a genuine data outage and drawn as a visible break in the line, not a
+  // straight connecting segment — added 2026-07-12 alongside the time-
+  // proportional x-axis fix, since a straight line across a real ~16h sensor
+  // outage gap looked like normal continuous data (just a steep segment)
+  // instead of the actual missing-data hole it represents. Sample interval
+  // is ~5min when healthy, so 20min is a generous multiple of that before
+  // calling it an outage rather than a slightly-delayed sample.
+  const GAP_BREAK_MS = 20 * 60 * 1000;
+
+  function segmentsFor(values, n) {
+    // Split into contiguous runs, breaking wherever the time gap between
+    // consecutive points exceeds GAP_BREAK_MS.
+    const segments = [];
+    let current = [0];
+    for (let i = 1; i < n; i++) {
+      const gapMs = tMs ? (tMs[i] - tMs[i - 1]) : 0;
+      if (tMs && gapMs > GAP_BREAK_MS) {
+        segments.push(current);
+        current = [i];
+      } else {
+        current.push(i);
+      }
+    }
+    segments.push(current);
+    return segments;
+  }
+
+  function drawLine(values, yFn, color, fillColor) {
+    if (!values || values.length < 2) return;
+    const n = values.length;
+    const segments = segmentsFor(values, n);
+    segments.forEach(seg => {
+      if (seg.length < 2) return; // isolated single point after a break — nothing to connect
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      seg.forEach((i, k) => {
+        const x = xFor(i, n);
+        const y = yFn(values[i]);
+        k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      const firstX = xFor(seg[0], n), lastX = xFor(seg[seg.length - 1], n);
+      ctx.lineTo(lastX, plotY + plotH);
+      ctx.lineTo(firstX, plotY + plotH);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+    });
+  }
+
+  // Faint horizontal grid (4 evenly-spaced lines across the plot area)
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.lineWidth = 1;
-  ctx.moveTo(pad, H / 2);
-  ctx.lineTo(W - pad, H / 2);
-  ctx.stroke();
+  const GRID_ROWS = 4;
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    ctx.beginPath();
+    ctx.moveTo(plotX, y);
+    ctx.lineTo(plotX + plotW, y);
+    ctx.stroke();
+  }
+  // Faint vertical grid (time gridlines, 6 columns)
+  const GRID_COLS = 6;
+  for (let g = 0; g <= GRID_COLS; g++) {
+    const x = plotX + (g / GRID_COLS) * plotW;
+    ctx.beginPath();
+    ctx.moveTo(x, plotY);
+    ctx.lineTo(x, plotY + plotH);
+    ctx.stroke();
+  }
 
-  drawLine(pressValues,     '#3b82f6', 'rgba(59,130,246,0.08)');
-  drawLine(windSpeedHistory, '#f59e0b', 'rgba(245,158,11,0.08)');
+  drawLine(pressValues, yForPress, '#3b82f6', 'rgba(59,130,246,0.08)');
+  drawLine(windValues,  yForWind,  '#f59e0b', 'rgba(245,158,11,0.08)');
 
-  // Wind trend label
-  const windTrendEl = document.getElementById('wind-trend-label');
-  if (windTrendEl && windSpeedHistory.length >= 2) {
-    const wDelta = windSpeedHistory[windSpeedHistory.length-1] - windSpeedHistory[0];
-    windTrendEl.textContent = (wDelta >= 0 ? '+' : '') + wDelta.toFixed(1) + ' kt/72h';
-    windTrendEl.style.color = wDelta > 5 ? 'var(--red)' : wDelta < -5 ? 'var(--green)' : 'var(--muted)';
+  // ── Left axis: pressure scale (mb) ──
+  ctx.font = '9px var(--font-mono, monospace)';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = pScale.max - (g / GRID_ROWS) * pScale.range;
+    ctx.fillText(val.toFixed(0), plotX - 4, y);
+  }
+
+  // ── Right axis: wind speed scale (kt) ──
+  ctx.fillStyle = '#f59e0b';
+  ctx.textAlign = 'left';
+  for (let g = 0; g <= GRID_ROWS; g++) {
+    const y = plotY + (g / GRID_ROWS) * plotH;
+    const val = wScale.max - (g / GRID_ROWS) * wScale.range;
+    ctx.fillText(val.toFixed(0), plotX + plotW + 4, y);
+  }
+
+  // ── Bottom axis: time-of-day scale (evenly spaced by actual TIME, not index) ──
+  if (tMs && tRange) {
+    ctx.fillStyle = 'var(--muted, #888)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let g = 0; g <= GRID_COLS; g++) {
+      const frac = g / GRID_COLS;
+      const ms = tMin + frac * tRange;
+      const x = plotX + frac * plotW;
+      const d = new Date(ms);
+      const label = isNaN(d.getTime()) ? '' :
+        d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+      ctx.fillText(label, x, plotY + plotH + 3);
+    }
   }
 }
 
@@ -1970,11 +3712,82 @@ const aisMap = L.map('ais-map', {
     markerZoomAnimation: false
 });
 
+// ── Base chart layer: true NOAA nautical chart (added 2026-07-12, Cap's
+// request for a dedicated chart map vs. plain OSM streets) ──────────────
+// Live source verified 2026-07-12: NOAA's ArcGIS for Maritime "Maritime
+// Chart Service" extension, served off gis.charttools.noaa.gov (the older
+// tileservice.charts.noaa.gov / plain NOAAChartDisplay WMTS cache is
+// retired/broken above z7 -- this dynamic export-based service is the
+// current live replacement, confirmed with a real rendered tile over
+// Barataria Bay/Port Fourchon showing depth soundings, buoys, and platform
+// notations).
+//
+// BUGFIX (2026-07-12): L.esri.dynamicMapLayer (the standard esri-leaflet
+// plugin layer) does NOT work with this specific NOAA service. Root cause,
+// confirmed by direct byte-level inspection: esri-leaflet requests
+// f=json (expecting a JSON wrapper containing an image href), but this
+// service ignores that parameter entirely and always returns raw PNG bytes
+// regardless of f=json/f=image -- esri-leaflet then fails to JSON-parse the
+// PNG data and silently never displays an image (no console error, no
+// failed network request -- it just never creates the overlay element).
+// transparent=true was also independently confirmed broken (returns an
+// all-zero-alpha/invisible image even with real chart content underneath).
+// Fix: hand-rolled minimal ImageOverlay-based layer that requests f=image
+// directly (confirmed working, real pixel content) and redraws on
+// pan/zoom/tab-visibility, instead of relying on esri-leaflet's abstraction.
+function noaaChartExportUrl(bounds, sizePx) {
+    const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    const params = new URLSearchParams({
+        bbox: `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`,
+        bboxSR: '4326',
+        size: `${sizePx.x},${sizePx.y}`,
+        dpi: '96',
+        format: 'png32',
+        f: 'image'
+    });
+    return 'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/MapServer/export?' + params.toString();
+}
+
+let noaaChartOverlay = null;
+let noaaChartRedrawTimer = null;
+
+function noaaChartRedraw() {
+    if (!aisMap.getContainer() || aisMap.getContainer().offsetWidth === 0) return; // hidden tab, skip
+    const bounds = aisMap.getBounds();
+    const size = aisMap.getSize();
+    if (size.x === 0 || size.y === 0) return;
+    const url = noaaChartExportUrl(bounds, size);
+    if (noaaChartOverlay) {
+        aisMap.removeLayer(noaaChartOverlay);
+    }
+    noaaChartOverlay = L.imageOverlay(url, bounds, {
+        opacity: 0.95,
+        attribution: '&copy; NOAA Office of Coast Survey',
+        zIndex: 1  // below vessel markers/zone circle, above the OSM/seamark base tiles
+    }).addTo(aisMap);
+}
+
+// Debounced redraw on map move/zoom -- avoid hammering NOAA's export
+// endpoint on every intermediate pan/zoom frame.
+aisMap.on('moveend zoomend', () => {
+    clearTimeout(noaaChartRedrawTimer);
+    noaaChartRedrawTimer = setTimeout(noaaChartRedraw, 300);
+});
+
+// Backward-compat alias so the existing invalidateSize()/redraw() call
+// sites (tab-switch handler, zone-load handler) keep working unchanged.
+const noaaChartLayer = { redraw: noaaChartRedraw };
+
+// Cap 2026-07-31: NOAA MCS charts are US-only. In Campos Basin the export
+// returns a fully transparent PNG, so the AIS map looked blank/"not loading".
+// Put a global basemap underneath; keep NOAA chart as an overlay when present.
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
-    maxZoom: 14,
-    opacity: 0.7
+    maxZoom: 19,
+    opacity: 1.0
 }).addTo(aisMap);
+
+noaaChartRedraw();
 
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenSeaMap',
@@ -1982,64 +3795,343 @@ L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     opacity: 0.9
 }).addTo(aisMap);
 
+// ============================================================
+// WEATHER MAP (added 2026-07-12, Cap's request): separate Leaflet instance
+// for synoptic-scale radar + NWS fronts, independent pan/zoom from the
+// tactical-scale AIS/chart map above -- avoids the single-map clutter
+// problem where radar/fronts and vessel-scale AIS/chart both wanted
+// different default zoom levels on one shared view.
+// ============================================================
+const weatherMap = L.map('weather-map', {
+    center: [27.5, -88.5],   // wider Gulf view -- synoptic scale, not dockside
+    zoom: 5,
+    zoomControl: true,
+    attributionControl: true,
+    zoomAnimation: false,
+    fadeAnimation: false,
+    markerZoomAnimation: false
+});
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 12,
+    opacity: 0.55
+}).addTo(weatherMap);
+
+// NOTE (2026-07-12): the radar toggle/playback + lightning toggle used to
+// live on this map as a simple always-on layer, but Cap pointed out those
+// controls were still physically sitting on the AIS/chart tab (leftover
+// from before the tab split). Moved to the richer existing radar-playback +
+// lightning system further down this file (aisToggleRadar/aisToggleLightning
+// and friends), now retargeted at weatherMap instead of aisMap -- see those
+// functions for the real radar/lightning logic. Removed the simpler
+// always-on version that was here to avoid running two separate radar
+// systems on the same map.
+
+// NWS fronts (cold/warm/stationary/occluded), live GeoJSON, verified
+// 2026-07-12 -- CORS-open directly from the browser, no proxy needed.
+const FRONTS_API_URL = 'https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/natl_fcst_wx_chart/MapServer/2/query?where=1%3D1&outFields=*&f=geojson';
+let frontsLayer = null;
+
+function frontStyle(feature) {
+    const feat = (feature.properties && feature.properties.feat) || '';
+    if (feat.includes('Cold'))       return { color: '#2563eb', weight: 2.5 };
+    if (feat.includes('Warm'))       return { color: '#dc2626', weight: 2.5 };
+    if (feat.includes('Occluded'))   return { color: '#7c3aed', weight: 2.5 };
+    if (feat.includes('Stationary')) return { color: '#dc2626', weight: 2.5, dashArray: '8,6' };
+    return { color: '#94a3b8', weight: 1.5, dashArray: '4,4' }; // trough/other
+}
+
+async function weatherMapLoadFronts() {
+    const statusEl = document.getElementById('weather-map-status');
+    try {
+        const res = await fetch(FRONTS_API_URL);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const geojson = await res.json();
+        if (frontsLayer && weatherMap.hasLayer(frontsLayer)) weatherMap.removeLayer(frontsLayer);
+        frontsLayer = L.geoJSON(geojson, {
+            style: frontStyle,
+            onEachFeature: (feature, layer) => {
+                const p = feature.properties || {};
+                if (p.popupconte) layer.bindPopup(p.popupconte);
+            }
+        }).addTo(weatherMap);
+        if (statusEl) statusEl.textContent = `${(geojson.features || []).length} front features — updated ${new Date().toLocaleTimeString()}`;
+    } catch (e) {
+        if (statusEl) statusEl.textContent = 'Fronts unavailable';
+        console.warn('weatherMap fronts fetch failed:', e);
+    }
+}
+weatherMapLoadFronts();
+setInterval(weatherMapLoadFronts, 30 * 60 * 1000); // fronts update per forecast cycle, not real-time
+
 // ── Weather Radar Overlay (RainViewer, free public API) ─────────────────
 // Ground-based composite radar (NEXRAD-class). Coverage is land-station
 // based, so it thins out offshore beyond ~100-150nm from the coast — most
 // useful for coastal transit/approach, not mid-Gulf/Campos Basin transit.
+// Confirmed fine for Kirt Chouest ops per Cap (2026-07-08): rarely more than
+// ~150nm offshore, and when they are it's transit between ports — coastal
+// coverage is the real use case here, not a limitation.
 // Docs: https://www.rainviewer.com/api/weather-maps-api.html
-let aisRadarLayer = null;
+//
+// Animated playback (added 2026-07-08): RainViewer returns the last ~2hrs of
+// frames (10-min steps, ~13 frames) -- previously only the single latest
+// frame was ever shown. Now all frames are fetched once, tile layers
+// pre-created (hidden until shown), and a play/pause + scrubber bar lets
+// storm movement actually be seen, not just a static snapshot.
+let aisRadarLayers = [];       // [{layer, time}, ...] chronological order
+let aisRadarFrameIdx = 0;      // currently displayed frame index
 let aisRadarEnabled = false;
+let aisRadarPlaying = false;
+let aisRadarPlayTimer = null;
 let aisRadarRefreshTimer = null;
 
-async function aisLoadRadarLayer() {
+function aisRadarFormatTime(unixSeconds) {
+    const d = new Date(unixSeconds * 1000);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function aisLoadRadarFrames() {
     try {
         const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
         const data = await res.json();
         const frames = (data.radar && data.radar.past) || [];
-        if (!frames.length) return null;
-        const latest = frames[frames.length - 1]; // most recent past frame
+        if (!frames.length) return [];
         const host = data.host;
-        // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
-        const url = `${host}${latest.path}/512/{z}/{x}/{y}/2/1_1.png`;
-        return L.tileLayer(url, {
-            attribution: '&copy; RainViewer',
-            opacity: 0.55,
-            maxZoom: 18,       // let the map itself zoom in freely for AIS work
-            maxNativeZoom: 7,  // RainViewer's tile server tops out at z7; above
-                                // that Leaflet upscales/stretches the z7 tile
-                                // instead of requesting a nonexistent zoom level
-                                // (was capped at 12 with no maxNativeZoom, which
-                                // caused "zoom level not supported" at AIS-useful
-                                // zoom levels like z8-14)
-            zIndex: 5
-        });
+        return frames.map(f => ({
+            time: f.time,
+            // color=2 (universal blue-green-red), size=512, smooth=1, snow=1
+            layer: L.tileLayer(`${host}${f.path}/512/{z}/{x}/{y}/2/1_1.png`, {
+                attribution: '&copy; RainViewer',
+                opacity: 0.55,
+                maxZoom: 18,       // let the map itself zoom in freely for AIS work
+                maxNativeZoom: 7,  // RainViewer's tile server tops out at z7; above
+                                    // that Leaflet upscales/stretches the z7 tile
+                                    // instead of requesting a nonexistent zoom level
+                zIndex: 5
+            })
+        }));
     } catch (e) {
         console.warn('RainViewer radar fetch failed:', e);
-        return null;
+        return [];
+    }
+}
+
+function aisRadarShowFrame(idx) {
+    if (!aisRadarLayers.length) return;
+    idx = Math.max(0, Math.min(aisRadarLayers.length - 1, idx));
+    aisRadarLayers.forEach((f, i) => {
+        if (i === idx) { if (!weatherMap.hasLayer(f.layer)) f.layer.addTo(weatherMap); }
+        else { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); }
+    });
+    aisRadarFrameIdx = idx;
+    document.getElementById('ais-radar-scrubber').value = idx;
+    document.getElementById('ais-radar-time').textContent = aisRadarFormatTime(aisRadarLayers[idx].time);
+}
+
+function aisRadarScrub(val) {
+    aisRadarStopPlay(); // manual scrub interrupts autoplay
+    aisRadarShowFrame(parseInt(val, 10));
+}
+
+function aisRadarStopPlay() {
+    aisRadarPlaying = false;
+    // BUGFIX-turned-timer-swap (2026-07-12, auto-replay feature): this used
+    // to be a single setInterval, but continuous looping (below) needs a
+    // variable-length pause on the hold-at-latest-frame beat, which
+    // setInterval can't do cleanly -- switched to chained setTimeout, so
+    // clear with clearTimeout here too (clearing a setTimeout id is what
+    // aisRadarPlayTimer now always holds).
+    if (aisRadarPlayTimer) { clearTimeout(aisRadarPlayTimer); aisRadarPlayTimer = null; }
+    const btn = document.getElementById('ais-radar-play');
+    if (btn) btn.textContent = '\u25B6';
+}
+
+// Advances one frame per call, chained via setTimeout rather than a fixed
+// setInterval so the "hold on latest frame" pause (added 2026-07-12, Cap's
+// request for auto-replay) can be a different, longer duration than the
+// normal frame-to-frame step -- makes it clear which frame is "now" before
+// the loop rewinds, instead of instantly snapping back to the oldest frame.
+function aisRadarPlayStep() {
+    if (!aisRadarPlaying) return;
+    const next = aisRadarFrameIdx + 1;
+    if (next >= aisRadarLayers.length) {
+        // Reached the most recent frame -- hold here a beat longer so it's
+        // clear that's "now", then loop back to the oldest frame and keep
+        // going. Runs indefinitely while radar is ON, no manual re-trigger
+        // needed (auto-replay, not a single one-shot animation).
+        aisRadarShowFrame(aisRadarLayers.length - 1);
+        aisRadarPlayTimer = setTimeout(() => {
+            if (!aisRadarPlaying) return;
+            aisRadarShowFrame(0);
+            aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500);
+        }, 1800); // hold on "now" frame ~1.8s before looping
+    } else {
+        aisRadarShowFrame(next);
+        aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500); // ~13 frames/loop = ~6.5s/pass
+    }
+}
+
+function aisRadarTogglePlay() {
+    if (!aisRadarLayers.length) return;
+    if (aisRadarPlaying) { aisRadarStopPlay(); return; }
+    aisRadarPlaying = true;
+    document.getElementById('ais-radar-play').textContent = '\u23F8';
+    // Restart from the beginning if sitting on the last frame, otherwise
+    // resume from wherever the scrubber currently is.
+    if (aisRadarFrameIdx >= aisRadarLayers.length - 1) aisRadarShowFrame(0);
+    aisRadarPlayTimer = setTimeout(aisRadarPlayStep, 500);
+}
+
+// ── Lightning strikes overlay (Xweather/GLD360, added 2026-07-11) ──────────
+// Same tile-overlay pattern as the RainViewer radar above, but tiles are
+// proxied through beau_server.py (/api/lightning-tile/{z}/{x}/{y}) instead
+// of hit directly — Xweather's raw tile URL embeds the API client_secret
+// in the path, which must never reach client-side JS/devtools. Server-side
+// proxy keeps the real credentials out of the browser entirely.
+const LIGHTNING_TILE_URL = 'https://beau.beaufort-ai.com/api/lightning-tile/{z}/{x}/{y}';
+let lightningLayer = null;
+let lightningEnabled = false;
+let lightningRefreshTimer = null;
+
+function aisLightningMakeLayer() {
+    // cache-bust query param forces Leaflet to re-fetch tiles on refresh
+    // instead of serving its own in-memory tile cache for a stale strike set
+    return L.tileLayer(LIGHTNING_TILE_URL + '?_=' + Date.now(), {
+        attribution: '&copy; Xweather (GLD360)',
+        opacity: 0.9,
+        maxZoom: 18,
+        maxNativeZoom: 10,
+        zIndex: 6   // above radar (zIndex 5) so strikes are never hidden under it
+    });
+}
+
+function aisToggleLightning() {
+    const btn = document.getElementById('ais-lightning-toggle');
+    const legend = document.getElementById('ais-lightning-legend');
+    lightningEnabled = !lightningEnabled;
+
+    if (lightningEnabled) {
+        lightningLayer = aisLightningMakeLayer();
+        lightningLayer.addTo(weatherMap);
+        btn.textContent = '\u26A1 Lightning: ON';
+        btn.classList.add('active');
+        legend.style.display = 'flex';
+        // Same invalidateSize pattern used elsewhere: showing this legend row
+        // changes the map container's effective height, so Leaflet needs to
+        // re-measure or the map view can end up subtly misaligned/cropped.
+        setTimeout(() => weatherMap.invalidateSize(), 0);
+        // Xweather's lightning-strikes layer updates every 5 minutes — refresh
+        // the tile layer on that cadence so strikes actually age off the map.
+        if (lightningRefreshTimer) clearInterval(lightningRefreshTimer);
+        lightningRefreshTimer = setInterval(() => {
+            if (!lightningEnabled) return;
+            const fresh = aisLightningMakeLayer();
+            fresh.addTo(weatherMap);
+            const old = lightningLayer;
+            lightningLayer = fresh;
+            if (old && weatherMap.hasLayer(old)) weatherMap.removeLayer(old);
+        }, 5 * 60 * 1000);
+    } else {
+        if (lightningRefreshTimer) { clearInterval(lightningRefreshTimer); lightningRefreshTimer = null; }
+        if (lightningLayer && weatherMap.hasLayer(lightningLayer)) weatherMap.removeLayer(lightningLayer);
+        lightningLayer = null;
+        btn.textContent = '\u26A1 Lightning: OFF';
+        btn.classList.remove('active');
+        legend.style.display = 'none';
+        setTimeout(() => weatherMap.invalidateSize(), 0);
+    }
+}
+
+// ── GOES-East satellite imagery panel (added 2026-08-11, Cap request) ──────
+// CHANGED same day: originally a Leaflet ImageOverlay draped on the zoomable
+// map. Cap caught two real bugs on first live look: (1) Full Disk imagery is
+// a circular disk, mapped as a rectangle, so the "deep space" corners of that
+// rectangle let the base OSM map bleed through at low/med zoom; (2) zooming
+// in on the vessel's own position just upscales the same ~1808px full-disk
+// JPEG -- no hidden detail underneath, renders as a useless white cloud blob.
+// Both are hard resolution/shape ceilings of the Full Disk product itself,
+// not fixable with zoom caps or CSS. Fix: plain static <img>, not a map
+// layer -- no zoom, no pan, no seam, no false promise of local detail. This
+// honestly matches what Full Disk GeoColor actually is: one current snapshot
+// of the whole GOES-East hemisphere. True zoomed-in local detail needs NOAA
+// mesoscale/regional sector crops + GPS reprojection -- open phase-2 item,
+// not yet built, not yet logged to BEAU_FEATURES.md per Cap's hold request.
+// Source: currently GOES-19 (took over as "GOES-East" from GOES-16 in Apr
+// 2025) -- label says "GOES-East" generically so it stays correct through
+// future satellite rotations.
+const GOES_IMAGE_URL = 'https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/1808x1808.jpg';
+let goesEnabled = false;
+let goesRefreshTimer = null;
+
+function goesRefreshImage() {
+    const img = document.getElementById('goes-static-img');
+    if (img) img.src = GOES_IMAGE_URL + '?_=' + Date.now(); // cache-bust for latest frame
+    const ts = document.getElementById('ais-goes-timestamp');
+    if (ts) ts.textContent = 'Last refreshed ' + now();
+}
+
+function aisToggleGoes() {
+    const btn = document.getElementById('ais-goes-toggle');
+    const legend = document.getElementById('ais-goes-legend');
+    const panel = document.getElementById('goes-static-panel');
+    goesEnabled = !goesEnabled;
+
+    if (goesEnabled) {
+        goesRefreshImage();
+        panel.style.display = 'block';
+        btn.textContent = '\u{1F6F0}\uFE0F Satellite: ON';
+        btn.classList.add('active');
+        legend.style.display = 'flex';
+        setTimeout(() => weatherMap.invalidateSize(), 0);
+        // GOES-East full disk updates on a ~10 min cadence -- refresh to match
+        if (goesRefreshTimer) clearInterval(goesRefreshTimer);
+        goesRefreshTimer = setInterval(() => { if (goesEnabled) goesRefreshImage(); }, 10 * 60 * 1000);
+    } else {
+        if (goesRefreshTimer) { clearInterval(goesRefreshTimer); goesRefreshTimer = null; }
+        panel.style.display = 'none';
+        btn.textContent = '\u{1F6F0}\uFE0F Satellite: OFF';
+        btn.classList.remove('active');
+        legend.style.display = 'none';
+        setTimeout(() => weatherMap.invalidateSize(), 0);
     }
 }
 
 async function aisToggleRadar() {
     const btn = document.getElementById('ais-radar-toggle');
+    const controls = document.getElementById('ais-radar-controls');
     aisRadarEnabled = !aisRadarEnabled;
 
     if (aisRadarEnabled) {
         btn.textContent = '\u{1F327}\uFE0F Radar: Loading...';
-        const layer = await aisLoadRadarLayer();
-        if (layer) {
-            aisRadarLayer = layer;
-            aisRadarLayer.addTo(aisMap);
+        const frames = await aisLoadRadarFrames();
+        if (frames.length) {
+            aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
+            aisRadarLayers = frames;
+            document.getElementById('ais-radar-scrubber').max = frames.length - 1;
+            aisRadarShowFrame(frames.length - 1); // start on latest frame
+            controls.style.display = 'flex';
             btn.textContent = '\u{1F327}\uFE0F Radar: ON';
             btn.classList.add('active');
-            // Refresh the radar frame every 10 minutes (RainViewer's cadence)
+            // Auto-replay (added 2026-07-12, Cap's request): start the loop
+            // automatically as soon as radar is turned on, instead of making
+            // someone manually hit play every time.
+            aisRadarTogglePlay();
+            // Refresh the frame set every 10 minutes (RainViewer's cadence)
             if (aisRadarRefreshTimer) clearInterval(aisRadarRefreshTimer);
             aisRadarRefreshTimer = setInterval(async () => {
                 if (!aisRadarEnabled) return;
-                const fresh = await aisLoadRadarLayer();
-                if (fresh) {
-                    if (aisRadarLayer) aisMap.removeLayer(aisRadarLayer);
-                    aisRadarLayer = fresh;
-                    aisRadarLayer.addTo(aisMap);
+                const fresh = await aisLoadRadarFrames();
+                if (fresh.length) {
+                    const wasPlaying = aisRadarPlaying;
+                    aisRadarStopPlay();
+                    aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
+                    aisRadarLayers = fresh;
+                    document.getElementById('ais-radar-scrubber').max = fresh.length - 1;
+                    aisRadarShowFrame(fresh.length - 1);
+                    // Auto-replay: keep looping with the new frame set rather than
+                    // freezing on a static latest frame after every 10-min refresh.
+                    if (wasPlaying) aisRadarTogglePlay();
                 }
             }, 10 * 60 * 1000);
         } else {
@@ -2048,8 +4140,11 @@ async function aisToggleRadar() {
             setTimeout(() => { btn.textContent = '\u{1F327}\uFE0F Radar: OFF'; }, 3000);
         }
     } else {
-        if (aisRadarLayer) { aisMap.removeLayer(aisRadarLayer); aisRadarLayer = null; }
+        aisRadarStopPlay();
+        aisRadarLayers.forEach(f => { if (weatherMap.hasLayer(f.layer)) weatherMap.removeLayer(f.layer); });
+        aisRadarLayers = [];
         if (aisRadarRefreshTimer) { clearInterval(aisRadarRefreshTimer); aisRadarRefreshTimer = null; }
+        controls.style.display = 'none';
         btn.textContent = '\u{1F327}\uFE0F Radar: OFF';
         btn.classList.remove('active');
     }
@@ -2271,6 +4366,48 @@ function aisUpdateOwnVessel(zone) {
     }
 }
 
+// ── Follow-vessel auto-recenter (added 2026-07-12, Cap's request: "will the
+// map follow the vessel to the next tile when we're underway?") ───────────
+// Re-centers the map on the vessel's live position every zone poll while
+// ON. Auto-pauses the instant a user manually drags/zooms the map (so it
+// doesn't yank the view back mid-look at something else), surfaced via the
+// header toggle button turning OFF. Programmatic recenters/pans set
+// aisProgrammaticMove first so the dragstart/zoomstart listeners below can
+// tell the difference between "we moved it" and "a person moved it."
+let aisFollowVessel = true;
+let aisProgrammaticMove = false;
+
+function aisSetFollowButtonUI() {
+    const btn = document.getElementById('ais-follow-toggle');
+    if (!btn) return;
+    if (aisFollowVessel) {
+        btn.textContent = '\u{1F4CD} Follow: ON';
+        btn.classList.add('active');
+    } else {
+        btn.textContent = '\u{1F4CD} Follow: OFF (tap to resume)';
+        btn.classList.remove('active');
+    }
+}
+
+function aisToggleFollow() {
+    aisFollowVessel = !aisFollowVessel;
+    aisSetFollowButtonUI();
+    if (aisFollowVessel && aisCurrentZone.vessel_lat && aisCurrentZone.vessel_lon) {
+        aisProgrammaticMove = true;
+        aisMap.setView([aisCurrentZone.vessel_lat, aisCurrentZone.vessel_lon], aisMap.getZoom(), { animate: true });
+        aisProgrammaticMove = false;
+    }
+}
+
+aisMap.on('dragstart', () => {
+    if (aisProgrammaticMove) return;  // our own panTo/setView, not a real user drag
+    if (aisFollowVessel) { aisFollowVessel = false; aisSetFollowButtonUI(); }
+});
+aisMap.on('zoomstart', () => {
+    if (aisProgrammaticMove) return;
+    if (aisFollowVessel) { aisFollowVessel = false; aisSetFollowButtonUI(); }
+});
+
 function aisUpdateZone(zone) {
     if (!zone || zone.center_lat === undefined || zone.center_lat === null) return;
     if (aisZoneUserAdjusted) return;  // don't override a manual adjustment mid-poll
@@ -2281,8 +4418,181 @@ function aisUpdateZone(zone) {
 
     if (!aisMapCenteredOnce) {
         aisMapCenteredOnce = true;
+        aisProgrammaticMove = true;
         aisMap.setView([zone.center_lat, zone.center_lon], 8, { animate: false });
+        aisProgrammaticMove = false;
+        // BUGFIX (2026-07-12): this often fires before the AIS tab has ever
+        // been opened (container still display:none / 0x0), which can leave
+        // the NOAA chart esri layer stuck on a zero-size export from its
+        // very first request. Force a redraw once the tab actually becomes
+        // visible and has a real size, in addition to the dashSwitchTab fix.
+        if (typeof noaaChartLayer !== 'undefined' && noaaChartLayer && noaaChartLayer.redraw) {
+            setTimeout(() => noaaChartLayer.redraw(), 100);
+        }
+    } else if (aisFollowVessel && zone.vessel_lat && zone.vessel_lon) {
+        // Underway auto-follow: keep the current zoom level, just pan to the
+        // vessel's new position each poll. panTo (not setView) so this never
+        // fires the dragstart/zoomstart pause-follow listeners above.
+        aisProgrammaticMove = true;
+        aisMap.panTo([zone.vessel_lat, zone.vessel_lon], { animate: true, duration: 1.2 });
+        aisProgrammaticMove = false;
     }
+}
+
+function aisUpdateInference(inf) {
+    const banner = document.getElementById('ais-infer-banner');
+    const line = document.getElementById('ais-infer-line');
+    const meta = document.getElementById('ais-infer-meta');
+    if (!banner || !line || !meta) return;
+    if (!inf) {
+        banner.className = 'ais-infer-banner';
+        line.textContent = 'Inference unavailable';
+        meta.textContent = '';
+        return;
+    }
+    const summary = inf.summary || {};
+    const feat = inf.fleet_features || {};
+    const signals = inf.signals || [];
+    const top = signals[0] || null;
+    const sevRaw = (summary.top_severity || (top && top.severity) || 'INFO').toLowerCase();
+    const sev = ['info','watch','warning','alarm'].includes(sevRaw) ? sevRaw : 'info';
+    const one = summary.one_liner || (top && top.message) || 'No fleet behavioral signal yet.';
+    banner.className = 'ais-infer-banner show ' + sev;
+    line.textContent = one;
+    const bits = [];
+    if (feat.vessels_in_zone != null) bits.push(feat.vessels_in_zone + ' in zone');
+    if (feat.mean_sog_kts != null) bits.push('mean SOG ' + Number(feat.mean_sog_kts).toFixed(1) + ' kt');
+    if (feat.local_wind_kts != null) bits.push('local wind ' + Number(feat.local_wind_kts).toFixed(1) + ' kt' + (feat.local_wind_deg != null ? (' @ ' + Math.round(feat.local_wind_deg) + '°') : ''));
+    if (top && top.proxy_wind_from_deg != null) bits.push('proxy FROM ' + Math.round(top.proxy_wind_from_deg) + '°');
+    if (top && top.local_agreement) bits.push('vs local: ' + top.local_agreement);
+    if (top && top.claim_ref) bits.push(top.claim_ref);
+    meta.textContent = bits.join(' · ');
+    if (typeof aisUpdateCpaUi === 'function') aisUpdateCpaUi(inf);
+}
+
+// --- CPA + Beau alert indicator (2026-07-30) ---
+const AIS_CPA_SETTINGS_URL = (typeof AIS_API_URL === 'string')
+  ? AIS_API_URL.replace(/\/api\/ais\/?$/, '/api/ais_cpa_settings')
+  : 'https://beau.beaufort-ai.com/api/ais_cpa_settings';
+let aisCpaSettingsLoaded = false;
+let aisLastAlertKey = null;
+
+function beauSetAlertPill(level, text) {
+  const el = document.getElementById('beau-alert-pill');
+  if (!el) return;
+  const lvl = (level || 'clear').toLowerCase();
+  const cls = ['clear','watch','warning','caution','alert','alarm'].includes(lvl) ? lvl : 'clear';
+  el.className = 'beau-alert-pill ' + cls;
+  el.textContent = text || ('BEAU: ' + cls.toUpperCase());
+}
+
+function aisSetTabBadge(count, severity) {
+  const el = document.getElementById('tab-badge-ais');
+  if (!el) return;
+  const n = count || 0;
+  el.textContent = n > 9 ? '9+' : String(n);
+  el.classList.toggle('show', n > 0);
+  el.classList.remove('watch','alert');
+  const sev = (severity || '').toLowerCase();
+  if (n > 0) {
+    if (sev === 'alarm' || sev === 'warning' || sev === 'alert') el.classList.add('alert');
+    else el.classList.add('watch');
+  }
+}
+
+function aisMaybeToastClosePass(sig) {
+  if (!sig || !sig.message) return;
+  const key = [sig.type, sig.mmsi || '', sig.severity || '', sig.tcpa_min || '', sig.cpa_nm || ''].join('|');
+  if (key === aisLastAlertKey) return;
+  aisLastAlertKey = key;
+  if (typeof fleetShowToast === 'function') {
+    const sev = (sig.severity || 'WATCH').toLowerCase();
+    fleetShowToast({
+      severity: sev === 'alarm' ? 'critical' : sev === 'warning' ? 'warning' : 'info',
+      title: 'AIS Close-Pass',
+      body: sig.message,
+    });
+  }
+}
+
+function aisUpdateCpaUi(inf) {
+  const cpa = (inf && inf.cpa) || {};
+  const meta = document.getElementById('ais-cpa-meta');
+  const safeInput = document.getElementById('ais-safe-cpa');
+  const modeSel = document.getElementById('ais-cpa-mode');
+  if (safeInput && cpa.safe_cpa_nm != null && !safeInput.matches(':focus')) safeInput.value = Number(cpa.safe_cpa_nm).toFixed(2);
+  if (modeSel && cpa.settings && cpa.settings.mode && !modeSel.matches(':focus')) modeSel.value = cpa.settings.mode;
+  if (meta) {
+    const bits = [];
+    bits.push('mode ' + String(cpa.mode || '--').toUpperCase());
+    if (cpa.safe_cpa_nm != null) bits.push('safe ' + Number(cpa.safe_cpa_nm).toFixed(2) + 'nm');
+    if (cpa.effective_safe_cpa_nm != null) bits.push('eff ' + Number(cpa.effective_safe_cpa_nm).toFixed(2) + 'nm');
+    if (cpa.own_sog_kts != null) bits.push('own ' + Number(cpa.own_sog_kts).toFixed(1) + 'kt');
+    if (cpa.alert_count != null) bits.push(cpa.alert_count + ' CPA alert' + (cpa.alert_count === 1 ? '' : 's'));
+    if (cpa.mode === 'port') bits.push('port quieting ON');
+    meta.textContent = bits.join(' · ');
+  }
+  const contacts = cpa.contacts || [];
+  const byMmsi = {};
+  contacts.forEach(c => { if (c && c.mmsi != null) byMmsi[String(c.mmsi)] = c; });
+  document.querySelectorAll('.ais-vessel-row[data-mmsi]').forEach(row => {
+    row.classList.remove('cpa-watch','cpa-warning','cpa-alarm');
+    const c = byMmsi[row.getAttribute('data-mmsi')];
+    if (!c || !c.severity) return;
+    const sev = String(c.severity).toLowerCase();
+    if (sev === 'alarm') row.classList.add('cpa-alarm');
+    else if (sev === 'warning') row.classList.add('cpa-warning');
+    else if (sev === 'watch') row.classList.add('cpa-watch');
+  });
+  const signals = (inf && inf.signals) || [];
+  const close = signals.filter(s => s && s.type === 'close_pass' && !(s.message && s.message.toUpperCase().includes('KIRT')));
+  const topClose = close[0] || null;
+  const topSev = (inf && inf.summary && inf.summary.top_severity) || (topClose && topClose.severity) || null;
+  aisSetTabBadge(close.length || ((inf && inf.summary && inf.summary.cpa_alert_count) || 0), topSev);
+  if (topClose) {
+    aisMaybeToastClosePass(topClose);
+    const lvl = String(topClose.severity || 'watch').toLowerCase();
+    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + (topClose.severity || 'WATCH') + ' · CPA');
+  } else if (topSev && String(topSev).toUpperCase() !== 'INFO') {
+    const lvl = String(topSev).toLowerCase();
+    beauSetAlertPill(lvl === 'alarm' ? 'alert' : lvl, 'BEAU: ' + String(topSev).toUpperCase());
+  } else {
+    beauSetAlertPill('clear', 'BEAU: CLEAR');
+  }
+}
+
+async function aisLoadCpaSettings() {
+  try {
+    const res = await fetch(AIS_CPA_SETTINGS_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const s = await res.json();
+    const safeInput = document.getElementById('ais-safe-cpa');
+    const modeSel = document.getElementById('ais-cpa-mode');
+    if (safeInput && s.safe_cpa_nm != null) safeInput.value = Number(s.safe_cpa_nm).toFixed(2);
+    if (modeSel && s.mode) modeSel.value = s.mode;
+    aisCpaSettingsLoaded = true;
+    const meta = document.getElementById('ais-cpa-meta');
+    if (meta) meta.textContent = 'saved safe ' + Number(s.safe_cpa_nm || 1).toFixed(2) + 'nm · mode ' + String(s.mode || 'auto').toUpperCase() + (s.effective_mode ? (' · now ' + String(s.effective_mode).toUpperCase()) : '');
+  } catch (e) {
+    const meta = document.getElementById('ais-cpa-meta');
+    if (meta) meta.textContent = 'CPA settings unavailable';
+  }
+}
+
+async function aisSaveCpaSettings() {
+  const safeInput = document.getElementById('ais-safe-cpa');
+  const modeSel = document.getElementById('ais-cpa-mode');
+  const meta = document.getElementById('ais-cpa-meta');
+  const body = { safe_cpa_nm: safeInput ? Number(safeInput.value) : 1.0, mode: modeSel ? modeSel.value : 'auto' };
+  try {
+    const res = await fetch(AIS_CPA_SETTINGS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const s = await res.json();
+    if (meta) meta.textContent = 'saved · safe ' + Number(s.safe_cpa_nm || body.safe_cpa_nm).toFixed(2) + 'nm · mode ' + String(s.mode || body.mode).toUpperCase();
+    if (typeof aisPoll === 'function') aisPoll();
+  } catch (e) {
+    if (meta) meta.textContent = 'save failed';
+  }
 }
 
 async function aisPoll() {
@@ -2292,13 +4602,19 @@ async function aisPoll() {
         const data = await res.json();
         aisUpdateChart(data);
         aisUpdateZone(data.zone);
+        aisUpdateInference(data.inference);
+        if (!aisCpaSettingsLoaded) aisLoadCpaSettings();
     } catch (e) {
         document.getElementById('ais-status').textContent = 'AIS feed unavailable';
+        aisUpdateInference(null);
+        beauSetAlertPill('clear', 'BEAU: OFFLINE');
     }
 }
 setInterval(aisPoll, 10000);
 aisPoll(); // immediate first load
-
+</script>
+  <script src="/js/analytics-beacon.js?v=20260731c" defer></script>
+  <script>
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
@@ -2311,7 +4627,7 @@ aisPoll(); // immediate first load
             btn.innerHTML = '🌙 Dark Mode';
             localStorage.setItem('beauTheme', 'light');
         }
-        if (typeof drawSparkline === 'function' && windSpeedHistory && windSpeedHistory.length > 0) {
+        if (typeof drawSparkline === 'function' && typeof windSpeedHistory !== 'undefined' && windSpeedHistory && windSpeedHistory.length > 0) {
             drawSparkline();
         }
     }
@@ -2320,6 +4636,6 @@ aisPoll(); // immediate first load
         const btn = document.getElementById('themeBtn');
         if (btn) btn.innerHTML = '🌙 Dark Mode';
     }
-</script>
+  </script>
 </body>
 </html>
