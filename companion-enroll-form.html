@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companion Enrollment Request — Beaufort AI</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.5; }
+  h1 { font-size: 1.5rem; }
+  label { display: block; margin-top: 1.1rem; font-weight: 600; }
+  input[type=text], input[type=tel], input[type=email], select {
+    width: 100%; padding: 0.55rem; margin-top: 0.3rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; box-sizing: border-box;
+  }
+  .consent { margin-top: 1.3rem; display: flex; gap: 0.6rem; align-items: flex-start; }
+  .consent input { margin-top: 0.25rem; }
+  .consent label { font-weight: 400; margin: 0; }
+  button { margin-top: 1.6rem; padding: 0.75rem 1.5rem; background: #0b5fff; color: #fff; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+  .small { font-size: 0.85rem; color: #555; margin-top: 1.5rem; }
+  a { color: #0b5fff; }
+</style>
+</head>
+<body>
+  <h1>Companion Enrollment Request</h1>
+  <p>Use this form to request enrollment of a participant's phone number in Beaufort AI's wellness companionship SMS service (the "Companion"). This form is completed by the family member, legal guardian, or authorized caregiver enrolling the participant — not the participant themselves.</p>
+
+  <form id="enroll-form" action="https://formsubmit.co/hello@beaufortai.ai" method="POST">
+    <input type="hidden" name="_subject" value="New Companion Enrollment Request">
+    <input type="hidden" name="_captcha" value="true">
+    <input type="hidden" name="_next" value="https://beaufortai.ai/companion-enroll-thanks">
+    <label for="enroller_name">Your full name (the enrolling party)</label>
+    <input type="text" id="enroller_name" name="enroller_name" required>
+
+    <label for="enroller_relationship">Your relationship to the participant</label>
+    <select id="enroller_relationship" name="enroller_relationship" required>
+      <option value="">Select one</option>
+      <option>Family member</option>
+      <option>Legal guardian</option>
+      <option>Authorized caregiver / facility staff</option>
+      <option>Other</option>
+    </select>
+
+    <label for="enroller_email">Your email address</label>
+    <input type="email" id="enroller_email" name="enroller_email" required>
+
+    <label for="enroller_phone">Your phone number</label>
+    <input type="tel" id="enroller_phone" name="enroller_phone" placeholder="(555) 555-5555" required>
+
+    <label for="participant_name">Participant's name (first name or preferred name is fine)</label>
+    <input type="text" id="participant_name" name="participant_name" required>
+
+    <label for="participant_phone">Participant's mobile phone number (the number that will receive Companion messages)</label>
+    <input type="tel" id="participant_phone" name="participant_phone" placeholder="(555) 555-5555" required>
+
+    <div class="consent">
+      <input type="checkbox" id="consent_authority" name="consent_authority" required>
+      <label for="consent_authority">I confirm I am authorized to make this request on behalf of the participant named above, and I have explained this service, its expected message frequency, and how to stop it (reply STOP) to the participant or their responsible party.</label>
+    </div>
+
+    <div class="consent">
+      <input type="checkbox" id="consent_sms" name="consent_sms">
+      <label for="consent_sms">I give explicit consent for the phone number above to receive recurring SMS text messages from Beaufort AI's Companion service. Message frequency varies (typically 1–5 messages/day). Message and data rates may apply. Reply STOP to opt out or HELP for help at any time. <strong>This consent is entirely optional and is not a condition of using Beaufort AI's other services.</strong> You may decline SMS messaging and still request program information or contact Beaufort AI directly.</label>
+    </div>
+
+    <div class="consent">
+      <input type="checkbox" id="consent_policy" name="consent_policy" required>
+      <label for="consent_policy">I have read and agree to the <a href="/companion-privacy" target="_blank" rel="noopener">Privacy Policy and Terms &amp; Conditions</a>.</label>
+    </div>
+
+    <button type="submit">Submit Enrollment Request</button>
+  </form>
+
+  <p class="small">
+    Submitting this form does not immediately enroll the number. A Beaufort AI representative will contact the enrolling party to verify identity and authorization before activating the Companion service. The participant will receive a confirmation opt-in text message before any other messages are sent, and the participant may independently reply STOP at any time to end messages, regardless of who requested enrollment.
+    <br><br>
+    Declining SMS consent above does not prevent you from submitting this request or contacting Beaufort AI for program information.
+    <br><br>
+    Questions? Contact Beaufort AI at <a href="mailto:hello@beaufortai.ai">hello@beaufortai.ai</a>.
+  </p>
+</body>
+</html>
