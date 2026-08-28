@@ -289,6 +289,17 @@
     .wr-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:2px}
     .wr-value{font-family:var(--font-mono);font-size:26px;font-weight:700;color:#f1f5f9;line-height:1}
     .wr-unit{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.08em}
+    /* MAX GUST CARD (added 2026-08-28, Cap request: placed directly below wind compass rose) */
+    .max-gust-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin:0 auto 8px;max-width:280px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .max-gust-info{display:flex;flex-direction:column}
+    .max-gust-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:2px}
+    .max-gust-value{font-family:var(--font-mono);font-size:26px;font-weight:700;color:#f59e0b;line-height:1}
+    .max-gust-unit{font-size:13px;color:var(--muted);margin-left:4px}
+    .max-gust-since{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
+    .max-gust-reset-btn{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;padding:5px 9px;cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap}
+    .max-gust-reset-btn:hover{border-color:var(--amber);color:var(--amber)}
+    .max-gust-reset-btn:disabled{opacity:.5;cursor:default}
+    body.light-theme .max-gust-card{background:#ffffff;border-color:#cbd5e1}
     #wind-rose{border-radius:50%;background:#0a0f14}
     .forecast-loading{padding:20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
     @media(max-width:600px){.sensor-grid{grid-template-columns:1fr 1fr}.site-header{flex-direction:column;justify-content:center;gap:6px;height:auto;padding:12px 20px}body{padding-top:80px}.site-nav{display:none}}
@@ -651,6 +662,16 @@
         </div>
       </div>
       </div>
+    </div>
+
+    <!-- MAX GUST CARD (added 2026-08-28, Cap request: "below the wind direction dial") -->
+    <div class="max-gust-card">
+      <div class="max-gust-info">
+        <div class="max-gust-label">MAX GUST</div>
+        <div><span class="max-gust-value" id="max-gust-value">--</span><span class="max-gust-unit">kts</span></div>
+        <div class="max-gust-since" id="max-gust-since">since --</div>
+      </div>
+      <button class="max-gust-reset-btn" id="max-gust-reset-btn" onclick="resetMaxGust()" title="Reset max gust tracker to current reading">&#x21bb; RESET</button>
     </div>
 
     <!-- GRAPHCAST 48H FORECAST STRIP -->
@@ -1981,6 +2002,49 @@ function decToDMS(dec, isLat) {
 }
 
 // ── PI LIVE FEED ─────────────────────────────────────────────────────────
+// ── MAX GUST CARD (added 2026-08-28, Cap request: "below the wind direction
+// dial") ────────────────────────────────────────────────────────────────
+// Backend (/api/sensors) already tracks the running-max observed live wind
+// reading server-side (survives page reloads/restarts) and exposes it as
+// wind.max_gust_kts / wind.max_gust_since. This just renders it + wires
+// the reset button to POST /api/sensors/reset-max-gust.
+function updateMaxGustCard(wind) {
+  const valEl = document.getElementById('max-gust-value');
+  const sinceEl = document.getElementById('max-gust-since');
+  if (!valEl || !sinceEl) return;
+  const kts = wind.max_gust_kts;
+  const since = wind.max_gust_since;
+  valEl.textContent = (kts !== null && kts !== undefined && !isNaN(kts)) ? Number(kts).toFixed(1) : '--';
+  if (since) {
+    try {
+      const t = new Date(since);
+      sinceEl.textContent = 'since ' + t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    } catch(e) {
+      sinceEl.textContent = 'since --';
+    }
+  } else {
+    sinceEl.textContent = 'since --';
+  }
+}
+
+async function resetMaxGust() {
+  const btn = document.getElementById('max-gust-reset-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '\u21bb RESETTING...'; }
+  try {
+    const res = await fetch(PI_FEED_URL.replace('/api/sensors', '/api/sensors/reset-max-gust'), {
+      method: 'POST',
+      headers: { 'x-api-key': BEAU_API_KEY }
+    });
+    const d = await res.json();
+    if (!res.ok || d.ok === false) throw new Error(d.error || ('HTTP ' + res.status));
+    updateMaxGustCard({ max_gust_kts: d.max_gust_kts, max_gust_since: d.max_gust_since });
+  } catch (e) {
+    console.log('Max gust reset failed:', e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '\u21bb RESET'; }
+  }
+}
+
 async function fetchPiFeed() {
   const statusEl = document.getElementById('pi-feed-status');
   try {
@@ -2101,6 +2165,10 @@ async function fetchPiFeed() {
     const _twd = parseFloat(document.getElementById('f-wind_direction')?.value) || 0;
     updateWindRose(aws, awa, _tws, _twd, d.gps?.cog || 0,
       d.accel?.heading_deg, d.accel?.heading_cal, d.accel?.heading_cal_label);
+
+    // Max gust card (added 2026-08-28, Cap request) -- backend tracks the
+    // observed running-max live wind reading server-side; this just displays it.
+    updateMaxGustCard(d.wind || {});
 
   } catch(e) {
     // Fable5 M2 fail-backoff (2026-08-01)
