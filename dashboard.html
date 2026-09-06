@@ -938,15 +938,34 @@ async function runSensorAnalysis() {
   const ps = document.getElementById('payload-section');
   if (ps) ps.classList.add('visible');
 
-  // UI: thinking state
+  // UI: HOLD-CURRENT-WHILE-LOADING (added 2026-09-06, Cap request).
+  // vLLM inference now regularly runs 70-100s+ per sensor analysis, which
+  // exceeds the client's 90s abort timeout on a growing share of requests
+  // and — even when it doesn't — leaves the panel showing only a bare
+  // spinner for over a minute, which reads as "stuck"/broken rather than
+  // "working". Fix: keep the LAST successful analysis fully visible
+  // (dimmed, with an "UPDATING" badge) while the new one streams in the
+  // background. Tokens are buffered into `pendingText` instead of being
+  // painted live, and the old->new swap happens atomically in onDone(),
+  // matching Cap's ask: "hold current forecast, present the full new one
+  // all at once when it's finished". First-ever run (no cached result)
+  // still shows the spinner since there's nothing to hold onto yet.
   const box = document.getElementById('analysis-box');
   const body = document.getElementById('analysis-body');
   const badge = document.getElementById('alert-badge');
   const conf  = document.getElementById('analysis-confidence');
-  if (badge) {badge.className='analysis-alert-badge'; badge.textContent='';}
-  if (conf)  {conf.style.display='none'; conf.textContent='';}
+  const hasPriorResult = !!(lastAnalysisResult && lastAnalysisResult.text);
+  if (badge) {badge.className='analysis-alert-badge' + (hasPriorResult ? (' ' + (lastAnalysisResult.alertLevel==='ADVISORY'?'advisory':lastAnalysisResult.alertLevel==='CAUTION'?'caution':'normal')) : ''); badge.textContent = hasPriorResult ? lastAnalysisResult.alertLevel : '';}
+  if (conf)  {conf.style.display = hasPriorResult ? 'block' : 'none'; conf.textContent = hasPriorResult ? 'Updating \u2014 previous result shown below' : '';}
   if (box)   box.classList.add('streaming');
-  if (body)  body.innerHTML = `<div class="thinking-state"><div class="spinner"></div><span>Beau is analyzing sensor data<span class="thinking-dots"></span></span></div>`;
+  if (body) {
+    if (hasPriorResult) {
+      body.innerHTML = `<div class="analysis-updating-badge" style="display:flex;align-items:center;gap:8px;color:var(--amber);font-size:11px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border)"><div class="spinner" style="width:12px;height:12px"></div><span>Beau is re-analyzing\u2026 showing last result below<span class="thinking-dots"></span></span></div>` +
+        `<div style="opacity:.55">${lastAnalysisResult.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+    } else {
+      body.innerHTML = `<div class="thinking-state"><div class="spinner"></div><span>Beau is analyzing sensor data<span class="thinking-dots"></span></span></div>`;
+    }
+  }
 
   setStatus('#f59e0b', 'Sensor analysis...');
   setEl('analysis-time', now());
@@ -958,18 +977,16 @@ async function runSensorAnalysis() {
   await streamBeauRequest(
     payload,
     (token) => {
-      // First token: replace thinking state with stream
-      if (!streamedText) {
-        body.innerHTML = '';
-      }
+      // Buffer tokens silently — do NOT paint them live. The panel keeps
+      // showing the previous result (dimmed) + "updating" badge until the
+      // new answer is completely finished (onDone below), so operators
+      // always see a complete analysis, never a half-streamed one.
       streamedText += token;
-      if (body) {
-        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
-      }
     },
     (finalData) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-      // Remove cursor
+      // Atomic swap: replace the dimmed old text with the finished new text
+      // all at once, exactly as requested.
       if (body) body.textContent = streamedText.trim();
 
       // Parse final data for alert level
