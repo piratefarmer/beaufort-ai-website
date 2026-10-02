@@ -2294,6 +2294,24 @@ function decToDMS(dec, isLat) {
 }
 
 // ── PI LIVE FEED ─────────────────────────────────────────────────────────
+// 2026-10-01 fast attitude poll (Cap: roll/pitch too slow to level). Writes the same f-roll/f-pitch/f-yaw inputs as set(); 1s cadence, no overlap.
+let attitudeInFlight = false;
+async function fetchAttitude() {
+  if (attitudeInFlight || typeof piFeedEnabled === 'undefined' || !piFeedEnabled) return;
+  attitudeInFlight = true;
+  try {
+    const res = await fetch(PI_FEED_URL, { headers: { 'x-api-key': BEAU_API_KEY }, cache: 'no-store' });
+    if (!res.ok) return;
+    const d = await res.json();
+    const a = d && d.accel;
+    if (!a) return;
+    const put = (id, v) => { const el = document.getElementById('f-' + id); if (el && typeof v === 'number' && isFinite(v)) el.value = v.toFixed(1); };
+    put('roll', a.roll); put('pitch', a.pitch); put('yaw', a.yaw);
+  } catch (e) { /* silent: the 5s full feed still runs */ }
+  finally { attitudeInFlight = false; }
+}
+setInterval(fetchAttitude, 1000);
+
 async function fetchPiFeed() {
   const statusEl = document.getElementById('pi-feed-status');
   try {
