@@ -1773,6 +1773,20 @@ async function streamBeauRequest(body, onToken, onDone, onError) {
   }
 }
 
+
+// 2026-10-01 card fix: server streams raw tokens incl. hidden ANALYSIS: section, then a final cleaned token.
+// Show only text after the last 'ANSWER:'; while none yet, show the thinking state. Final cleaned token replaces, never appends.
+function beauVisibleText(raw){
+  const i=raw.toUpperCase().lastIndexOf('ANSWER:');
+  if(i===-1) return raw.toUpperCase().includes('ANALYSIS:') ? '' : raw;
+  return raw.slice(i+7).trim();
+}
+function beauAlertFromText(t){
+  const u=(t||'').toUpperCase();
+  if(/\bADVISORY\b|\bDANGER\b|\bWARNING\b/.test(u.slice(0,200))) return 'ADVISORY';
+  if(/\bCAUTION\b|\bWATCH\b/.test(u.slice(0,200))) return 'CAUTION';
+  return null;
+}
 // ── MODE 1: SENSOR ANALYSIS ──────────────────────────────────
 async function runSensorAnalysis() {
   if (sensorRequestInFlight) return;
@@ -1821,17 +1835,16 @@ async function runSensorAnalysis() {
     payload,
     (token) => {
       // First token: replace thinking state with stream
-      if (!streamedText) {
-        body.innerHTML = '';
-      }
       streamedText += token;
-      if (body) {
-        body.innerHTML = streamedText.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
+      const _vis = beauVisibleText(streamedText);
+      if (body && _vis) {
+        body.innerHTML = _vis.replace(/<s>/gi,'').replace(/<\/s>/gi,'').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<span class="stream-cursor"></span>';
       }
     },
     (finalData) => {
       const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
       // Remove cursor
+      streamedText = beauVisibleText(streamedText) || streamedText;
       if (body) body.textContent = streamedText.trim();
 
       // Parse final data for alert level
@@ -1839,7 +1852,7 @@ async function runSensorAnalysis() {
       let confidence = null;
       if (finalData) {
         const pred = finalData.prediction || finalData;
-        alertLevel = (pred.alert_level || 'NORMAL').toUpperCase();
+        alertLevel = (pred.alert_level || beauAlertFromText(streamedText) || 'NORMAL').toUpperCase();
         confidence = pred.confidence ?? null;
       } else {
         // Infer from text
@@ -3733,7 +3746,9 @@ const NOWCAST_TIER_COLORS = {
   calm:      '#4ade80',
   changing:  '#fbbf24',
   bad:       '#f87171',
+  severe:    '#f87171',
 };
+const NOWCAST_TIER_LABEL = { calm:'CALM', changing:'CHANGING', bad:'SEVERE', severe:'SEVERE' };
 
 function _fmtElapsed(seconds) {
   if (seconds == null || seconds < 0) return '--';
@@ -3756,14 +3771,14 @@ async function fetchNowcastTier() {
     const color = NOWCAST_TIER_COLORS[tier] || NOWCAST_TIER_COLORS.calm;
     document.documentElement.style.setProperty('--tier-color', color);
 
-    if (pillTextEl) pillTextEl.textContent = `${tier.toUpperCase()} · ${data.cadence_min ?? '--'} MIN CADENCE`;
+    if (pillTextEl) pillTextEl.textContent = `${(NOWCAST_TIER_LABEL[tier]||tier.toUpperCase())} · ${data.cadence_min ?? '--'} MIN CADENCE`;
 
     if (stripTextEl) {
       const p = data.pressure_trend_mb_hr;
       const g = data.gust_delta_kt;
       const pStr = (p != null) ? `${p >= 0 ? '+' : ''}${p.toFixed(1)} mb/hr` : 'n/a';
       const gStr = (g != null) ? `${g >= 0 ? '+' : ''}${g.toFixed(1)}kt vs baseline` : 'n/a';
-      let html = `Nowcasting tier <b>${tier.toUpperCase()}</b> — pressure trend ${pStr}, gust delta ${gStr}.`;
+      let html = `Nowcasting tier <b>${(NOWCAST_TIER_LABEL[tier]||tier.toUpperCase())}</b> — pressure trend ${pStr}, gust delta ${gStr}.`;
       if (Array.isArray(data.deviation_notes) && data.deviation_notes.length) {
         html += `<span class="tier-deviation-note">⚠ ${data.deviation_notes.join(' ')}</span>`;
       }
